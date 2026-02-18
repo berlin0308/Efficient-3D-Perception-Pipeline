@@ -1,0 +1,42 @@
+# Data and datasets
+data/
+**/data/
+*.pkl
+*.bin
+*.npy
+
+# Training and evaluation output
+output/
+**/output/
+**/ckpt/
+**/*.pth
+*.ckpt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+*.egg-info/
+*.egg
+build/
+dist/
+eggs/
+.eggs/
+
+# IDE and OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+*.swo
+*~
+
+# OpenPCDet / project specific
+*.zip
+*.tar
+*.tar.gz

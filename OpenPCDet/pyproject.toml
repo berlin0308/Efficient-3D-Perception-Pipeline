@@ -1,0 +1,4 @@
+[build-system]
+# So that PEP 517 isolated build env has torch (setup.py imports it).
+requires = ["setuptools>=42", "wheel", "torch"]
+build-backend = "setuptools.build_meta"
