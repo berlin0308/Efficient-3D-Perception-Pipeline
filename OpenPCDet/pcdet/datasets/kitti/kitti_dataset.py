@@ -384,6 +384,11 @@ class KittiDataset(DatasetTemplate):
 
         eval_det_annos = copy.deepcopy(det_annos)
         eval_gt_annos = [copy.deepcopy(info['annos']) for info in self.kitti_infos]
+        max_eval_samples = kwargs.get('max_eval_samples', None)
+        if max_eval_samples is not None:
+            n = min(max_eval_samples, len(eval_gt_annos), len(eval_det_annos))
+            eval_gt_annos = eval_gt_annos[:n]
+            eval_det_annos = eval_det_annos[:n]
         ap_result_str, ap_dict = kitti_eval.get_official_eval_result(eval_gt_annos, eval_det_annos, class_names)
 
         return ap_result_str, ap_dict

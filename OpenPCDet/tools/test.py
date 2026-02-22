@@ -7,6 +7,15 @@ import re
 import time
 from pathlib import Path
 
+# Set CUDA device before importing torch (PyTorch reads CUDA_VISIBLE_DEVICES at import time)
+def _parse_cuda_id():
+    p = argparse.ArgumentParser()
+    p.add_argument('--cuda_id', type=int, default=1, help='CUDA device ID (default: 1)')
+    args, _ = p.parse_known_args()
+    return args.cuda_id
+
+os.environ['CUDA_VISIBLE_DEVICES'] = str(_parse_cuda_id())
+
 import numpy as np
 import torch
 from tensorboardX import SummaryWriter
@@ -40,8 +49,15 @@ def parse_config():
     parser.add_argument('--ckpt_dir', type=str, default=None, help='specify a ckpt directory to be evaluated if needed')
     parser.add_argument('--save_to_file', action='store_true', default=False, help='')
     parser.add_argument('--infer_time', action='store_true', default=True, help='calculate inference latency')
+    parser.add_argument('--profile', action='store_true', default=False, help='enable torch.profiler for full pipeline (dataloader + model + postprocess)')
+    parser.add_argument('--profile_steps', type=int, default=20, help='number of steps to profile (default 20)')
+    parser.add_argument('--profile_output', type=str, default=None, help='path for Chrome trace JSON (default: result_dir/torch_profile_trace.json)')
+    parser.add_argument('--max_samples', type=int, default=None, help='only run evaluation on first N samples (e.g. 100); omit or 0 for full eval')
+    parser.add_argument('--cuda_id', type=int, default=1, help='CUDA device ID to use (default: 1)')
 
     args = parser.parse_args()
+    if args.max_samples is not None and args.max_samples <= 0:
+        args.max_samples = None  # 0 or negative = no limit
 
     cfg_from_yaml_file(args.cfg_file, cfg)
     cfg.TAG = Path(args.cfg_file).stem
@@ -138,7 +154,7 @@ def repeat_eval_ckpt(model, test_loader, args, eval_output_dir, logger, ckpt_dir
 def main():
     args, cfg = parse_config()
 
-    if args.infer_time:
+    if args.infer_time or args.profile:
         os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 
     if args.launcher == 'none':

@@ -1,8 +1,10 @@
 import pickle
 import time
+from pathlib import Path
 
 import numpy as np
 import torch
+import torch.profiler
 import tqdm
 
 from pcdet.models import load_data_to_gpu
@@ -36,6 +38,13 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
     dataset = dataloader.dataset
     class_names = dataset.class_names
     det_annos = []
+    max_samples = getattr(args, 'max_samples', None)
+    num_samples_evaluated = 0
+
+    def batch_size_from_dict(batch_dict):
+        if 'frame_id' in batch_dict and batch_dict['frame_id'] is not None:
+            return len(batch_dict['frame_id'])
+        return getattr(args, 'batch_size', 1)
 
     if getattr(args, 'infer_time', False):
         start_iter = int(len(dataloader) * 0.1)
@@ -55,32 +64,98 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
     if cfg.LOCAL_RANK == 0:
         progress_bar = tqdm.tqdm(total=len(dataloader), leave=True, desc='eval', dynamic_ncols=True)
     start_time = time.time()
-    for i, batch_dict in enumerate(dataloader):
-        load_data_to_gpu(batch_dict)
 
-        if getattr(args, 'infer_time', False):
-            start_time = time.time()
+    use_profile = getattr(args, 'profile', False)
+    if use_profile:
+        dataloader_iter = iter(dataloader)
+        profile_steps = min(getattr(args, 'profile_steps', 20), len(dataloader))
+        profile_output_path = getattr(args, 'profile_output', None) or (result_dir / 'torch_profile_trace.json')
+        if isinstance(profile_output_path, str):
+            profile_output_path = Path(profile_output_path)
+        if 'result_dir' in str(profile_output_path) or not profile_output_path.parent.exists():
+            profile_output_path = result_dir / profile_output_path.name
+        profile_output_path.parent.mkdir(parents=True, exist_ok=True)
+        do_profile_export = use_profile and (cfg.LOCAL_RANK == 0)
 
-        with torch.no_grad():
-            pred_dicts, ret_dict = model(batch_dict)
+        def run_one_step(batch_dict):
+            load_data_to_gpu(batch_dict)
+            step_start = time.time() if getattr(args, 'infer_time', False) else None
+            with torch.no_grad():
+                pred_dicts, ret_dict = model(batch_dict)
+            disp_dict = {}
+            if getattr(args, 'infer_time', False) and step_start is not None:
+                infer_time_meter.update((time.time() - step_start) * 1000)
+                disp_dict['infer_time'] = f'{infer_time_meter.val:.2f}({infer_time_meter.avg:.2f})'
+            statistics_info(cfg, ret_dict, metric, disp_dict)
+            annos = dataset.generate_prediction_dicts(
+                batch_dict, pred_dicts, class_names,
+                output_path=final_output_dir if args.save_to_file else None
+            )
+            if cfg.LOCAL_RANK == 0:
+                progress_bar.set_postfix(disp_dict)
+                progress_bar.update()
+            return annos
 
-        disp_dict = {}
+        if do_profile_export:
+            with torch.profiler.profile(
+                activities=[torch.profiler.ProfilerActivity.CPU, torch.profiler.ProfilerActivity.CUDA],
+                record_shapes=True,
+                with_stack=True,
+            ) as prof:
+                for _ in range(profile_steps):
+                    if max_samples is not None and num_samples_evaluated >= max_samples:
+                        break
+                    batch_dict = next(dataloader_iter)
+                    annos = run_one_step(batch_dict)
+                    det_annos += annos
+                    num_samples_evaluated += batch_size_from_dict(batch_dict)
+            prof.export_chrome_trace(str(profile_output_path))
+            logger.info('Profile trace saved to %s' % profile_output_path)
+        else:
+            for _ in range(profile_steps):
+                if max_samples is not None and num_samples_evaluated >= max_samples:
+                    break
+                batch_dict = next(dataloader_iter)
+                annos = run_one_step(batch_dict)
+                det_annos += annos
+                num_samples_evaluated += batch_size_from_dict(batch_dict)
 
-        if getattr(args, 'infer_time', False):
-            inference_time = time.time() - start_time
-            infer_time_meter.update(inference_time * 1000)
-            # use ms to measure inference time
-            disp_dict['infer_time'] = f'{infer_time_meter.val:.2f}({infer_time_meter.avg:.2f})'
+        for batch_dict in dataloader_iter:
+            if max_samples is not None and num_samples_evaluated >= max_samples:
+                break
+            annos = run_one_step(batch_dict)
+            det_annos += annos
+            num_samples_evaluated += batch_size_from_dict(batch_dict)
+    else:
+        for i, batch_dict in enumerate(dataloader):
+            if max_samples is not None and num_samples_evaluated >= max_samples:
+                break
+            load_data_to_gpu(batch_dict)
 
-        statistics_info(cfg, ret_dict, metric, disp_dict)
-        annos = dataset.generate_prediction_dicts(
-            batch_dict, pred_dicts, class_names,
-            output_path=final_output_dir if args.save_to_file else None
-        )
-        det_annos += annos
-        if cfg.LOCAL_RANK == 0:
-            progress_bar.set_postfix(disp_dict)
-            progress_bar.update()
+            if getattr(args, 'infer_time', False):
+                start_time = time.time()
+
+            with torch.no_grad():
+                pred_dicts, ret_dict = model(batch_dict)
+
+            disp_dict = {}
+
+            if getattr(args, 'infer_time', False):
+                inference_time = time.time() - start_time
+                infer_time_meter.update(inference_time * 1000)
+                # use ms to measure inference time
+                disp_dict['infer_time'] = f'{infer_time_meter.val:.2f}({infer_time_meter.avg:.2f})'
+
+            statistics_info(cfg, ret_dict, metric, disp_dict)
+            annos = dataset.generate_prediction_dicts(
+                batch_dict, pred_dicts, class_names,
+                output_path=final_output_dir if args.save_to_file else None
+            )
+            det_annos += annos
+            num_samples_evaluated += batch_size_from_dict(batch_dict)
+            if cfg.LOCAL_RANK == 0:
+                progress_bar.set_postfix(disp_dict)
+                progress_bar.update()
 
     if cfg.LOCAL_RANK == 0:
         progress_bar.close()
@@ -91,8 +166,11 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
         metric = common_utils.merge_results_dist([metric], world_size, tmpdir=result_dir / 'tmpdir')
 
     logger.info('*************** Performance of EPOCH %s *****************' % epoch_id)
-    sec_per_example = (time.time() - start_time) / len(dataloader.dataset)
+    n_eval = num_samples_evaluated if num_samples_evaluated > 0 else len(dataloader.dataset)
+    sec_per_example = (time.time() - start_time) / max(n_eval, 1)
     logger.info('Generate label finished(sec_per_example: %.4f second).' % sec_per_example)
+    if max_samples is not None and num_samples_evaluated > 0:
+        logger.info('Evaluated first %d samples (--max_samples=%d).' % (num_samples_evaluated, max_samples))
 
     if cfg.LOCAL_RANK != 0:
         return {}
@@ -122,11 +200,13 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
     with open(result_dir / 'result.pkl', 'wb') as f:
         pickle.dump(det_annos, f)
 
-    result_str, result_dict = dataset.evaluation(
-        det_annos, class_names,
+    eval_kwargs = dict(
         eval_metric=cfg.MODEL.POST_PROCESSING.EVAL_METRIC,
         output_path=final_output_dir
     )
+    if max_samples is not None and len(det_annos) < len(dataset):
+        eval_kwargs['max_eval_samples'] = len(det_annos)
+    result_str, result_dict = dataset.evaluation(det_annos, class_names, **eval_kwargs)
 
     logger.info(result_str)
     ret_dict.update(result_dict)
