@@ -1,2 +1,2 @@
-+ Torch profiler output: chrome://tracing/
++ Torch profiler output: https://chrome://tracing/
 + TorchScript: https://netron.app
