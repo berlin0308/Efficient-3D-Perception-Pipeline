@@ -16,3 +16,5 @@ venv/
 *.pt
 output
 version.py
+tools/torch_trace/
+tools/tl_out/
