@@ -18,6 +18,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = str(_parse_cuda_id())
 
 import numpy as np
 import torch
+import torch.nn as nn
 from tensorboardX import SummaryWriter
 
 from eval_utils import eval_utils
@@ -52,6 +53,12 @@ def parse_config():
     parser.add_argument('--profile', action='store_true', default=False, help='enable torch.profiler for full pipeline (dataloader + model + postprocess)')
     parser.add_argument('--profile_steps', type=int, default=20, help='number of steps to profile (default 20)')
     parser.add_argument('--profile_output', type=str, default=None, help='path for Chrome trace JSON (default: result_dir/torch_profile_trace.json)')
+    parser.add_argument('--nsight', action='store_true', default=False, help='enable NVTX ranges for Nsight Systems; run with: nsys profile -o out python test.py ... --nsight')
+    parser.add_argument('--nsight_steps', type=int, default=20, help='number of steps when profiling with --nsight (default 20)')
+    parser.add_argument('--warmup', type=int, default=20, help='number of warmup steps before measuring latency/profiling (default 20)')
+    parser.add_argument('--compile', action='store_true', help='wrap model with torch.compile() before eval (PyTorch 2.0+)')
+    parser.add_argument('--compile_debug', action='store_true', help='with --compile: log graph_breaks, graph_code, recompiles to stderr; use 2>out.txt to save (many graph breaks explain poor compile perf)')
+    parser.add_argument('--traced_model', type=str, default=None, help='path to TorchScript .pt from profile_utils/export.py; use it for forward, post_processing still uses --ckpt model')
     parser.add_argument('--max_samples', type=int, default=None, help='only run evaluation on first N samples (e.g. 100); omit or 0 for full eval')
     parser.add_argument('--cuda_id', type=int, default=1, help='CUDA device ID to use (default: 1)')
 
@@ -71,12 +78,52 @@ def parse_config():
     return args, cfg
 
 
+class TracedModelWrapper(nn.Module):
+    """Uses a TorchScript-traced forward (voxels, voxel_num_points, voxel_coords) -> (batch_cls_preds, batch_box_preds)
+    and delegates post_processing to the full Python model. Compatible with export.py output."""
+
+    def __init__(self, traced_module, full_model):
+        super().__init__()
+        self.traced = traced_module
+        self.full_model = full_model
+        self.full_model.eval()
+
+    def forward(self, batch_dict):
+        voxels = batch_dict['voxels']
+        voxel_num_points = batch_dict['voxel_num_points']
+        voxel_coords = batch_dict['voxel_coords']
+        batch_cls_preds, batch_box_preds = self.traced(voxels, voxel_num_points, voxel_coords)
+        batch_dict = dict(batch_dict)
+        batch_dict['batch_cls_preds'] = batch_cls_preds
+        batch_dict['batch_box_preds'] = batch_box_preds
+        # post_processing expects this (dense_head sets it; traced model outputs raw logits)
+        batch_dict['cls_preds_normalized'] = False
+        return self.full_model.post_processing(batch_dict)
+
+
 def eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch_id, dist_test=False):
     # load checkpoint
-    model.load_params_from_file(filename=args.ckpt, logger=logger, to_cpu=dist_test, 
+    model.load_params_from_file(filename=args.ckpt, logger=logger, to_cpu=dist_test,
                                 pre_trained_path=args.pretrained_model)
     model.cuda()
-    
+    model.eval()
+
+    traced_path = getattr(args, 'traced_model', None)
+    if traced_path:
+        path = Path(traced_path)
+        if not path.exists():
+            raise FileNotFoundError('--traced_model file not found: %s' % traced_path)
+        logger.info('Loading traced model from %s (forward only; post_processing from --ckpt model)', path)
+        traced = torch.jit.load(str(path), map_location='cuda')
+        traced.eval()
+        model = TracedModelWrapper(traced, model)
+        model.cuda()
+    elif getattr(args, 'compile', False):
+        if hasattr(torch, 'compile'):
+            logger.info('Wrapping model with torch.compile()')
+            model = torch.compile(model, mode='default')
+        else:
+            logger.warning('--compile set but torch.compile not available; skipping')
     # start evaluation
     eval_utils.eval_one_epoch(
         cfg, args, model, test_loader, epoch_id, logger, dist_test=dist_test,
@@ -154,7 +201,18 @@ def repeat_eval_ckpt(model, test_loader, args, eval_output_dir, logger, ckpt_dir
 def main():
     args, cfg = parse_config()
 
-    if args.infer_time or args.profile:
+    # Enable torch.compile diagnostics (graph breaks, graph code, recompiles) when requested.
+    # Output goes to stderr; redirect with e.g. 2>compile_debug.txt or 2>&1 | tee compile_debug.txt
+    if getattr(args, 'compile', False) and getattr(args, 'compile_debug', False):
+        if hasattr(torch, '_logging') and hasattr(torch._logging, 'set_logs'):
+            torch._logging.set_logs(
+                graph_breaks=True,
+                graph_code=True,
+                recompiles=True,
+            )
+            print('torch.compile debug: graph_breaks, graph_code, recompiles enabled (stderr)', flush=True)
+
+    if args.infer_time or args.profile or args.nsight:
         os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 
     if args.launcher == 'none':

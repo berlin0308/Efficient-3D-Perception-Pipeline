@@ -11,6 +11,42 @@ from pcdet.models import load_data_to_gpu
 from pcdet.utils import common_utils
 
 
+def _nvtx_range(name):
+    """Context manager for NVTX range (no-op if torch.cuda.nvtx not available)."""
+    nvtx = getattr(torch.cuda, 'nvtx', None)
+    if nvtx is None:
+        from contextlib import nullcontext
+        return nullcontext()
+    return _NvtxRange(name)
+
+
+class _NvtxRange:
+    def __init__(self, name):
+        self.name = name
+        self.nvtx = getattr(torch.cuda, 'nvtx', None)
+
+    def __enter__(self):
+        if self.nvtx is not None:
+            self.nvtx.range_push(self.name)
+
+    def __exit__(self, *args):
+        if self.nvtx is not None:
+            self.nvtx.range_pop()
+
+
+def _forward_model(model, batch_dict, args):
+    """
+    Run model(batch_dict). When --compile is set, pass only tensor/int/float keys
+    so torch.compile (Dynamo) does not see numpy.str_ or other unsupported types.
+    """
+    if not getattr(args, 'compile', False):
+        return model(batch_dict)
+    safe = {k: v for k, v in batch_dict.items() if isinstance(v, (torch.Tensor, int, float))}
+    pred_dicts, ret_dict = model(safe)
+    batch_dict.update(safe)
+    return pred_dicts, ret_dict
+
+
 def statistics_info(cfg, ret_dict, metric, disp_dict):
     for cur_thresh in cfg.MODEL.POST_PROCESSING.RECALL_THRESH_LIST:
         metric['recall_roi_%s' % str(cur_thresh)] += ret_dict.get('roi_%s' % str(cur_thresh), 0)
@@ -65,9 +101,17 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
         progress_bar = tqdm.tqdm(total=len(dataloader), leave=True, desc='eval', dynamic_ncols=True)
     start_time = time.time()
 
+    warmup = getattr(args, 'warmup', 20)
     use_profile = getattr(args, 'profile', False)
     if use_profile:
         dataloader_iter = iter(dataloader)
+        if warmup > 0 and cfg.LOCAL_RANK == 0:
+            logger.info('Running %d warmup steps (no timing/profiling)' % warmup)
+        for _ in range(min(warmup, len(dataloader))):
+            batch_dict = next(dataloader_iter)
+            load_data_to_gpu(batch_dict)
+            with torch.no_grad():
+                _forward_model(model, batch_dict, args)
         profile_steps = min(getattr(args, 'profile_steps', 20), len(dataloader))
         profile_output_path = getattr(args, 'profile_output', None) or (result_dir / 'torch_profile_trace.json')
         if isinstance(profile_output_path, str):
@@ -81,7 +125,7 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
             load_data_to_gpu(batch_dict)
             step_start = time.time() if getattr(args, 'infer_time', False) else None
             with torch.no_grad():
-                pred_dicts, ret_dict = model(batch_dict)
+                pred_dicts, ret_dict = _forward_model(model, batch_dict, args)
             disp_dict = {}
             if getattr(args, 'infer_time', False) and step_start is not None:
                 infer_time_meter.update((time.time() - step_start) * 1000)
@@ -126,24 +170,68 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
             annos = run_one_step(batch_dict)
             det_annos += annos
             num_samples_evaluated += batch_size_from_dict(batch_dict)
+    elif getattr(args, 'nsight', False):
+        dataloader_iter = iter(dataloader)
+        if warmup > 0 and cfg.LOCAL_RANK == 0:
+            logger.info('Running %d warmup steps (no NVTX/timing)' % warmup)
+        for _ in range(min(warmup, len(dataloader))):
+            batch_dict = next(dataloader_iter)
+            load_data_to_gpu(batch_dict)
+            with torch.no_grad():
+                _forward_model(model, batch_dict, args)
+        nsight_steps = min(getattr(args, 'nsight_steps', 20), len(dataloader))
+        if cfg.LOCAL_RANK == 0:
+            logger.info('Nsight mode: running %d steps with NVTX ranges (get_batch, data_to_gpu, forward, postprocess, generate_prediction_dicts)' % nsight_steps)
+
+        def run_one_step_nsight(batch_dict):
+            with _nvtx_range('data_to_gpu'):
+                load_data_to_gpu(batch_dict)
+            step_start = time.time() if getattr(args, 'infer_time', False) else None
+            with _nvtx_range('forward'):
+                with torch.no_grad():
+                    pred_dicts, ret_dict = _forward_model(model, batch_dict, args)
+            disp_dict = {}
+            if getattr(args, 'infer_time', False) and step_start is not None:
+                infer_time_meter.update((time.time() - step_start) * 1000)
+                disp_dict['infer_time'] = f'{infer_time_meter.val:.2f}({infer_time_meter.avg:.2f})'
+            with _nvtx_range('postprocess'):
+                statistics_info(cfg, ret_dict, metric, disp_dict)
+                with _nvtx_range('generate_prediction_dicts'):
+                    annos = dataset.generate_prediction_dicts(
+                        batch_dict, pred_dicts, class_names,
+                        output_path=final_output_dir if args.save_to_file else None
+                    )
+            if cfg.LOCAL_RANK == 0:
+                progress_bar.set_postfix(disp_dict)
+                progress_bar.update()
+            return annos
+
+        for _ in range(nsight_steps):
+            if max_samples is not None and num_samples_evaluated >= max_samples:
+                break
+            with _nvtx_range('get_batch'):
+                batch_dict = next(dataloader_iter)
+            annos = run_one_step_nsight(batch_dict)
+            det_annos += annos
+            num_samples_evaluated += batch_size_from_dict(batch_dict)
     else:
         for i, batch_dict in enumerate(dataloader):
             if max_samples is not None and num_samples_evaluated >= max_samples:
                 break
             load_data_to_gpu(batch_dict)
 
-            if getattr(args, 'infer_time', False):
+            do_timing = getattr(args, 'infer_time', False) and i >= warmup
+            if do_timing:
                 start_time = time.time()
 
             with torch.no_grad():
-                pred_dicts, ret_dict = model(batch_dict)
+                pred_dicts, ret_dict = _forward_model(model, batch_dict, args)
 
             disp_dict = {}
 
-            if getattr(args, 'infer_time', False):
+            if do_timing:
                 inference_time = time.time() - start_time
                 infer_time_meter.update(inference_time * 1000)
-                # use ms to measure inference time
                 disp_dict['infer_time'] = f'{infer_time_meter.val:.2f}({infer_time_meter.avg:.2f})'
 
             statistics_info(cfg, ret_dict, metric, disp_dict)
