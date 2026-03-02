@@ -18,10 +18,10 @@ os.environ['CUDA_VISIBLE_DEVICES'] = str(_parse_cuda_id())
 
 import numpy as np
 import torch
-import torch.nn as nn
 from tensorboardX import SummaryWriter
 
 from eval_utils import eval_utils
+from model_loader import load_model_for_inference
 from pcdet.config import cfg, cfg_from_list, cfg_from_yaml_file, log_config_to_file
 from pcdet.datasets import build_dataloader
 from pcdet.models import build_network
@@ -78,52 +78,8 @@ def parse_config():
     return args, cfg
 
 
-class TracedModelWrapper(nn.Module):
-    """Uses a TorchScript-traced forward (voxels, voxel_num_points, voxel_coords) -> (batch_cls_preds, batch_box_preds)
-    and delegates post_processing to the full Python model. Compatible with export.py output."""
-
-    def __init__(self, traced_module, full_model):
-        super().__init__()
-        self.traced = traced_module
-        self.full_model = full_model
-        self.full_model.eval()
-
-    def forward(self, batch_dict):
-        voxels = batch_dict['voxels']
-        voxel_num_points = batch_dict['voxel_num_points']
-        voxel_coords = batch_dict['voxel_coords']
-        batch_cls_preds, batch_box_preds = self.traced(voxels, voxel_num_points, voxel_coords)
-        batch_dict = dict(batch_dict)
-        batch_dict['batch_cls_preds'] = batch_cls_preds
-        batch_dict['batch_box_preds'] = batch_box_preds
-        # post_processing expects this (dense_head sets it; traced model outputs raw logits)
-        batch_dict['cls_preds_normalized'] = False
-        return self.full_model.post_processing(batch_dict)
-
-
-def eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch_id, dist_test=False):
-    # load checkpoint
-    model.load_params_from_file(filename=args.ckpt, logger=logger, to_cpu=dist_test,
-                                pre_trained_path=args.pretrained_model)
-    model.cuda()
-    model.eval()
-
-    traced_path = getattr(args, 'traced_model', None)
-    if traced_path:
-        path = Path(traced_path)
-        if not path.exists():
-            raise FileNotFoundError('--traced_model file not found: %s' % traced_path)
-        logger.info('Loading traced model from %s (forward only; post_processing from --ckpt model)', path)
-        traced = torch.jit.load(str(path), map_location='cuda')
-        traced.eval()
-        model = TracedModelWrapper(traced, model)
-        model.cuda()
-    elif getattr(args, 'compile', False):
-        if hasattr(torch, 'compile'):
-            logger.info('Wrapping model with torch.compile()')
-            model = torch.compile(model, mode='default')
-        else:
-            logger.warning('--compile set but torch.compile not available; skipping')
+def eval_single_ckpt(test_loader, args, eval_output_dir, logger, epoch_id, dist_test=False):
+    model = load_model_for_inference(cfg, args, logger, test_loader.dataset, to_cpu=dist_test)
     # start evaluation
     eval_utils.eval_one_epoch(
         cfg, args, model, test_loader, epoch_id, logger, dist_test=dist_test,
@@ -265,6 +221,8 @@ def main():
 
     ckpt_dir = args.ckpt_dir if args.ckpt_dir is not None else output_dir / 'ckpt'
 
+    # Offline pipeline: dataset from disk, DataLoader with CPU preprocessing, then load_data_to_gpu -> forward -> GPU->CPU.
+    # Real-time onboard differs: lidar at fixed Hz (e.g. 10 Hz), no DataLoader, latency budget per frame; see README "Test pipeline vs real-time".
     test_set, test_loader, sampler = build_dataloader(
         dataset_cfg=cfg.DATA_CONFIG,
         class_names=cfg.CLASS_NAMES,
@@ -272,12 +230,12 @@ def main():
         dist=dist_test, workers=args.workers, logger=logger, training=False
     )
 
-    model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=test_set)
     with torch.no_grad():
         if args.eval_all:
+            model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=test_set)
             repeat_eval_ckpt(model, test_loader, args, eval_output_dir, logger, ckpt_dir, dist_test=dist_test)
         else:
-            eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch_id, dist_test=dist_test)
+            eval_single_ckpt(test_loader, args, eval_output_dir, logger, epoch_id, dist_test=dist_test)
 
 
 if __name__ == '__main__':

@@ -58,6 +58,8 @@ def statistics_info(cfg, ret_dict, metric, disp_dict):
 
 
 def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=False, result_dir=None):
+    # Offline eval: dataloader (disk + CPU preprocess) -> load_data_to_gpu -> forward -> generate_prediction_dicts (GPU->CPU for metrics).
+    # Real-time: single-frame, latency from scan ready to detections; no dataset/workers. See README "Test pipeline vs real-time".
     result_dir.mkdir(parents=True, exist_ok=True)
 
     final_output_dir = result_dir / 'final_result' / 'data'
@@ -235,6 +237,7 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
                 disp_dict['infer_time'] = f'{infer_time_meter.val:.2f}({infer_time_meter.avg:.2f})'
 
             statistics_info(cfg, ret_dict, metric, disp_dict)
+            # Full GPU->CPU for evaluation (KITTI-style annos); real-time may keep minimal detections on GPU or copy less.
             annos = dataset.generate_prediction_dicts(
                 batch_dict, pred_dicts, class_names,
                 output_path=final_output_dir if args.save_to_file else None

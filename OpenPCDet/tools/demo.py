@@ -2,14 +2,20 @@ import argparse
 import glob
 from pathlib import Path
 
+# Optional visualization: allow importing demo (e.g. DemoDataset) without open3d/mayavi for headless inference
+V = None
+OPEN3D_FLAG = False
+mlab = None
 try:
     import open3d
     from visual_utils import open3d_vis_utils as V
     OPEN3D_FLAG = True
-except:
-    import mayavi.mlab as mlab
-    from visual_utils import visualize_utils as V
-    OPEN3D_FLAG = False
+except Exception:
+    try:
+        import mayavi.mlab as mlab
+        from visual_utils import visualize_utils as V
+    except Exception:
+        pass
 
 import numpy as np
 import torch
@@ -43,19 +49,18 @@ class DemoDataset(DatasetTemplate):
     def __len__(self):
         return len(self.sample_file_list)
 
-    def __getitem__(self, index):
+    def get_raw(self, index):
+        """Return input_dict (points, frame_id) without prepare_data. Used to split NVTX read vs prepare_data."""
         if self.ext == '.bin':
             points = np.fromfile(self.sample_file_list[index], dtype=np.float32).reshape(-1, 4)
         elif self.ext == '.npy':
             points = np.load(self.sample_file_list[index])
         else:
             raise NotImplementedError
+        return {'points': points, 'frame_id': index}
 
-        input_dict = {
-            'points': points,
-            'frame_id': index,
-        }
-
+    def __getitem__(self, index):
+        input_dict = self.get_raw(index)
         data_dict = self.prepare_data(data_dict=input_dict)
         return data_dict
 
@@ -107,7 +112,7 @@ def main():
                     p = Path(args.save_image)
                     save_path = str(p.parent / (p.stem + f'_{idx:06d}' + p.suffix))
                 Path(save_path).parent.mkdir(parents=True, exist_ok=True)
-            if not args.no_viz or save_path:
+            if (not args.no_viz or save_path) and V is not None:
                 try:
                     V.draw_scenes(
                         points=data_dict['points'][:, 1:], ref_boxes=pred_dicts[0]['pred_boxes'],
@@ -116,12 +121,14 @@ def main():
                     )
                     if save_path:
                         logger.info(f'Saved screenshot to {save_path}')
-                    if not OPEN3D_FLAG and not args.no_viz:
+                    if not OPEN3D_FLAG and mlab is not None and not args.no_viz:
                         mlab.show(stop=True)
                 except Exception as e:
                     logger.warning(f'Visualization failed (no display?): {e}')
                     if save_path:
                         logger.info('To save screenshot without a display, run with: xvfb-run -a python ...')
+            elif (not args.no_viz or save_path) and V is None:
+                logger.warning('Visualization skipped: neither open3d nor mayavi available. Install one for viz.')
             n_boxes = pred_dicts[0]['pred_boxes'].shape[0]
             logger.info(f'Sample {idx + 1}: predicted {n_boxes} boxes (classes: {cfg.CLASS_NAMES})')
 
