@@ -23,7 +23,7 @@ import torch
 
 from demo import DemoDataset
 from eval_utils.eval_utils import _nvtx_range
-from gpu_voxelizer import points_to_voxels_gpu, build_batch_dict_from_gpu_voxels
+from gpu_voxelizer import points_to_voxels_gpu, build_batch_dict_from_gpu_voxels, voxelize_tensor
 from model_loader import load_model_for_inference
 from pcdet.config import cfg, cfg_from_yaml_file
 from pcdet.models import load_data_to_gpu
@@ -51,6 +51,8 @@ def parse_config():
                         help='enable NVTX ranges for Nsight Systems; run with: nsys profile -o out python inference.py ... --nsight')
     parser.add_argument('--preprocess_gpu', action='store_true', default=False,
                         help='offload preprocessing to GPU (GPU voxelization); default is CPU preprocessing')
+    parser.add_argument('--compile_voxelizer', action='store_true', default=False,
+                        help='when using --preprocess_gpu, wrap voxelization with torch.compile(); no effect without --preprocess_gpu')
     args = parser.parse_args()
     cfg_from_yaml_file(args.cfg_file, cfg)
     return args, cfg
@@ -102,7 +104,32 @@ def main():
         max_pts = int(voxel_cfg.MAX_POINTS_PER_VOXEL)
         max_voxels = int(voxel_cfg.MAX_NUMBER_OF_VOXELS.get('test', voxel_cfg.MAX_NUMBER_OF_VOXELS.get('train', 40000)))
         use_lead_xyz = getattr(getattr(cfg.MODEL, 'VFE', None), 'USE_ABSLOTE_XYZ', True)
+        compile_voxelizer = getattr(args, 'compile_voxelizer', False)
+        compiled_voxelize = None
+        if compile_voxelizer:
+            if hasattr(torch, 'compile'):
+                logger.info('Voxelizer will be wrapped with torch.compile(dynamic=True)')
+                range_min_t = torch.tensor(point_cloud_range[:3], dtype=torch.float32, device='cuda')
+                range_max_t = torch.tensor(point_cloud_range[3:], dtype=torch.float32, device='cuda')
+                voxel_size_t = torch.tensor(voxel_size, dtype=torch.float32, device='cuda')
+                grid_size = np.round(
+                    (np.array(point_cloud_range[3:]) - np.array(point_cloud_range[:3])) / np.array(voxel_size)
+                ).astype(np.int64)
+                nx, ny, nz = int(grid_size[0]), int(grid_size[1]), int(grid_size[2])
+
+                def _voxelize_fn(pts):
+                    return voxelize_tensor(
+                        pts, range_min_t, range_max_t, voxel_size_t,
+                        nx, ny, nz, max_pts, max_voxels, use_lead_xyz,
+                    )
+
+                compiled_voxelize = torch.compile(_voxelize_fn, mode='default', dynamic=True)
+            else:
+                compile_voxelizer = False
+                logger.warning('--compile_voxelizer set but torch.compile not available; using plain voxelizer')
     else:
+        compile_voxelizer = False
+        compiled_voxelize = None
         logger.info('Data source ready: %d frames (raw %s); per-frame pipeline: get_raw -> voxelize(CPU) -> to_gpu -> forward'
                     % (n_total, args.ext))
 
@@ -139,6 +166,26 @@ def main():
                     with _nvtx_range('data_to_gpu'):
                         points_gpu = torch.from_numpy(raw['points']).float().cuda()
                     with _nvtx_range('pre_processing'):
+                        if compiled_voxelize is not None:
+                            with _nvtx_range('voxelize_compiled'):
+                                voxels, coords, num_pts = compiled_voxelize(points_gpu)
+                        else:
+                            voxels, coords, num_pts = points_to_voxels_gpu(
+                                points_gpu,
+                                point_cloud_range=point_cloud_range,
+                                voxel_size=voxel_size,
+                                max_points_per_voxel=max_pts,
+                                max_num_voxels=max_voxels,
+                                use_lead_xyz=use_lead_xyz,
+                                device=torch.device('cuda'),
+                            )
+                        data_dict = build_batch_dict_from_gpu_voxels(voxels, coords, num_pts, frame_id=i, batch_size=1)
+                else:
+                    raw = dataset.get_raw(i)
+                    points_gpu = torch.from_numpy(raw['points']).float().cuda()
+                    if compiled_voxelize is not None:
+                        voxels, coords, num_pts = compiled_voxelize(points_gpu)
+                    else:
                         voxels, coords, num_pts = points_to_voxels_gpu(
                             points_gpu,
                             point_cloud_range=point_cloud_range,
@@ -148,19 +195,6 @@ def main():
                             use_lead_xyz=use_lead_xyz,
                             device=torch.device('cuda'),
                         )
-                        data_dict = build_batch_dict_from_gpu_voxels(voxels, coords, num_pts, frame_id=i, batch_size=1)
-                else:
-                    raw = dataset.get_raw(i)
-                    points_gpu = torch.from_numpy(raw['points']).float().cuda()
-                    voxels, coords, num_pts = points_to_voxels_gpu(
-                        points_gpu,
-                        point_cloud_range=point_cloud_range,
-                        voxel_size=voxel_size,
-                        max_points_per_voxel=max_pts,
-                        max_num_voxels=max_voxels,
-                        use_lead_xyz=use_lead_xyz,
-                        device=torch.device('cuda'),
-                    )
                     data_dict = build_batch_dict_from_gpu_voxels(voxels, coords, num_pts, frame_id=i, batch_size=1)
             else:
                 if nvtx_this:

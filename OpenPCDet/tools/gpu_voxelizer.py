@@ -2,9 +2,101 @@
 GPU voxelization for PointPillar-style preprocessing.
 Matches DATA_CONFIG: point_cloud_range, voxel_size, max_points_per_voxel, max_num_voxels.
 Used when inference.py is run with --preprocess_gpu.
+
+voxelize_tensor() is a tensor-only entry point for torch.compile (--compile_voxelizer).
 """
 import numpy as np
 import torch
+
+
+def voxelize_tensor(
+    points,
+    range_min_t,
+    range_max_t,
+    voxel_size_t,
+    nx,
+    ny,
+    nz,
+    max_points_per_voxel,
+    max_num_voxels,
+    use_lead_xyz,
+):
+    """
+    Tensor-only voxelization for torch.compile. All config as tensors or Python scalars.
+    Caller must ensure points and range_min_t, range_max_t, voxel_size_t are on the same device.
+
+    Args:
+        points: (N, 4) float32 tensor on GPU (xyz + intensity).
+        range_min_t: (3,) float32 tensor, [xmin, ymin, zmin].
+        range_max_t: (3,) float32 tensor, [xmax, ymax, zmax].
+        voxel_size_t: (3,) float32 tensor, [vx, vy, vz].
+        nx, ny, nz: int grid dimensions (from config).
+        max_points_per_voxel: int.
+        max_num_voxels: int.
+        use_lead_xyz: bool.
+
+    Returns:
+        voxels: (M, max_points_per_voxel, C), coordinates: (M, 3), num_points: (M,).
+    """
+    # Mask points inside range
+    mask = (
+        (points[:, 0] >= range_min_t[0]) & (points[:, 0] < range_max_t[0]) &
+        (points[:, 1] >= range_min_t[1]) & (points[:, 1] < range_max_t[1]) &
+        (points[:, 2] >= range_min_t[2]) & (points[:, 2] < range_max_t[2])
+    )
+    points = points[mask]
+    if points.shape[0] == 0:
+        C = 4 if use_lead_xyz else 1
+        device = range_min_t.device
+        return (
+            torch.zeros((0, max_points_per_voxel, C), dtype=torch.float32, device=device),
+            torch.zeros((0, 3), dtype=torch.int64, device=device),
+            torch.zeros((0,), dtype=torch.int32, device=device),
+        )
+    N = points.shape[0]
+    device = points.device
+
+    # Voxel grid indices (ix, iy, iz)
+    grid_float = (points[:, :3] - range_min_t) / voxel_size_t
+    grid_int = grid_float.long().clamp(0)
+    grid_int[:, 0] = torch.clamp(grid_int[:, 0], max=nx - 1)
+    grid_int[:, 1] = torch.clamp(grid_int[:, 1], max=ny - 1)
+    grid_int[:, 2] = torch.clamp(grid_int[:, 2], max=nz - 1)
+    lid = grid_int[:, 2] * (nx * ny) + grid_int[:, 1] * nx + grid_int[:, 0]
+
+    sorted_idx = torch.argsort(lid)
+    sorted_points = points[sorted_idx]
+    sorted_lid = lid[sorted_idx]
+
+    unique_lid, counts = torch.unique_consecutive(sorted_lid, return_counts=True)
+    M = min(int(unique_lid.shape[0]), max_num_voxels)
+    if M == 0:
+        C = 4 if use_lead_xyz else 1
+        return (
+            torch.zeros((0, max_points_per_voxel, C), dtype=torch.float32, device=device),
+            torch.zeros((0, 3), dtype=torch.int64, device=device),
+            torch.zeros((0,), dtype=torch.int32, device=device),
+        )
+
+    cumsum = torch.cat([torch.tensor([0], device=device, dtype=torch.long), counts.cumsum(0)])
+    C = 4 if use_lead_xyz else 1
+    counts_m = counts[:M]
+    num_points = counts_m.clamp(max=max_points_per_voxel).to(torch.int32)
+
+    first_idx = cumsum[:M]
+    coords_idx = sorted_idx[first_idx]
+    coordinates = grid_int[coords_idx][:, [2, 1, 0]]
+
+    row_offsets = cumsum[:M]
+    slot = torch.arange(max_points_per_voxel, device=device, dtype=torch.long).unsqueeze(0)
+    point_index = (row_offsets.unsqueeze(1) + slot).clamp(max=N - 1)
+    valid = slot < num_points.unsqueeze(1)
+    point_index = torch.where(valid, point_index, torch.zeros_like(point_index))
+    voxels = sorted_points[point_index, :C] * valid.unsqueeze(2).float()
+
+    if not use_lead_xyz:
+        voxels = voxels[..., 3:]
+    return voxels, coordinates, num_points
 
 
 def points_to_voxels_gpu(
