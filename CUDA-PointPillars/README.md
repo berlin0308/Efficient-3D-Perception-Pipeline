@@ -58,6 +58,39 @@ Set Jetson to power mode with "sudo nvpmodel -m 0 && sudo jetson_clocks"
 | OpenPCDet         | 77.28   | 52.29          | 62.68        |
 ```
 
+## x86_64 Setup (CUDA 12.1)
+
+`CMakeLists.txt` has been modified for x86_64 + CUDA 12.1 (original targets Jetson/aarch64).
+
+### Compile && Run
+
+```shell
+$ cd CUDA-PointPillars
+$ mkdir build && cd build
+$ cmake .. && make -j$(nproc)
+$ ./demo
+```
+
+> If your CUDA path is different, update `CUDA_TOOLKIT_ROOT_DIR` in `CMakeLists.txt`.
+
+### Profiling
+
+**Nsight Systems** (timeline):
+```shell
+$ cd build
+$ nsys profile -t cuda,nvtx,osrt -s cpu -o pp_nsys ./demo
+```
+
+**Nsight Compute** (kernel-level):
+```shell
+$ cd build
+$ sudo /usr/local/cuda-12.1/bin/ncu --target-processes all --set full --launch-skip 20 --launch-count 30 -o pp_ncu_full ./demo
+```
+
+Profile outputs: [`profile_outputs/pointpillars/cuda-pp-baseline/`](../profile_outputs/pointpillars/cuda-pp-baseline/)
+
+---
+
 ## Note
 
 - GenerateVoxels has random output since GPU processes all points simultaneously while points selection for a voxel is random.
