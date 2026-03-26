@@ -6,6 +6,7 @@ Run from OpenPCDet/tools: python test_online.py --cfg_file ... --ckpt ... --data
 import _init_path
 import argparse
 import time
+from contextlib import nullcontext
 from pathlib import Path
 
 # Set CUDA device before importing torch
@@ -40,6 +41,8 @@ def parse_config():
     parser.add_argument('--traced_model', type=str, default=None,
                         help='path to TorchScript .pt; if set, use traced forward + ckpt post_processing')
     parser.add_argument('--compile', action='store_true', help='wrap model with torch.compile()')
+    parser.add_argument('--amp', action='store_true', default=False,
+                        help='enable mixed-precision inference with fp16 autocast')
     parser.add_argument('--cuda_id', type=int, default=0, help='CUDA device ID (default: 0)')
     parser.add_argument('--rate', type=float, default=None,
                         help='simulate lidar rate in Hz (e.g. 10); sleep after each frame to match period')
@@ -134,6 +137,9 @@ def main():
                     % (n_total, args.ext))
 
     model = load_model_for_inference(cfg, args, logger, dataset, to_cpu=False)
+    amp_enabled = bool(args.amp) and torch.cuda.is_available()
+    if args.amp:
+        logger.info('Mixed precision enabled: fp16 autocast')
 
     period_sec = (1.0 / args.rate) if args.rate is not None else None
     if period_sec is not None:
@@ -144,7 +150,7 @@ def main():
     use_nvtx = getattr(args, 'nsight', False)
     t_start = time.perf_counter()
 
-    with torch.no_grad():
+    with torch.inference_mode():
         for i in range(n_run):
             # Reset 10 Hz clock after warmup so first measured frame starts the period (avoids being "behind" from slow warmup)
             if period_sec is not None and i == args.warmup:
@@ -213,9 +219,13 @@ def main():
             t0 = time.perf_counter()
             if nvtx_this:
                 with _nvtx_range('forward'):
-                    pred_dicts, _ = model(data_dict)
+                    with (torch.autocast(device_type='cuda', dtype=torch.float16, enabled=amp_enabled)
+                          if amp_enabled else nullcontext()):
+                        pred_dicts, _ = model(data_dict)
             else:
-                pred_dicts, _ = model(data_dict)
+                with (torch.autocast(device_type='cuda', dtype=torch.float16, enabled=amp_enabled)
+                      if amp_enabled else nullcontext()):
+                    pred_dicts, _ = model(data_dict)
             torch.cuda.synchronize()
             t1 = time.perf_counter()
             latency_ms = (t1 - t0) * 1000.0
