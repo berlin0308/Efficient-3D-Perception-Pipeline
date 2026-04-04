@@ -53,6 +53,10 @@ def parse_config():
                         help='offload preprocessing to GPU (GPU voxelization); default is CPU preprocessing')
     parser.add_argument('--compile_voxelizer', action='store_true', default=False,
                         help='when using --preprocess_gpu, wrap voxelization with torch.compile(); no effect without --preprocess_gpu')
+    parser.add_argument('--amp', action='store_true', default=False,
+                        help='enable AMP (FP16) inference via torch.autocast')
+    parser.add_argument('--channels_last', action='store_true', default=False,
+                        help='convert model to channels-last (NHWC) memory format to eliminate NCHW<->NHWC conversion overhead with Tensor Core')
     args = parser.parse_args()
     cfg_from_yaml_file(args.cfg_file, cfg)
     return args, cfg
@@ -134,6 +138,9 @@ def main():
                     % (n_total, args.ext))
 
     model = load_model_for_inference(cfg, args, logger, dataset, to_cpu=False)
+    if getattr(args, 'channels_last', False):
+        model = model.to(memory_format=torch.channels_last)
+        logger.info('Model converted to channels-last (NHWC) memory format')
 
     period_sec = (1.0 / args.rate) if args.rate is not None else None
     if period_sec is not None:
@@ -211,11 +218,19 @@ def main():
                 else:
                     load_data_to_gpu(data_dict)
             t0 = time.perf_counter()
-            if nvtx_this:
-                with _nvtx_range('forward'):
+            # Original (FP32):
+            # if nvtx_this:
+            #     with _nvtx_range('forward'):
+            #         pred_dicts, _ = model(data_dict)
+            # else:
+            #     pred_dicts, _ = model(data_dict)
+            amp_ctx = torch.autocast(device_type='cuda', dtype=torch.float16) if args.amp else torch.cuda.amp.autocast(enabled=False)
+            with amp_ctx:
+                if nvtx_this:
+                    with _nvtx_range('forward'):
+                        pred_dicts, _ = model(data_dict)
+                else:
                     pred_dicts, _ = model(data_dict)
-            else:
-                pred_dicts, _ = model(data_dict)
             torch.cuda.synchronize()
             t1 = time.perf_counter()
             latency_ms = (t1 - t0) * 1000.0
