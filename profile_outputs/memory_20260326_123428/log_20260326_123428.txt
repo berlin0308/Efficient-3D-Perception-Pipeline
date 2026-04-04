@@ -1,0 +1,46 @@
+2026-03-26 12:34:28,732   INFO  Memory trace — output dir: /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/memory_20260326_123428
+2026-03-26 12:34:28,732   INFO  Loading KITTI dataset
+2026-03-26 12:34:28,790   INFO  Total samples for KITTI dataset: 3769
+2026-03-26 12:34:29,120   INFO  ==> Loading parameters from checkpoint /media/emma/data/ML_sys/Kitti/pointpillar_7728.pth to GPU
+2026-03-26 12:34:29,138   INFO  ==> Done (loaded 127/127)
+2026-03-26 12:34:29,178   INFO  Running 5 warmup steps...
+2026-03-26 12:34:29,755   INFO  Measuring memory over 20 steps...
+2026-03-26 12:34:48,185   INFO  ========================================================================
+2026-03-26 12:34:48,185   INFO    PointPillars Memory Trace — 2026-03-26 12:34:48
+2026-03-26 12:34:48,185   INFO  ========================================================================
+2026-03-26 12:34:48,185   INFO    Config  : cfgs/kitti_models/pointpillar.yaml
+2026-03-26 12:34:48,185   INFO    Compile : False   Traced : none
+2026-03-26 12:34:48,185   INFO    Warmup  : 5   Steps : 20   Batch : 1
+2026-03-26 12:34:48,185   INFO  
+2026-03-26 12:34:48,185   INFO  ── H2D Transfer ────────────────────────────────────────────────
+2026-03-26 12:34:48,185   INFO    Mean per frame : 2.90 MB   Max : 4.18 MB
+2026-03-26 12:34:48,185   INFO    Note: actual DMA bytes may differ; this estimates CPU tensor sizes.
+2026-03-26 12:34:48,185   INFO  
+2026-03-26 12:34:48,185   INFO  ── Per-stage GPU Memory (MB) ────────────────────────────────────
+2026-03-26 12:34:48,185   INFO  Stage                   alloc_mean   alloc_max   peak_mean    peak_max   frag_mean
+2026-03-26 12:34:48,185   INFO  ----------------------------------------------------------------------------------
+2026-03-26 12:34:48,185   INFO  Before H2D                    52.8        53.3       196.7       198.6       439.2
+2026-03-26 12:34:48,186   INFO  After H2D                     56.0        57.5       196.7       198.6       436.0
+2026-03-26 12:34:48,186   INFO  After VFE (hook)              57.3        59.4       196.7       198.6       434.7
+2026-03-26 12:34:48,186   INFO  After Scatter (hook)         109.6       111.7       196.7       198.6       382.4
+2026-03-26 12:34:48,186   INFO  After Backbone (hook)        188.1       190.1       289.7       292.0       303.9
+2026-03-26 12:34:48,186   INFO  After Head (hook)            196.6       198.6       289.7       292.0       295.4
+2026-03-26 12:34:48,186   INFO  After Postprocess            196.6       198.6       289.7       292.0       295.4
+2026-03-26 12:34:48,186   INFO  
+2026-03-26 12:34:48,186   INFO    * Hook stages show 0 when model is TorchScript/traced (hooks do not fire).
+2026-03-26 12:34:48,186   INFO      In that case, use after_h2d / after_postprocess as pre/post bounds.
+2026-03-26 12:34:48,186   INFO  
+2026-03-26 12:34:48,186   INFO  ── Fragmentation Interpretation ─────────────────────────────────
+2026-03-26 12:34:48,186   INFO    fragmentation = reserved - allocated (memory held by allocator but not used)
+2026-03-26 12:34:48,186   INFO    High fragmentation (> 200 MB) can cause OOM even with apparent free memory.
+2026-03-26 12:34:48,186   INFO    Mitigation: torch.cuda.empty_cache() between runs, or PYTORCH_NO_CUDA_MEMORY_CACHING=1
+2026-03-26 12:34:48,186   INFO  
+2026-03-26 12:34:48,186   INFO  ── Memory Snapshot ──────────────────────────────────────────────
+2026-03-26 12:34:48,186   INFO    Saved → /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/memory_20260326_123428/memory_snapshot.pickle
+2026-03-26 12:34:48,186   INFO    View  : python -m torch.cuda.memory_viz /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/memory_20260326_123428/memory_snapshot.pickle
+2026-03-26 12:34:48,186   INFO    Or    : upload at https://pytorch.org/memory_viz
+2026-03-26 12:34:48,186   INFO  
+2026-03-26 12:34:48,186   INFO  ── Outputs ──────────────────────────────────────────────────────
+2026-03-26 12:34:48,186   INFO    Summary : /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/memory_20260326_123428/memory_summary.txt
+2026-03-26 12:34:48,186   INFO    Snapshot: /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/memory_20260326_123428/memory_snapshot.pickle
+2026-03-26 12:34:48,186   INFO  ========================================================================
