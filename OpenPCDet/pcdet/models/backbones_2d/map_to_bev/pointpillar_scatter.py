@@ -17,8 +17,8 @@ class PointPillarScatter(nn.Module):
         batch_size = coords[:, 0].max().int().item() + 1
         for batch_idx in range(batch_size):
             spatial_feature = torch.zeros(
-                self.num_bev_features,
                 self.nz * self.nx * self.ny,
+                self.num_bev_features,
                 dtype=pillar_features.dtype,
                 device=pillar_features.device)
 
@@ -27,8 +27,8 @@ class PointPillarScatter(nn.Module):
             indices = this_coords[:, 1] + this_coords[:, 2] * self.nx + this_coords[:, 3]
             indices = indices.type(torch.long)
             pillars = pillar_features[batch_mask, :]
-            pillars = pillars.t()
-            spatial_feature[:, indices] = pillars
+            spatial_feature[indices, :] = pillars  # HWC coalesced write
+            spatial_feature = spatial_feature.t()  # -> CHW for backbone
             batch_spatial_features.append(spatial_feature)
 
         batch_spatial_features = torch.stack(batch_spatial_features, 0)
@@ -53,8 +53,8 @@ class PointPillarScatter3d(nn.Module):
         batch_size = coords[:, 0].max().int().item() + 1
         for batch_idx in range(batch_size):
             spatial_feature = torch.zeros(
-                self.num_bev_features_before_compression,
                 self.nz * self.nx * self.ny,
+                self.num_bev_features_before_compression,
                 dtype=pillar_features.dtype,
                 device=pillar_features.device)
 
@@ -63,8 +63,8 @@ class PointPillarScatter3d(nn.Module):
             indices = this_coords[:, 1] * self.ny * self.nx + this_coords[:, 2] * self.nx + this_coords[:, 3]
             indices = indices.type(torch.long)
             pillars = pillar_features[batch_mask, :]
-            pillars = pillars.t()
-            spatial_feature[:, indices] = pillars
+            spatial_feature[indices, :] = pillars  # HWC coalesced write
+            spatial_feature = spatial_feature.t()  # -> CHW for backbone
             batch_spatial_features.append(spatial_feature)
 
         batch_spatial_features = torch.stack(batch_spatial_features, 0)
