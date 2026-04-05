@@ -1,0 +1,36 @@
+2026-03-26 12:47:14,979   INFO  Profile suite — output dir: /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/suite_20260326_124714
+2026-03-26 12:47:14,983   INFO  Loading KITTI dataset
+2026-03-26 12:47:15,065   INFO  Total samples for KITTI dataset: 3769
+2026-03-26 12:47:15,444   INFO  ==> Loading parameters from checkpoint /media/emma/data/ML_sys/Kitti/pointpillar_7728.pth to GPU
+2026-03-26 12:47:15,462   INFO  ==> Done (loaded 127/127)
+2026-03-26 12:47:15,515   INFO  Running 10 warmup steps...
+2026-03-26 12:47:16,970   INFO  Profiling 30 steps...
+2026-03-26 12:47:20,259   INFO  Chrome trace saved → /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/suite_20260326_124714/torch_profile_trace.json
+2026-03-26 12:47:21,439   INFO  ======================================================================
+2026-03-26 12:47:21,439   INFO    PointPillars Profile Suite — 2026-03-26 12:47:21
+2026-03-26 12:47:21,439   INFO  ======================================================================
+2026-03-26 12:47:21,439   INFO    Config  : cfgs/kitti_models/pointpillar.yaml
+2026-03-26 12:47:21,439   INFO    Ckpt    : /media/emma/data/ML_sys/Kitti/pointpillar_7728.pth
+2026-03-26 12:47:21,439   INFO    Compile : False
+2026-03-26 12:47:21,439   INFO    Traced  : none
+2026-03-26 12:47:21,439   INFO    Warmup  : 10 steps   Measured: 30 steps   Batch: 4
+2026-03-26 12:47:21,439   INFO  
+2026-03-26 12:47:21,439   INFO  ── Per-stage latency (mean / p50 / p99 / std) [ms] ─────────────
+2026-03-26 12:47:21,440   INFO  Stage                     mean           p50           p99           std
+2026-03-26 12:47:21,440   INFO  ------------------------------------------------------------------------
+2026-03-26 12:47:21,440   INFO  DataLoader (CPU)          0.27          0.24          0.74          0.13
+2026-03-26 12:47:21,440   INFO  H2D Transfer             13.35         12.34         29.87          6.12
+2026-03-26 12:47:21,440   INFO  Forward (GPU)            61.66         61.05         72.71          5.82
+2026-03-26 12:47:21,440   INFO  PostProcess               2.56          2.62          4.78          0.84
+2026-03-26 12:47:21,440   INFO  ── Full Frame ──         77.80         78.92         95.07          8.27
+2026-03-26 12:47:21,440   INFO  
+2026-03-26 12:47:21,440   INFO  ── Throughput & Memory ─────────────────────────────────────────
+2026-03-26 12:47:21,440   INFO    Throughput         : 51.4 samples/s  (batch=4, mean_frame=77.80 ms)
+2026-03-26 12:47:21,440   INFO    Peak GPU Memory    : 1049.9 MB  (max across steps)
+2026-03-26 12:47:21,440   INFO    Mean peak per step : 1049.3 MB
+2026-03-26 12:47:21,440   INFO    CUDA kernel events : 38129
+2026-03-26 12:47:21,440   INFO  
+2026-03-26 12:47:21,440   INFO  ── Outputs ──────────────────────────────────────────────────────
+2026-03-26 12:47:21,440   INFO    Chrome trace       : /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/suite_20260326_124714/torch_profile_trace.json
+2026-03-26 12:47:21,440   INFO    Summary            : /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/suite_20260326_124714/profile_summary.txt
+2026-03-26 12:47:21,440   INFO  ======================================================================

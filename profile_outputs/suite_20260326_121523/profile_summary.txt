@@ -1,0 +1,28 @@
+======================================================================
+  PointPillars Profile Suite — 2026-03-26 12:15:26
+======================================================================
+  Config  : cfgs/kitti_models/pointpillar.yaml
+  Ckpt    : /media/emma/data/ML_sys/Kitti/pointpillar_7728.pth
+  Compile : False
+  Traced  : none
+  Warmup  : 10 steps   Measured: 30 steps   Batch: 1
+
+── Per-stage latency (mean / p50 / p99 / std) [ms] ─────────────
+Stage                     mean           p50           p99           std
+------------------------------------------------------------------------
+DataLoader (CPU)          0.47          0.22          1.92          0.48
+H2D Transfer              1.70          1.25          5.53          1.18
+Forward (GPU)            17.58         15.75         33.52          4.80
+PostProcess               0.84          0.68          3.05          0.58
+── Full Frame ──         20.44         18.65         38.14          5.59
+
+── Throughput & Memory ─────────────────────────────────────────
+  Throughput         : 48.9 samples/s  (batch=1, mean_frame=20.44 ms)
+  Peak GPU Memory    : 292.0 MB  (max across steps)
+  Mean peak per step : 291.8 MB
+  CUDA kernel events : 20523
+
+── Outputs ──────────────────────────────────────────────────────
+  Chrome trace       : /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/suite_20260326_121523/torch_profile_trace.json
+  Summary            : /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/suite_20260326_121523/profile_summary.txt
+======================================================================

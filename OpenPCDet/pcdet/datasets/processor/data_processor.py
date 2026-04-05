@@ -13,8 +13,65 @@ except:
     pass
 
 
+class _NumpyVoxelGenerator:
+    """Pure-numpy fallback voxelizer (no spconv/cumm dependency)."""
+
+    def __init__(self, vsize_xyz, coors_range_xyz, max_num_points_per_voxel, max_num_voxels):
+        self._vsize = np.array(vsize_xyz, dtype=np.float32)
+        self._range = np.array(coors_range_xyz, dtype=np.float32)
+        self._max_pts = max_num_points_per_voxel
+        self._max_vox = max_num_voxels
+        grid = np.round((self._range[3:] - self._range[:3]) / self._vsize).astype(np.int32)
+        self._grid = grid  # (nx, ny, nz)
+
+    def generate(self, points):
+        pts = np.asarray(points, dtype=np.float32)
+        vsize, rmin, grid = self._vsize, self._range[:3], self._grid
+
+        coords_f = (pts[:, :3] - rmin) / vsize          # (N, 3) float
+        coords_i = coords_f.astype(np.int32)             # truncate
+
+        valid = np.all((coords_i >= 0) & (coords_i < grid), axis=1)
+        pts = pts[valid]
+        coords_i = coords_i[valid]
+
+        # unique voxel key: z*ny*nx + y*nx + x
+        keys = (coords_i[:, 2] * grid[1] * grid[0]
+                + coords_i[:, 1] * grid[0]
+                + coords_i[:, 0])
+
+        # sort so we can group by key
+        order = np.argsort(keys, kind='stable')
+        keys_s = keys[order]
+        pts_s = pts[order]
+        coords_s = coords_i[order]
+
+        unique_keys, first_idx, counts = np.unique(
+            keys_s, return_index=True, return_counts=True
+        )
+        num_voxels = min(len(unique_keys), self._max_vox)
+        unique_keys = unique_keys[:num_voxels]
+        first_idx = first_idx[:num_voxels]
+        counts = counts[:num_voxels]
+
+        num_feats = pts.shape[1]
+        voxels = np.zeros((num_voxels, self._max_pts, num_feats), dtype=np.float32)
+        coordinates = np.zeros((num_voxels, 3), dtype=np.int32)
+        num_points = np.zeros(num_voxels, dtype=np.int32)
+
+        for i, (fi, cnt) in enumerate(zip(first_idx, counts)):
+            n = min(cnt, self._max_pts)
+            voxels[i, :n] = pts_s[fi:fi + n]
+            # coordinates stored as (z, y, x) to match spconv convention
+            coordinates[i] = coords_s[fi][[2, 1, 0]]
+            num_points[i] = n
+
+        return voxels, coordinates, num_points
+
+
 class VoxelGeneratorWrapper():
     def __init__(self, vsize_xyz, coors_range_xyz, num_point_features, max_num_points_per_voxel, max_num_voxels):
+        self.spconv_ver = 0  # 0 = numpy fallback
         try:
             from spconv.utils import VoxelGeneratorV2 as VoxelGenerator
             self.spconv_ver = 1
@@ -23,8 +80,7 @@ class VoxelGeneratorWrapper():
                 from spconv.utils import VoxelGenerator
                 self.spconv_ver = 1
             except:
-                from spconv.utils import Point2VoxelCPU3d as VoxelGenerator
-                self.spconv_ver = 2
+                pass
 
         if self.spconv_ver == 1:
             self._voxel_generator = VoxelGenerator(
@@ -34,12 +90,15 @@ class VoxelGeneratorWrapper():
                 max_voxels=max_num_voxels
             )
         else:
-            self._voxel_generator = VoxelGenerator(
+            # spconv v2 uses cumm for CPU voxelization. cumm 0.4.x has a bug in
+            # tv::array2tensor (SIGFPE) on some CUDA 12.x driver combinations, and
+            # cumm 0.6.x is API-incompatible with spconv 2.3.x. Use pure-numpy instead.
+            self.spconv_ver = 0
+            self._voxel_generator = _NumpyVoxelGenerator(
                 vsize_xyz=vsize_xyz,
                 coors_range_xyz=coors_range_xyz,
-                num_point_features=num_point_features,
                 max_num_points_per_voxel=max_num_points_per_voxel,
-                max_num_voxels=max_num_voxels
+                max_num_voxels=max_num_voxels,
             )
 
     def generate(self, points):
@@ -50,7 +109,7 @@ class VoxelGeneratorWrapper():
                     voxel_output['voxels'], voxel_output['coordinates'], voxel_output['num_points_per_voxel']
             else:
                 voxels, coordinates, num_points = voxel_output
-        else:
+        elif self.spconv_ver == 2:
             assert tv is not None, f"Unexpected error, library: 'cumm' wasn't imported properly."
             voxel_output = self._voxel_generator.point_to_voxel(tv.from_numpy(points))
             tv_voxels, tv_coordinates, tv_num_points = voxel_output
@@ -58,6 +117,8 @@ class VoxelGeneratorWrapper():
             voxels = tv_voxels.numpy()
             coordinates = tv_coordinates.numpy()
             num_points = tv_num_points.numpy()
+        else:
+            voxels, coordinates, num_points = self._voxel_generator.generate(points)
         return voxels, coordinates, num_points
 
 

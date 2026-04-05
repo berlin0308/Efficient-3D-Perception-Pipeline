@@ -1,0 +1,28 @@
+=================================================================
+  PointPillars Energy Monitor — 2026-03-26 12:48:37
+=================================================================
+  GPU            : NVIDIA GeForce RTX 3080 Ti Laptop GPU
+  Config         : cfgs/kitti_models/pointpillar.yaml
+  Compile        : False  Traced: none
+  Warmup         : 10   Steps: 50   Batch: 8
+
+── Latency (ms) ─────────────────────────────────────────
+  Mean : 112.03   p50 : 111.29   p99 : 134.62
+
+── Throughput ───────────────────────────────────────────
+  56.14 samples/s  (total_samples=400, wall=7.13 s)
+
+── Power & Energy ───────────────────────────────────────
+  Mean power     : 75.6 W
+  Peak power     : 78.3 W
+  Total energy   : 538.96 J  (over 7.13 s, 141 samples)
+
+── Performance-per-Watt ─────────────────────────────────
+  0.7422 samples/s/W  (throughput / mean_power)
+  0.7422 samples/J   (total_samples / total_energy)
+  Interpretation: higher = more efficient per unit energy
+
+── Outputs ──────────────────────────────────────────────
+  Summary  : /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/energy_20260326_124827/energy_summary.txt
+  Raw CSV  : /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/energy_20260326_124827/energy_samples.csv
+=================================================================

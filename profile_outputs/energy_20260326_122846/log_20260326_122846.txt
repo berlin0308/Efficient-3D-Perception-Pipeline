@@ -1,0 +1,7 @@
+2026-03-26 12:28:46,261   INFO  GPU [0]: NVIDIA GeForce RTX 3080 Ti Laptop GPU
+2026-03-26 12:28:46,261   INFO  Loading KITTI dataset
+2026-03-26 12:28:46,348   INFO  Total samples for KITTI dataset: 3769
+2026-03-26 12:28:46,734   INFO  ==> Loading parameters from checkpoint /media/emma/data/ML_sys/Kitti/pointpillar_7728.pth to GPU
+2026-03-26 12:28:46,751   INFO  ==> Done (loaded 127/127)
+2026-03-26 12:28:46,799   INFO  Running 10 warmup steps (no measurement)...
+2026-03-26 12:28:47,455   INFO  Measuring energy over 50 steps...

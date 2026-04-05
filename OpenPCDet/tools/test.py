@@ -57,6 +57,8 @@ def parse_config():
     parser.add_argument('--nsight_steps', type=int, default=20, help='number of steps when profiling with --nsight (default 20)')
     parser.add_argument('--warmup', type=int, default=20, help='number of warmup steps before measuring latency/profiling (default 20)')
     parser.add_argument('--compile', action='store_true', help='wrap model with torch.compile() before eval (PyTorch 2.0+)')
+    parser.add_argument('--amp', action='store_true', default=False,
+                        help='enable mixed-precision inference with fp16 autocast')
     parser.add_argument('--compile_debug', action='store_true', help='with --compile: log graph_breaks, graph_code, recompiles to stderr; use 2>out.txt to save (many graph breaks explain poor compile perf)')
     parser.add_argument('--traced_model', type=str, default=None, help='path to TorchScript .pt from profile_utils/export.py; use it for forward, post_processing still uses --ckpt model')
     parser.add_argument('--max_samples', type=int, default=None, help='only run evaluation on first N samples (e.g. 100); omit or 0 for full eval')
@@ -230,7 +232,7 @@ def main():
         dist=dist_test, workers=args.workers, logger=logger, training=False
     )
 
-    with torch.no_grad():
+    with torch.inference_mode():
         if args.eval_all:
             model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=test_set)
             repeat_eval_ckpt(model, test_loader, args, eval_output_dir, logger, ckpt_dir, dist_test=dist_test)
