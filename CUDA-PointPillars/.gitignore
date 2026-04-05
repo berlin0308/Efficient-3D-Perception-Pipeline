@@ -1,0 +1,13 @@
+build/
+model/*.cache
+*.so
+*.pth
+*.cache
+__pycache__/
+*.pyc
+*.engine
+*.trt
+*.pkl
+*.egg-info/
+*.log
+

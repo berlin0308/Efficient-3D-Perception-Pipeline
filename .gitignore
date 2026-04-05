@@ -40,3 +40,12 @@ eggs/
 *.zip
 *.tar
 *.tar.gz
+
+# Profile binary outputs
+*.nsys-rep
+*.ncu-rep
+*.sqlite
+
+# Personal notes (keep local only)
+reports/*.md
+profile_outputs/**/*.md

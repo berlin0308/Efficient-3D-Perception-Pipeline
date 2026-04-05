@@ -33,19 +33,7 @@
 
 ---
 
-## 2. Efficiency Runtime Switches (Energy + Memory)
 
-The inference/eval/profiling scripts now support `--amp` (FP16 autocast) and run with `torch.inference_mode()` for lower runtime overhead.
-
-Also, `load_data_to_gpu` now preserves integer/bool numpy dtypes during H2D copy (instead of forcing everything to float), reducing unnecessary memory expansion in the end-to-end path.
-
-Examples:
-
-- Offline eval: `python OpenPCDet/tools/test.py ... --amp`
-- Real-time path: `python OpenPCDet/tools/inference.py ... --amp`
-- Profile suite: `python OpenPCDet/tools/profile_suite.py ... --amp`
-- Energy monitor: `python OpenPCDet/tools/energy_monitor.py ... --amp`
-- Memory trace: `python OpenPCDet/tools/memory_trace.py ... --amp`
 
 ---
 
