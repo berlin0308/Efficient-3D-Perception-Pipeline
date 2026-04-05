@@ -1,0 +1,6 @@
+2026-03-26 12:05:51,633   INFO  Profile suite — output dir: /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/suite_20260326_120551
+2026-03-26 12:05:51,634   INFO  Loading KITTI dataset
+2026-03-26 12:05:51,718   INFO  Total samples for KITTI dataset: 3769
+2026-03-26 12:05:52,005   INFO  ==> Loading parameters from checkpoint /media/emma/data/ML_sys/Kitti/pointpillar_7728.pth to GPU
+2026-03-26 12:05:52,033   INFO  ==> Done (loaded 127/127)
+2026-03-26 12:05:52,092   INFO  Running 10 warmup steps...

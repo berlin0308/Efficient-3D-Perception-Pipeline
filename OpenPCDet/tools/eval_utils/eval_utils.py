@@ -1,5 +1,6 @@
 import pickle
 import time
+from contextlib import nullcontext
 from pathlib import Path
 
 import numpy as np
@@ -39,10 +40,16 @@ def _forward_model(model, batch_dict, args):
     Run model(batch_dict). When --compile is set, pass only tensor/int/float keys
     so torch.compile (Dynamo) does not see numpy.str_ or other unsupported types.
     """
+    amp_enabled = bool(getattr(args, 'amp', False))
+    amp_ctx = torch.autocast(device_type='cuda', dtype=torch.float16, enabled=amp_enabled) \
+        if torch.cuda.is_available() else nullcontext()
+
     if not getattr(args, 'compile', False):
-        return model(batch_dict)
+        with amp_ctx:
+            return model(batch_dict)
     safe = {k: v for k, v in batch_dict.items() if isinstance(v, (torch.Tensor, int, float))}
-    pred_dicts, ret_dict = model(safe)
+    with amp_ctx:
+        pred_dicts, ret_dict = model(safe)
     batch_dict.update(safe)
     return pred_dicts, ret_dict
 
@@ -112,7 +119,7 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
         for _ in range(min(warmup, len(dataloader))):
             batch_dict = next(dataloader_iter)
             load_data_to_gpu(batch_dict)
-            with torch.no_grad():
+            with torch.inference_mode():
                 _forward_model(model, batch_dict, args)
         profile_steps = min(getattr(args, 'profile_steps', 20), len(dataloader))
         profile_output_path = getattr(args, 'profile_output', None) or (result_dir / 'torch_profile_trace.json')
@@ -126,7 +133,7 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
         def run_one_step(batch_dict):
             load_data_to_gpu(batch_dict)
             step_start = time.time() if getattr(args, 'infer_time', False) else None
-            with torch.no_grad():
+            with torch.inference_mode():
                 pred_dicts, ret_dict = _forward_model(model, batch_dict, args)
             disp_dict = {}
             if getattr(args, 'infer_time', False) and step_start is not None:
@@ -179,7 +186,7 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
         for _ in range(min(warmup, len(dataloader))):
             batch_dict = next(dataloader_iter)
             load_data_to_gpu(batch_dict)
-            with torch.no_grad():
+            with torch.inference_mode():
                 _forward_model(model, batch_dict, args)
         nsight_steps = min(getattr(args, 'nsight_steps', 20), len(dataloader))
         if cfg.LOCAL_RANK == 0:
@@ -190,7 +197,7 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
                 load_data_to_gpu(batch_dict)
             step_start = time.time() if getattr(args, 'infer_time', False) else None
             with _nvtx_range('forward'):
-                with torch.no_grad():
+                with torch.inference_mode():
                     pred_dicts, ret_dict = _forward_model(model, batch_dict, args)
             disp_dict = {}
             if getattr(args, 'infer_time', False) and step_start is not None:
@@ -226,7 +233,7 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
             if do_timing:
                 start_time = time.time()
 
-            with torch.no_grad():
+            with torch.inference_mode():
                 pred_dicts, ret_dict = _forward_model(model, batch_dict, args)
 
             disp_dict = {}

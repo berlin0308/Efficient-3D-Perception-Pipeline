@@ -1,0 +1,39 @@
+========================================================================
+  PointPillars Memory Trace — 2026-03-26 12:34:48
+========================================================================
+  Config  : cfgs/kitti_models/pointpillar.yaml
+  Compile : False   Traced : none
+  Warmup  : 5   Steps : 20   Batch : 1
+
+── H2D Transfer ────────────────────────────────────────────────
+  Mean per frame : 2.90 MB   Max : 4.18 MB
+  Note: actual DMA bytes may differ; this estimates CPU tensor sizes.
+
+── Per-stage GPU Memory (MB) ────────────────────────────────────
+Stage                   alloc_mean   alloc_max   peak_mean    peak_max   frag_mean
+----------------------------------------------------------------------------------
+Before H2D                    52.8        53.3       196.7       198.6       439.2
+After H2D                     56.0        57.5       196.7       198.6       436.0
+After VFE (hook)              57.3        59.4       196.7       198.6       434.7
+After Scatter (hook)         109.6       111.7       196.7       198.6       382.4
+After Backbone (hook)        188.1       190.1       289.7       292.0       303.9
+After Head (hook)            196.6       198.6       289.7       292.0       295.4
+After Postprocess            196.6       198.6       289.7       292.0       295.4
+
+  * Hook stages show 0 when model is TorchScript/traced (hooks do not fire).
+    In that case, use after_h2d / after_postprocess as pre/post bounds.
+
+── Fragmentation Interpretation ─────────────────────────────────
+  fragmentation = reserved - allocated (memory held by allocator but not used)
+  High fragmentation (> 200 MB) can cause OOM even with apparent free memory.
+  Mitigation: torch.cuda.empty_cache() between runs, or PYTORCH_NO_CUDA_MEMORY_CACHING=1
+
+── Memory Snapshot ──────────────────────────────────────────────
+  Saved → /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/memory_20260326_123428/memory_snapshot.pickle
+  View  : python -m torch.cuda.memory_viz /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/memory_20260326_123428/memory_snapshot.pickle
+  Or    : upload at https://pytorch.org/memory_viz
+
+── Outputs ──────────────────────────────────────────────────────
+  Summary : /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/memory_20260326_123428/memory_summary.txt
+  Snapshot: /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/memory_20260326_123428/memory_snapshot.pickle
+========================================================================

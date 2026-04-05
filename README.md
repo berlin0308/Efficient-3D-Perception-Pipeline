@@ -33,18 +33,7 @@
 
 ---
 
-## 2. CUDA-PointPillars Baseline (TensorRT C++ inference)
 
-**Source:** [`CUDA-PointPillars/`](CUDA-PointPillars/) — NVIDIA's TensorRT-based C++ inference pipeline, adapted for x86_64 + CUDA 12.1.
-
-**How to build & run:** see [`CUDA-PointPillars/README.md`](CUDA-PointPillars/README.md#x86_64-setup-cuda-121)
-
-**Results** (`profile_outputs/pointpillars/cuda-pp-baseline/`):
-
-| Output | Path | How to view |
-|--------|------|-------------|
-| Nsight Systems report | [`nsight_report_20260309_cuda_pointpillars.nsys-rep`](profile_outputs/pointpillars/cuda-pp-baseline/nsight_report_20260309_cuda_pointpillars.nsys-rep) | Nsight Systems GUI |
-| Nsight Compute (full) | [pp_ncu_full.ncu-rep (Google Drive)](https://drive.google.com/file/d/1mieijdxKPSPflqkSOnuKpFsFKqBKP0fg/view?usp=sharing) | Nsight Compute GUI |
 
 ---
 

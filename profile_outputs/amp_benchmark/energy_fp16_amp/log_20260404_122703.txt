@@ -1,0 +1,37 @@
+2026-04-04 12:27:03,865   INFO  GPU [0]: NVIDIA GeForce RTX 3080 Ti Laptop GPU
+2026-04-04 12:27:03,865   INFO  Loading KITTI dataset
+2026-04-04 12:27:03,921   INFO  Total samples for KITTI dataset: 3769
+2026-04-04 12:27:04,117   INFO  ==> Loading parameters from checkpoint /media/emma/data/ML_sys/Kitti/pointpillar_7728.pth to GPU
+2026-04-04 12:27:04,132   INFO  ==> Done (loaded 127/127)
+2026-04-04 12:27:04,167   INFO  Running 10 warmup steps (no measurement)...
+2026-04-04 12:27:04,925   INFO  Measuring energy over 50 steps...
+2026-04-04 12:27:05,718   INFO  =================================================================
+2026-04-04 12:27:05,718   INFO    PointPillars Energy Monitor — 2026-04-04 12:27:05
+2026-04-04 12:27:05,718   INFO  =================================================================
+2026-04-04 12:27:05,718   INFO    GPU            : NVIDIA GeForce RTX 3080 Ti Laptop GPU
+2026-04-04 12:27:05,718   INFO    Config         : cfgs/kitti_models/pointpillar.yaml
+2026-04-04 12:27:05,718   INFO    Compile        : False  Traced: none
+2026-04-04 12:27:05,718   INFO    AMP (fp16)     : True
+2026-04-04 12:27:05,718   INFO    Warmup         : 10   Steps: 50   Batch: 1
+2026-04-04 12:27:05,718   INFO  
+2026-04-04 12:27:05,718   INFO  ── Latency (ms) ─────────────────────────────────────────
+2026-04-04 12:27:05,718   INFO    Mean : 9.57   p50 : 9.60   p99 : 11.54
+2026-04-04 12:27:05,718   INFO  
+2026-04-04 12:27:05,718   INFO  ── Throughput ───────────────────────────────────────────
+2026-04-04 12:27:05,718   INFO    70.92 samples/s  (total_samples=50, wall=0.70 s)
+2026-04-04 12:27:05,718   INFO  
+2026-04-04 12:27:05,718   INFO  ── Power & Energy ───────────────────────────────────────
+2026-04-04 12:27:05,718   INFO    Mean power     : 36.9 W
+2026-04-04 12:27:05,718   INFO    Peak power     : 42.3 W
+2026-04-04 12:27:05,718   INFO    Total energy   : 25.97 J  (over 0.70 s, 15 samples)
+2026-04-04 12:27:05,718   INFO  
+2026-04-04 12:27:05,718   INFO  ── Performance-per-Watt ─────────────────────────────────
+2026-04-04 12:27:05,718   INFO    1.9227 samples/s/W  (throughput / mean_power)
+2026-04-04 12:27:05,718   INFO    1.9252 samples/J   (total_samples / total_energy)
+2026-04-04 12:27:05,718   INFO    Interpretation: higher = more efficient per unit energy
+2026-04-04 12:27:05,718   INFO  
+2026-04-04 12:27:05,719   INFO  ── Outputs ──────────────────────────────────────────────
+2026-04-04 12:27:05,719   INFO    Summary  : /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/amp_benchmark/energy_fp16_amp/energy_summary.txt
+2026-04-04 12:27:05,719   INFO    Raw CSV  : /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/amp_benchmark/energy_fp16_amp/energy_samples.csv
+2026-04-04 12:27:05,719   INFO  =================================================================
+2026-04-04 12:27:05,719   INFO  Raw power samples → /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/amp_benchmark/energy_fp16_amp/energy_samples.csv

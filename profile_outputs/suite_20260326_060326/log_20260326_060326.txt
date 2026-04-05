@@ -1,0 +1,3 @@
+2026-03-26 06:03:26,905   INFO  Profile suite — output dir: /media/emma/data/ML_sys/3D-Perception-Pipeline-Optimization/profile_outputs/suite_20260326_060326
+2026-03-26 06:03:26,916   INFO  Loading KITTI dataset
+2026-03-26 06:03:26,916   INFO  Total samples for KITTI dataset: 0
