@@ -1,0 +1,34 @@
+[collect_research_metrics] cfg_file: /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+[collect_research_metrics] ckpt: /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth
+[collect_research_metrics] output_root: /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix
+[collect_research_metrics] removed existing /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/runs.csv (--fresh_runs)
+[collect_research_metrics] exec: /home/ubuntu/miniconda3/envs/mls/bin/python /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/profile_suite.py --cfg_file /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml --ckpt /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth --output_dir /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M0_FP32/profile --warmup 300 --steps 50 --batch_size 1 --workers 2 --cuda_id 0 --measurement_burnin_steps 20
+Traceback (most recent call last):
+  File "/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/profile_suite.py", line 53, in <module>
+    from eval_utils.eval_utils import _nvtx_range
+  File "/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/eval_utils/eval_utils.py", line 11, in <module>
+    from pcdet.models import load_data_to_gpu
+  File "/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/models/__init__.py", line 6, in <module>
+    from .detectors import build_detector
+  File "/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/models/detectors/__init__.py", line 1, in <module>
+    from .detector3d_template import Detector3DTemplate
+  File "/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/models/detectors/detector3d_template.py", line 8, in <module>
+    from .. import backbones_2d, backbones_3d, dense_heads, roi_heads
+  File "/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/models/backbones_3d/__init__.py", line 4, in <module>
+    from .spconv_backbone_focal import VoxelBackBone8xFocal
+  File "/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/models/backbones_3d/spconv_backbone_focal.py", line 8, in <module>
+    from .focal_sparse_conv.SemanticSeg.pyramid_ffn import PyramidFeat2D
+  File "/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/models/backbones_3d/focal_sparse_conv/SemanticSeg/pyramid_ffn.py", line 4, in <module>
+    from .sem_deeplabv3 import SemDeepLabV3
+  File "/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/models/backbones_3d/focal_sparse_conv/SemanticSeg/sem_deeplabv3.py", line 8, in <module>
+    import torchvision
+  File "/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/torchvision/__init__.py", line 6, in <module>
+    from torchvision import _meta_registrations, datasets, io, models, ops, transforms, utils
+  File "/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/torchvision/datasets/__init__.py", line 1, in <module>
+    from ._optical_flow import FlyingChairs, FlyingThings3D, HD1K, KittiFlow, Sintel
+  File "/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/torchvision/datasets/_optical_flow.py", line 10, in <module>
+    from PIL import Image
+  File "/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/PIL/Image.py", line 95, in <module>
+    from . import _imaging as core
+ImportError: /usr/lib/x86_64-linux-gnu/libstdc++.so.6: version `GLIBCXX_3.4.29' not found (required by /home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/PIL/../../.././libLerc.so.4)
+Command failed (1): ['/home/ubuntu/miniconda3/envs/mls/bin/python', '/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/profile_suite.py', '--cfg_file', '/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml', '--ckpt', '/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth', '--output_dir', '/home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M0_FP32/profile', '--warmup', '300', '--steps', '50', '--batch_size', '1', '--workers', '2', '--cuda_id', '0', '--measurement_burnin_steps', '20']

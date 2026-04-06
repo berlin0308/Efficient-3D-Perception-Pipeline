@@ -217,6 +217,53 @@ class DatasetTemplate(torch_data.Dataset):
 
         return data_dict
 
+    def prepare_data_for_gpu_voxelization(self, data_dict):
+        """
+        Same as prepare_data() but skips CPU transform_points_to_voxels so `points`
+        remain as numpy; caller voxelizes on GPU (see tools/gpu_voxelizer.py).
+        """
+        if self.training:
+            assert 'gt_boxes' in data_dict, 'gt_boxes should be provided for training'
+            gt_boxes_mask = np.array([n in self.class_names for n in data_dict['gt_names']], dtype=np.bool_)
+
+            if 'calib' in data_dict:
+                calib = data_dict['calib']
+            data_dict = self.data_augmentor.forward(
+                data_dict={
+                    **data_dict,
+                    'gt_boxes_mask': gt_boxes_mask
+                }
+            )
+            if 'calib' in data_dict:
+                data_dict['calib'] = calib
+        data_dict = self.set_lidar_aug_matrix(data_dict)
+        if data_dict.get('gt_boxes', None) is not None:
+            selected = common_utils.keep_arrays_by_name(data_dict['gt_names'], self.class_names)
+            data_dict['gt_boxes'] = data_dict['gt_boxes'][selected]
+            data_dict['gt_names'] = data_dict['gt_names'][selected]
+            gt_classes = np.array([self.class_names.index(n) + 1 for n in data_dict['gt_names']], dtype=np.int32)
+            gt_boxes = np.concatenate((data_dict['gt_boxes'], gt_classes.reshape(-1, 1).astype(np.float32)), axis=1)
+            data_dict['gt_boxes'] = gt_boxes
+
+            if data_dict.get('gt_boxes2d', None) is not None:
+                data_dict['gt_boxes2d'] = data_dict['gt_boxes2d'][selected]
+
+        if data_dict.get('points', None) is not None:
+            data_dict = self.point_feature_encoder.forward(data_dict)
+
+        data_dict = self.data_processor.forward(
+            data_dict=data_dict,
+            skip_processor_func_names={'transform_points_to_voxels'},
+        )
+
+        if self.training and len(data_dict['gt_boxes']) == 0:
+            new_index = np.random.randint(self.__len__())
+            return self.__getitem__(new_index)
+
+        data_dict.pop('gt_names', None)
+
+        return data_dict
+
     @staticmethod
     def collate_batch(batch_list, _unused=False):
         data_dict = defaultdict(list)

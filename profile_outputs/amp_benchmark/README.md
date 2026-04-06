@@ -6,7 +6,7 @@ for PointPillars inference on KITTI data.
 **GPU:** NVIDIA GeForce RTX 3080 Ti Laptop GPU  
 **Model:** PointPillars, `pointpillar_7728.pth` (Car@R11=77.28)  
 **Config:** `cfgs/kitti_models/pointpillar.yaml`  
-**Settings:** batch=1, 10 warmup steps, 50 measured steps
+**Settings:** batch=1, 100 warmup steps, 50 measured steps
 
 ---
 
@@ -41,19 +41,82 @@ for PointPillars inference on KITTI data.
 ```
 amp_benchmark/
 ├── fp32/
-│   ├── profile_summary.txt       # latency/memory baseline
-│   └── torch_profile_trace.json  # Chrome trace (chrome://tracing)
+│   ├── profile_summary.txt          # latency/memory baseline (incl. p95 in newer runs)
+│   ├── latency_per_step.csv         # per-step stage latencies (for distributions / p95–p99)
+│   └── torch_profile_trace.json     # Chrome trace (chrome://tracing)
 ├── fp16_amp/
-│   ├── profile_summary.txt       # latency/memory with AMP
+│   ├── profile_summary.txt
+│   ├── latency_per_step.csv
 │   └── torch_profile_trace.json
 ├── energy_fp32/
-│   ├── energy_summary.txt        # power/energy baseline
-│   └── energy_samples.csv        # raw (timestamp_s, power_W) samples
+│   ├── energy_summary.txt           # power/energy baseline (incl. p95 forward latency)
+│   ├── energy_samples.csv           # raw (timestamp_s, power_W) samples
+│   └── energy_latency_per_step.csv  # per-step forward wall time (ms)
 ├── energy_fp16_amp/
-│   ├── energy_summary.txt        # power/energy with AMP
-│   └── energy_samples.csv
-└── comparison.md                 # detailed notes
+│   ├── energy_summary.txt
+│   ├── energy_samples.csv
+│   └── energy_latency_per_step.csv
+└── comparison.md                    # detailed notes
 ```
+
+---
+
+## Energy methodology (DRAM vs on-chip memory)
+
+`energy_monitor.py` reports **whole-GPU** power via NVML and integrates it to Joules. That value **does not** separate DRAM energy from SRAM / on-chip cache energy.
+
+For claims such as “data movement dominates” or “DRAM energy exceeds SRAM,” combine NVML with at least one of:
+
+1. **Nsight Compute (NCU)** — memory throughput, L2 hit rate, DRAM bytes moved (compute vs memory bound).
+2. **An energy model** — multiply measured bytes (from NCU or a simulator) by published J/byte assumptions, and cite the model.
+3. **Platform-specific counters** — if available on your hardware.
+
+In aggregated CSV rows, set `energy_method` to `nvml_integrated` for monitor runs, or document a composite method (e.g. `ncu_bytes_times_energy_model`) when you add NCU-based analysis. The frozen column list and longer text live in `OpenPCDet/tools/research_metrics_schema.py` (`ENERGY_BREAKDOWN_METHODOLOGY`).
+
+---
+
+## Research CSV aggregation (`collect_research_metrics.py`)
+
+To merge profile + energy directories into one **`runs.csv`** for plotting (latency, energy, optional accuracy / NCU paths), use the collector from `OpenPCDet/tools/`:
+
+```bash
+# From OpenPCDet/tools/: set checkpoint (required if not under ckpt/pointpillar_7728.pth)
+# Optional: only if ckpt is not at OpenPCDet/tools/ckpt/pointpillar_7728.pth
+export OPENPCDET_CKPT=/your/path/pointpillar_7728.pth
+
+# Defaults: cfg cfgs/kitti_models/pointpillar.yaml, ckpt tools/ckpt/pointpillar_7728.pth, output MLS/profile_outputs/research_matrix
+python collect_research_metrics.py run --cuda_id 0 --warmup 100 --steps 50
+
+# Or use the wrapper (sets OPENPCDET_CKPT from repo ckpt/ or /media/emma/... when present)
+bash ../scripts/run_collect_research_metrics.sh --cuda_id 0
+
+# Merge existing result folders (manifest = JSON array)
+python collect_research_metrics.py merge \
+  --manifest manifest.json \
+  --runs_csv ../../profile_outputs/research_matrix/runs.csv
+
+# 5×3 = 15 experiment design (export status table for the report; see tools/RESEARCH_EXPERIMENT_MATRIX.md)
+python collect_research_metrics.py matrix --output_csv ../../profile_outputs/research_matrix/experiment_matrix_15.csv
+
+# Run only *runnable* cells from that design (same three configs as legacy when tooling unchanged)
+python collect_research_metrics.py run --matrix 15 --cuda_id 0 --warmup 100 --steps 50
+```
+
+`manifest.json` example:
+
+```json
+[
+  {
+    "variant_name": "baseline_fp32",
+    "profile_dir": "/path/to/fp32",
+    "energy_dir": "/path/to/energy_fp32",
+    "map_car_r11": "77.28",
+    "ncu_csv": "/path/to/ncu_export.csv"
+  }
+]
+```
+
+Column order is defined once in `research_metrics_schema.py` (`RUNS_CSV_COLUMNS`). Optional NCU kernel detail is appended to `ncu_kernels.csv` next to `runs.csv` when `ncu_csv` is set and the export is parseable.
 
 ---
 
@@ -68,14 +131,14 @@ Run from `OpenPCDet/tools/`. Adjust `--ckpt` and `--cuda_id` for your machine.
 python profile_suite.py \
   --cfg_file cfgs/kitti_models/pointpillar.yaml \
   --ckpt /path/to/pointpillar_7728.pth \
-  --cuda_id 0 --warmup 10 --steps 50 --batch_size 1 --workers 2 \
+  --cuda_id 0 --warmup 100 --steps 50 --batch_size 1 --workers 2 \
   --output_dir profile_outputs/amp_benchmark/fp32
 
 # FP16 AMP
 python profile_suite.py \
   --cfg_file cfgs/kitti_models/pointpillar.yaml \
   --ckpt /path/to/pointpillar_7728.pth \
-  --cuda_id 0 --warmup 10 --steps 50 --batch_size 1 --workers 2 \
+  --cuda_id 0 --warmup 100 --steps 50 --batch_size 1 --workers 2 \
   --amp \
   --output_dir profile_outputs/amp_benchmark/fp16_amp
 ```
@@ -87,14 +150,14 @@ python profile_suite.py \
 python energy_monitor.py \
   --cfg_file cfgs/kitti_models/pointpillar.yaml \
   --ckpt /path/to/pointpillar_7728.pth \
-  --cuda_id 0 --warmup 10 --steps 50 --batch_size 1 --workers 2 \
+  --cuda_id 0 --warmup 100 --steps 50 --batch_size 1 --workers 2 \
   --output_dir profile_outputs/amp_benchmark/energy_fp32
 
 # FP16 AMP
 python energy_monitor.py \
   --cfg_file cfgs/kitti_models/pointpillar.yaml \
   --ckpt /path/to/pointpillar_7728.pth \
-  --cuda_id 0 --warmup 10 --steps 50 --batch_size 1 --workers 2 \
+  --cuda_id 0 --warmup 100 --steps 50 --batch_size 1 --workers 2 \
   --amp \
   --output_dir profile_outputs/amp_benchmark/energy_fp16_amp
 ```

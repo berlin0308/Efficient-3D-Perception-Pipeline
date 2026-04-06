@@ -1,0 +1,699 @@
+[collect_research_metrics] cfg_file: /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+[collect_research_metrics] ckpt: /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth
+[collect_research_metrics] output_root: /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix
+[collect_research_metrics] exec: /home/ubuntu/miniconda3/envs/mls/bin/python /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/profile_suite.py --cfg_file /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml --ckpt /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth --output_dir /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/profile --warmup 300 --steps 50 --batch_size 1 --workers 2 --cuda_id 0 --compile --amp --measurement_burnin_steps 20
+2026-04-06 02:19:09,468   INFO  Profile suite — output dir: /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/profile
+2026-04-06 02:19:09,503   INFO  Loading KITTI dataset
+2026-04-06 02:19:09,677   INFO  Total samples for KITTI dataset: 2330
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3526.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+2026-04-06 02:19:10,063   INFO  ==> Loading parameters from checkpoint /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-06 02:19:10,091   INFO  ==> Done (loaded 127/127)
+2026-04-06 02:19:10,114   INFO  Wrapping model with torch.compile()
+2026-04-06 02:19:12,135   INFO  Running 300 warmup steps...
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/torch/_dynamo/utils.py:1397: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:83.)
+  return node.target(*args, **kwargs)
+[2026-04-06 02:21:20,586] torch._dynamo.convert_frame: [WARNING] torch._dynamo hit config.cache_size_limit (64)
+[2026-04-06 02:21:20,586] torch._dynamo.convert_frame: [WARNING]    function: '<resume in generate_recall_record>' (/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/models/detectors/detector3d_template.py:302)
+[2026-04-06 02:21:20,586] torch._dynamo.convert_frame: [WARNING] to diagnose recompilation issues, set env variable TORCHDYNAMO_REPORT_GUARD_FAILURES=1 and also see https://pytorch.org/docs/master/compile/troubleshooting.html.
+[2026-04-06 02:21:20,590] torch._dynamo.convert_frame: [WARNING] torch._dynamo hit config.cache_size_limit (64)
+[2026-04-06 02:21:20,590] torch._dynamo.convert_frame: [WARNING]    function: 'boxes_iou3d_gpu' (/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/ops/iou3d_nms/iou3d_nms_utils.py:48)
+[2026-04-06 02:21:20,590] torch._dynamo.convert_frame: [WARNING] to diagnose recompilation issues, set env variable TORCHDYNAMO_REPORT_GUARD_FAILURES=1 and also see https://pytorch.org/docs/master/compile/troubleshooting.html.
+2026-04-06 02:22:25,539   INFO  Measurement burn-in: 20 steps (before profiler loop)
+2026-04-06 02:22:29,371   INFO  Profiling 50 steps (KITTI RT CPU stages)...
+STAGE:2026-04-06 02:22:29 4419:4419 ActivityProfilerController.cpp:312] Completed Stage: Warm Up
+STAGE:2026-04-06 02:22:38 4419:4419 ActivityProfilerController.cpp:318] Completed Stage: Collection
+STAGE:2026-04-06 02:22:38 4419:4419 ActivityProfilerController.cpp:322] Completed Stage: Post Processing
+2026-04-06 02:22:45,283   INFO  Chrome trace saved → /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/profile/torch_profile_trace.json
+2026-04-06 02:22:47,289   INFO  ======================================================================
+2026-04-06 02:22:47,289   INFO    PointPillars Profile Suite — 2026-04-06 02:22:47
+2026-04-06 02:22:47,289   INFO  ======================================================================
+2026-04-06 02:22:47,289   INFO    Config  : /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+2026-04-06 02:22:47,289   INFO    Ckpt    : /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth
+2026-04-06 02:22:47,289   INFO    Compile : True
+2026-04-06 02:22:47,289   INFO    AMP (fp16): True
+2026-04-06 02:22:47,289   INFO    Memory opt scatter (HWC write): False
+2026-04-06 02:22:47,289   INFO    Memory opt conv2d (channels_last): False
+2026-04-06 02:22:47,290   INFO    Preprocess GPU (voxelize on GPU): False
+2026-04-06 02:22:47,290   INFO    Compile voxelizer: False
+2026-04-06 02:22:47,290   INFO    INT8    : False  (CPU dynamic Linear PTQ if true)
+2026-04-06 02:22:47,290   INFO    Traced  : none
+2026-04-06 02:22:47,290   INFO    Nsight NVTX: False
+2026-04-06 02:22:47,290   INFO    Warmup  : 300 steps   Measured: 50 steps   Batch: 1   Meas. burn-in: 20
+2026-04-06 02:22:47,290   INFO  
+2026-04-06 02:22:47,290   INFO  ── Per-stage latency (mean / p50 / p95 / p99 / std) [ms] ─────────────
+2026-04-06 02:22:47,290   INFO  Stage                   mean         p50         p95         p99         std
+2026-04-06 02:22:47,290   INFO  ----------------------------------------------------------------------------
+2026-04-06 02:22:47,290   INFO  read_points (excl.T_rt)       51.72       36.46      121.33      137.53       34.59
+2026-04-06 02:22:47,290   INFO  pre_processing         80.89       75.12      128.56      140.55       27.55
+2026-04-06 02:22:47,290   INFO  data_to_gpu             4.57        5.25        6.79        7.05        1.78
+2026-04-06 02:22:47,290   INFO  Forward (GPU)          41.81       42.06       57.09       64.97       10.06
+2026-04-06 02:22:47,290   INFO  PostProcess             1.49        1.35        2.06        2.14        0.37
+2026-04-06 02:22:47,290   INFO  ── Onboard frame ──       49.67       50.68       67.30       76.40       11.72
+2026-04-06 02:22:47,290   INFO  ── T_rt (onboard) ──      128.75      122.58      168.89      178.10       22.48
+2026-04-06 02:22:47,290   INFO  
+2026-04-06 02:22:47,290   INFO  ── Throughput & Memory ─────────────────────────────────────────
+2026-04-06 02:22:47,290   INFO    Throughput         : 7.8 samples/s  (batch=1, mean T_rt=128.75 ms)
+2026-04-06 02:22:47,291   INFO    Peak GPU Memory    : 2667.3 MB  (NMS/recall on GPU; backbone mostly CPU when INT8)
+2026-04-06 02:22:47,291   INFO    Peak GPU Mem (steady): 2667.3 MB  (steps with forward <= 200.0 ms)
+2026-04-06 02:22:47,291   INFO    Mean peak per step : 2504.4 MB
+2026-04-06 02:22:47,291   INFO    CUDA kernel events : 24925
+2026-04-06 02:22:47,291   INFO    T_rt mean (onboard, excl. read_points): 128.75 ms
+2026-04-06 02:22:47,291   INFO  
+2026-04-06 02:22:47,291   INFO  ── Outputs ──────────────────────────────────────────────────────
+2026-04-06 02:22:47,291   INFO    Chrome trace       : /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/profile/torch_profile_trace.json
+2026-04-06 02:22:47,291   INFO    Summary            : /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/profile/profile_summary.txt
+2026-04-06 02:22:47,291   INFO  ======================================================================
+[collect_research_metrics] exec: /home/ubuntu/miniconda3/envs/mls/bin/python /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/energy_monitor.py --cfg_file /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml --ckpt /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth --output_dir /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/energy --warmup 300 --steps 50 --batch_size 1 --workers 2 --cuda_id 0 --compile --energy_exclude_compile_over_ms 200.0 --amp --measurement_burnin_steps 20
+2026-04-06 02:23:06,310   INFO  GPU [0]: NVIDIA TITAN RTX
+2026-04-06 02:23:06,353   INFO  Loading KITTI dataset
+2026-04-06 02:23:06,530   INFO  Total samples for KITTI dataset: 2330
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3526.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+2026-04-06 02:23:06,906   INFO  ==> Loading parameters from checkpoint /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-06 02:23:06,940   INFO  ==> Done (loaded 127/127)
+2026-04-06 02:23:06,959   INFO  Wrapping model with torch.compile()
+2026-04-06 02:23:09,347   INFO  Running 300 warmup steps (no measurement)...
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/torch/_dynamo/utils.py:1397: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:83.)
+  return node.target(*args, **kwargs)
+[2026-04-06 02:25:04,081] torch._dynamo.convert_frame: [WARNING] torch._dynamo hit config.cache_size_limit (64)
+[2026-04-06 02:25:04,081] torch._dynamo.convert_frame: [WARNING]    function: '<resume in generate_recall_record>' (/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/models/detectors/detector3d_template.py:302)
+[2026-04-06 02:25:04,081] torch._dynamo.convert_frame: [WARNING] to diagnose recompilation issues, set env variable TORCHDYNAMO_REPORT_GUARD_FAILURES=1 and also see https://pytorch.org/docs/master/compile/troubleshooting.html.
+[2026-04-06 02:25:04,086] torch._dynamo.convert_frame: [WARNING] torch._dynamo hit config.cache_size_limit (64)
+[2026-04-06 02:25:04,086] torch._dynamo.convert_frame: [WARNING]    function: 'boxes_iou3d_gpu' (/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/ops/iou3d_nms/iou3d_nms_utils.py:48)
+[2026-04-06 02:25:04,086] torch._dynamo.convert_frame: [WARNING] to diagnose recompilation issues, set env variable TORCHDYNAMO_REPORT_GUARD_FAILURES=1 and also see https://pytorch.org/docs/master/compile/troubleshooting.html.
+2026-04-06 02:25:27,703   INFO  Measuring energy over 50 steps...
+2026-04-06 02:25:27,705   INFO  Measurement burn-in: 20 steps (power sampled, excluded from reported energy)
+2026-04-06 02:25:50,551   INFO  =================================================================
+2026-04-06 02:25:50,551   INFO    PointPillars Energy Monitor — 2026-04-06 02:25:50
+2026-04-06 02:25:50,552   INFO  =================================================================
+2026-04-06 02:25:50,552   INFO    GPU            : NVIDIA TITAN RTX
+2026-04-06 02:25:50,552   INFO    Config         : /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+2026-04-06 02:25:50,552   INFO    Compile        : True  Traced: none
+2026-04-06 02:25:50,552   INFO    AMP (fp16)     : True
+2026-04-06 02:25:50,552   INFO    Memory opt scatter (HWC write): False
+2026-04-06 02:25:50,552   INFO    Memory opt conv2d (channels_last): False
+2026-04-06 02:25:50,552   INFO    Preprocess GPU (voxelize on GPU): False
+2026-04-06 02:25:50,552   INFO    Compile voxelizer: False
+2026-04-06 02:25:50,552   INFO    INT8 (CPU PTQ) : False
+2026-04-06 02:25:50,552   INFO    Warmup         : 300   Steps: 50   Batch: 1
+2026-04-06 02:25:50,552   INFO    Meas. burn-in  : 20  (power sampled; excluded from NVML J window)
+2026-04-06 02:25:50,552   INFO  
+2026-04-06 02:25:50,553   INFO  ── Latency (ms) ─────────────────────────────────────────
+2026-04-06 02:25:50,553   INFO    Mean : 57.15   p50 : 45.83   p95 : 124.38   p99 : 152.31
+2026-04-06 02:25:50,553   INFO  
+2026-04-06 02:25:50,553   INFO  ── Throughput ───────────────────────────────────────────
+2026-04-06 02:25:50,553   INFO    11.36 samples/s  (total_samples=50, wall=4.40 s)
+2026-04-06 02:25:50,553   INFO  
+2026-04-06 02:25:50,553   INFO  ── Power & Energy ───────────────────────────────────────
+2026-04-06 02:25:50,553   INFO    Mean power     : 182.9 W
+2026-04-06 02:25:50,553   INFO    Peak power     : 269.6 W
+2026-04-06 02:25:50,553   INFO    Total energy   : 801.57 J  (NVML window=4.40 s, 83 power samples)
+2026-04-06 02:25:50,553   INFO  
+2026-04-06 02:25:50,553   INFO  ── Performance-per-Watt ─────────────────────────────────
+2026-04-06 02:25:50,554   INFO    0.0621 samples/s/W  (throughput / mean_power)
+2026-04-06 02:25:50,554   INFO    0.0624 samples/J   (steady_samples / steady_energy; spike intervals omitted when enabled)
+2026-04-06 02:25:50,554   INFO    Interpretation: higher = more efficient per unit energy
+2026-04-06 02:25:50,554   INFO  
+2026-04-06 02:25:50,554   INFO  ── Outputs ──────────────────────────────────────────────
+2026-04-06 02:25:50,554   INFO    Summary  : /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/energy/energy_summary.txt
+2026-04-06 02:25:50,554   INFO    Raw CSV  : /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/energy/energy_samples.csv
+2026-04-06 02:25:50,554   INFO  =================================================================
+2026-04-06 02:25:50,556   INFO  Raw power samples → /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/energy/energy_samples.csv
+2026-04-06 02:25:50,558   INFO  Per-step forward latency → /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/energy/energy_latency_per_step.csv
+[collect_research_metrics] exec: /home/ubuntu/miniconda3/envs/mls/bin/python /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/kitti_eval_export.py --cfg_file /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml --ckpt /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth --output_json /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/kitti_eval_metrics.json --eval_result_dir /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/kitti_eval_run --cuda_id 0 --batch_size 1 --workers 2 --warmup 20 --max_samples 200 --compile --amp
+2026-04-06 02:26:16,452   INFO  ********************** kitti_eval_export **********************
+2026-04-06 02:26:16,452   INFO  cfg_file                 /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+2026-04-06 02:26:16,453   INFO  ckpt                     /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth
+2026-04-06 02:26:16,453   INFO  cuda_id                  0
+2026-04-06 02:26:16,453   INFO  batch_size               1
+2026-04-06 02:26:16,453   INFO  workers                  2
+2026-04-06 02:26:16,453   INFO  compile                  True
+2026-04-06 02:26:16,453   INFO  amp                      True
+2026-04-06 02:26:16,453   INFO  memory_opt_scatter       False
+2026-04-06 02:26:16,453   INFO  memory_opt_conv2d        False
+2026-04-06 02:26:16,453   INFO  int8                     False
+2026-04-06 02:26:16,454   INFO  warmup                   20
+2026-04-06 02:26:16,454   INFO  infer_time               False
+2026-04-06 02:26:16,454   INFO  max_samples              200
+2026-04-06 02:26:16,454   INFO  save_to_file             False
+2026-04-06 02:26:16,454   INFO  launcher                 none
+2026-04-06 02:26:16,454   INFO  profile                  False
+2026-04-06 02:26:16,454   INFO  nsight                   False
+2026-04-06 02:26:16,454   INFO  traced_model             None
+2026-04-06 02:26:16,454   INFO  pretrained_model         None
+2026-04-06 02:26:16,454   INFO  compile_debug            False
+2026-04-06 02:26:16,454   INFO  preprocess_gpu           False
+2026-04-06 02:26:16,454   INFO  compile_voxelizer        False
+2026-04-06 02:26:16,454   INFO  cfg.ROOT_DIR: /home/nas/polin/cmu-berlin/MLS/OpenPCDet
+2026-04-06 02:26:16,455   INFO  cfg.LOCAL_RANK: 0
+2026-04-06 02:26:16,455   INFO  cfg.CLASS_NAMES: ['Car', 'Pedestrian', 'Cyclist']
+2026-04-06 02:26:16,455   INFO  ----------- DATA_CONFIG -----------
+2026-04-06 02:26:16,455   INFO  cfg.DATA_CONFIG.DATASET: KittiDataset
+2026-04-06 02:26:16,455   INFO  cfg.DATA_CONFIG.DATA_PATH: ../data/kitti
+2026-04-06 02:26:16,455   INFO  cfg.DATA_CONFIG.POINT_CLOUD_RANGE: [0, -39.68, -3, 69.12, 39.68, 1]
+2026-04-06 02:26:16,455   INFO  ----------- DATA_SPLIT -----------
+2026-04-06 02:26:16,455   INFO  cfg.DATA_CONFIG.DATA_SPLIT.train: train
+2026-04-06 02:26:16,455   INFO  cfg.DATA_CONFIG.DATA_SPLIT.test: val
+2026-04-06 02:26:16,455   INFO  ----------- INFO_PATH -----------
+2026-04-06 02:26:16,455   INFO  cfg.DATA_CONFIG.INFO_PATH.train: ['kitti_infos_train.pkl']
+2026-04-06 02:26:16,455   INFO  cfg.DATA_CONFIG.INFO_PATH.test: ['kitti_infos_val.pkl']
+2026-04-06 02:26:16,455   INFO  cfg.DATA_CONFIG.GET_ITEM_LIST: ['points']
+2026-04-06 02:26:16,456   INFO  cfg.DATA_CONFIG.FOV_POINTS_ONLY: True
+2026-04-06 02:26:16,456   INFO  ----------- DATA_AUGMENTOR -----------
+2026-04-06 02:26:16,456   INFO  cfg.DATA_CONFIG.DATA_AUGMENTOR.DISABLE_AUG_LIST: ['placeholder']
+2026-04-06 02:26:16,456   INFO  cfg.DATA_CONFIG.DATA_AUGMENTOR.AUG_CONFIG_LIST: [{'NAME': 'gt_sampling', 'USE_ROAD_PLANE': True, 'DB_INFO_PATH': ['kitti_dbinfos_train.pkl'], 'PREPARE': {'filter_by_min_points': ['Car:5', 'Pedestrian:5', 'Cyclist:5'], 'filter_by_difficulty': [-1]}, 'SAMPLE_GROUPS': ['Car:15', 'Pedestrian:15', 'Cyclist:15'], 'NUM_POINT_FEATURES': 4, 'DATABASE_WITH_FAKELIDAR': False, 'REMOVE_EXTRA_WIDTH': [0.0, 0.0, 0.0], 'LIMIT_WHOLE_SCENE': False}, {'NAME': 'random_world_flip', 'ALONG_AXIS_LIST': ['x']}, {'NAME': 'random_world_rotation', 'WORLD_ROT_ANGLE': [-0.78539816, 0.78539816]}, {'NAME': 'random_world_scaling', 'WORLD_SCALE_RANGE': [0.95, 1.05]}]
+2026-04-06 02:26:16,456   INFO  ----------- POINT_FEATURE_ENCODING -----------
+2026-04-06 02:26:16,456   INFO  cfg.DATA_CONFIG.POINT_FEATURE_ENCODING.encoding_type: absolute_coordinates_encoding
+2026-04-06 02:26:16,456   INFO  cfg.DATA_CONFIG.POINT_FEATURE_ENCODING.used_feature_list: ['x', 'y', 'z', 'intensity']
+2026-04-06 02:26:16,456   INFO  cfg.DATA_CONFIG.POINT_FEATURE_ENCODING.src_feature_list: ['x', 'y', 'z', 'intensity']
+2026-04-06 02:26:16,456   INFO  cfg.DATA_CONFIG.DATA_PROCESSOR: [{'NAME': 'mask_points_and_boxes_outside_range', 'REMOVE_OUTSIDE_BOXES': True}, {'NAME': 'shuffle_points', 'SHUFFLE_ENABLED': {'train': True, 'test': False}}, {'NAME': 'transform_points_to_voxels', 'VOXEL_SIZE': [0.16, 0.16, 4], 'MAX_POINTS_PER_VOXEL': 32, 'MAX_NUMBER_OF_VOXELS': {'train': 16000, 'test': 40000}}]
+2026-04-06 02:26:16,456   INFO  cfg.DATA_CONFIG._BASE_CONFIG_: cfgs/dataset_configs/kitti_dataset.yaml
+2026-04-06 02:26:16,456   INFO  ----------- MODEL -----------
+2026-04-06 02:26:16,456   INFO  cfg.MODEL.NAME: PointPillar
+2026-04-06 02:26:16,456   INFO  ----------- VFE -----------
+2026-04-06 02:26:16,457   INFO  cfg.MODEL.VFE.NAME: PillarVFE
+2026-04-06 02:26:16,457   INFO  cfg.MODEL.VFE.WITH_DISTANCE: False
+2026-04-06 02:26:16,457   INFO  cfg.MODEL.VFE.USE_ABSLOTE_XYZ: True
+2026-04-06 02:26:16,457   INFO  cfg.MODEL.VFE.USE_NORM: True
+2026-04-06 02:26:16,457   INFO  cfg.MODEL.VFE.NUM_FILTERS: [64]
+2026-04-06 02:26:16,457   INFO  ----------- MAP_TO_BEV -----------
+2026-04-06 02:26:16,457   INFO  cfg.MODEL.MAP_TO_BEV.NAME: PointPillarScatter
+2026-04-06 02:26:16,457   INFO  cfg.MODEL.MAP_TO_BEV.NUM_BEV_FEATURES: 64
+2026-04-06 02:26:16,457   INFO  ----------- BACKBONE_2D -----------
+2026-04-06 02:26:16,457   INFO  cfg.MODEL.BACKBONE_2D.NAME: BaseBEVBackbone
+2026-04-06 02:26:16,457   INFO  cfg.MODEL.BACKBONE_2D.LAYER_NUMS: [3, 5, 5]
+2026-04-06 02:26:16,457   INFO  cfg.MODEL.BACKBONE_2D.LAYER_STRIDES: [2, 2, 2]
+2026-04-06 02:26:16,457   INFO  cfg.MODEL.BACKBONE_2D.NUM_FILTERS: [64, 128, 256]
+2026-04-06 02:26:16,457   INFO  cfg.MODEL.BACKBONE_2D.UPSAMPLE_STRIDES: [1, 2, 4]
+2026-04-06 02:26:16,458   INFO  cfg.MODEL.BACKBONE_2D.NUM_UPSAMPLE_FILTERS: [128, 128, 128]
+2026-04-06 02:26:16,458   INFO  ----------- DENSE_HEAD -----------
+2026-04-06 02:26:16,458   INFO  cfg.MODEL.DENSE_HEAD.NAME: AnchorHeadSingle
+2026-04-06 02:26:16,458   INFO  cfg.MODEL.DENSE_HEAD.CLASS_AGNOSTIC: False
+2026-04-06 02:26:16,458   INFO  cfg.MODEL.DENSE_HEAD.USE_DIRECTION_CLASSIFIER: True
+2026-04-06 02:26:16,458   INFO  cfg.MODEL.DENSE_HEAD.DIR_OFFSET: 0.78539
+2026-04-06 02:26:16,458   INFO  cfg.MODEL.DENSE_HEAD.DIR_LIMIT_OFFSET: 0.0
+2026-04-06 02:26:16,458   INFO  cfg.MODEL.DENSE_HEAD.NUM_DIR_BINS: 2
+2026-04-06 02:26:16,458   INFO  cfg.MODEL.DENSE_HEAD.ANCHOR_GENERATOR_CONFIG: [{'class_name': 'Car', 'anchor_sizes': [[3.9, 1.6, 1.56]], 'anchor_rotations': [0, 1.57], 'anchor_bottom_heights': [-1.78], 'align_center': False, 'feature_map_stride': 2, 'matched_threshold': 0.6, 'unmatched_threshold': 0.45}, {'class_name': 'Pedestrian', 'anchor_sizes': [[0.8, 0.6, 1.73]], 'anchor_rotations': [0, 1.57], 'anchor_bottom_heights': [-0.6], 'align_center': False, 'feature_map_stride': 2, 'matched_threshold': 0.5, 'unmatched_threshold': 0.35}, {'class_name': 'Cyclist', 'anchor_sizes': [[1.76, 0.6, 1.73]], 'anchor_rotations': [0, 1.57], 'anchor_bottom_heights': [-0.6], 'align_center': False, 'feature_map_stride': 2, 'matched_threshold': 0.5, 'unmatched_threshold': 0.35}]
+2026-04-06 02:26:16,458   INFO  ----------- TARGET_ASSIGNER_CONFIG -----------
+2026-04-06 02:26:16,458   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.NAME: AxisAlignedTargetAssigner
+2026-04-06 02:26:16,458   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.POS_FRACTION: -1.0
+2026-04-06 02:26:16,459   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.SAMPLE_SIZE: 512
+2026-04-06 02:26:16,459   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.NORM_BY_NUM_EXAMPLES: False
+2026-04-06 02:26:16,459   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.MATCH_HEIGHT: False
+2026-04-06 02:26:16,459   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.BOX_CODER: ResidualCoder
+2026-04-06 02:26:16,459   INFO  ----------- LOSS_CONFIG -----------
+2026-04-06 02:26:16,459   INFO  ----------- LOSS_WEIGHTS -----------
+2026-04-06 02:26:16,459   INFO  cfg.MODEL.DENSE_HEAD.LOSS_CONFIG.LOSS_WEIGHTS.cls_weight: 1.0
+2026-04-06 02:26:16,459   INFO  cfg.MODEL.DENSE_HEAD.LOSS_CONFIG.LOSS_WEIGHTS.loc_weight: 2.0
+2026-04-06 02:26:16,459   INFO  cfg.MODEL.DENSE_HEAD.LOSS_CONFIG.LOSS_WEIGHTS.dir_weight: 0.2
+2026-04-06 02:26:16,459   INFO  cfg.MODEL.DENSE_HEAD.LOSS_CONFIG.LOSS_WEIGHTS.code_weights: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+2026-04-06 02:26:16,460   INFO  ----------- POST_PROCESSING -----------
+2026-04-06 02:26:16,460   INFO  cfg.MODEL.POST_PROCESSING.RECALL_THRESH_LIST: [0.3, 0.5, 0.7]
+2026-04-06 02:26:16,460   INFO  cfg.MODEL.POST_PROCESSING.SCORE_THRESH: 0.1
+2026-04-06 02:26:16,460   INFO  cfg.MODEL.POST_PROCESSING.OUTPUT_RAW_SCORE: False
+2026-04-06 02:26:16,460   INFO  cfg.MODEL.POST_PROCESSING.EVAL_METRIC: kitti
+2026-04-06 02:26:16,460   INFO  ----------- NMS_CONFIG -----------
+2026-04-06 02:26:16,460   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.MULTI_CLASSES_NMS: False
+2026-04-06 02:26:16,460   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.NMS_TYPE: nms_gpu
+2026-04-06 02:26:16,460   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.NMS_THRESH: 0.01
+2026-04-06 02:26:16,461   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.NMS_PRE_MAXSIZE: 4096
+2026-04-06 02:26:16,461   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.NMS_POST_MAXSIZE: 500
+2026-04-06 02:26:16,461   INFO  ----------- OPTIMIZATION -----------
+2026-04-06 02:26:16,461   INFO  cfg.OPTIMIZATION.BATCH_SIZE_PER_GPU: 4
+2026-04-06 02:26:16,461   INFO  cfg.OPTIMIZATION.NUM_EPOCHS: 80
+2026-04-06 02:26:16,461   INFO  cfg.OPTIMIZATION.OPTIMIZER: adam_onecycle
+2026-04-06 02:26:16,461   INFO  cfg.OPTIMIZATION.LR: 0.003
+2026-04-06 02:26:16,461   INFO  cfg.OPTIMIZATION.WEIGHT_DECAY: 0.01
+2026-04-06 02:26:16,461   INFO  cfg.OPTIMIZATION.MOMENTUM: 0.9
+2026-04-06 02:26:16,461   INFO  cfg.OPTIMIZATION.MOMS: [0.95, 0.85]
+2026-04-06 02:26:16,461   INFO  cfg.OPTIMIZATION.PCT_START: 0.4
+2026-04-06 02:26:16,461   INFO  cfg.OPTIMIZATION.DIV_FACTOR: 10
+2026-04-06 02:26:16,461   INFO  cfg.OPTIMIZATION.DECAY_STEP_LIST: [35, 45]
+2026-04-06 02:26:16,461   INFO  cfg.OPTIMIZATION.LR_DECAY: 0.1
+2026-04-06 02:26:16,462   INFO  cfg.OPTIMIZATION.LR_CLIP: 1e-07
+2026-04-06 02:26:16,462   INFO  cfg.OPTIMIZATION.LR_WARMUP: False
+2026-04-06 02:26:16,462   INFO  cfg.OPTIMIZATION.WARMUP_EPOCH: 1
+2026-04-06 02:26:16,462   INFO  cfg.OPTIMIZATION.GRAD_NORM_CLIP: 10
+2026-04-06 02:26:16,462   INFO  cfg.TAG: pointpillar
+2026-04-06 02:26:16,462   INFO  cfg.EXP_GROUP_PATH: home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models
+2026-04-06 02:26:16,510   INFO  Loading KITTI dataset
+2026-04-06 02:26:16,723   INFO  Total samples for KITTI dataset: 2330
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3526.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+2026-04-06 02:26:17,152   INFO  ==> Loading parameters from checkpoint /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-06 02:26:17,184   INFO  ==> Done (loaded 127/127)
+2026-04-06 02:26:17,405   INFO  Wrapping model with torch.compile()
+2026-04-06 02:26:19,802   INFO  *************** EPOCH 7728 EVALUATION *****************
+eval:   0%|          | 0/2330 [00:00<?, ?it/s]/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/torch/_dynamo/utils.py:1397: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:83.)
+  return node.target(*args, **kwargs)
+eval:   0%|          | 0/2330 [00:36<?, ?it/s, recall_0.3=(0, 1) / 1]eval:   0%|          | 1/2330 [00:36<23:36:25, 36.49s/it, recall_0.3=(0, 1) / 1]eval:   0%|          | 1/2330 [00:48<23:36:25, 36.49s/it, recall_0.3=(0, 3) / 3]eval:   0%|          | 2/2330 [00:48<14:08:42, 21.87s/it, recall_0.3=(0, 3) / 3]eval:   0%|          | 2/2330 [00:49<14:08:42, 21.87s/it, recall_0.3=(0, 9) / 9]eval:   0%|          | 3/2330 [00:49<7:57:00, 12.30s/it, recall_0.3=(0, 9) / 9] eval:   0%|          | 3/2330 [00:49<7:57:00, 12.30s/it, recall_0.3=(0, 11) / 11]eval:   0%|          | 4/2330 [00:49<5:01:13,  7.77s/it, recall_0.3=(0, 11) / 11]eval:   0%|          | 4/2330 [00:50<5:01:13,  7.77s/it, recall_0.3=(0, 13) / 13]eval:   0%|          | 5/2330 [00:50<3:23:25,  5.25s/it, recall_0.3=(0, 13) / 13]eval:   0%|          | 5/2330 [00:51<3:23:25,  5.25s/it, recall_0.3=(0, 15) / 16]eval:   0%|          | 6/2330 [00:51<2:26:40,  3.79s/it, recall_0.3=(0, 15) / 16]eval:   0%|          | 6/2330 [01:00<2:26:40,  3.79s/it, recall_0.3=(0, 15) / 17]eval:   0%|          | 7/2330 [01:00<3:28:28,  5.38s/it, recall_0.3=(0, 15) / 17]eval:   0%|          | 7/2330 [01:00<3:28:28,  5.38s/it, recall_0.3=(0, 16) / 18]eval:   0%|          | 8/2330 [01:00<2:30:32,  3.89s/it, recall_0.3=(0, 16) / 18]eval:   0%|          | 8/2330 [01:01<2:30:32,  3.89s/it, recall_0.3=(0, 20) / 22]eval:   0%|          | 9/2330 [01:01<1:54:32,  2.96s/it, recall_0.3=(0, 20) / 22]eval:   0%|          | 9/2330 [01:01<1:54:32,  2.96s/it, recall_0.3=(0, 22) / 24]eval:   0%|          | 10/2330 [01:02<1:54:29,  2.96s/it, recall_0.3=(0, 26) / 29]eval:   0%|          | 11/2330 [01:02<1:09:26,  1.80s/it, recall_0.3=(0, 26) / 29]eval:   0%|          | 11/2330 [01:03<1:09:26,  1.80s/it, recall_0.3=(0, 32) / 35]eval:   1%|          | 12/2330 [01:03<1:00:36,  1.57s/it, recall_0.3=(0, 32) / 35]eval:   1%|          | 12/2330 [01:04<1:00:36,  1.57s/it, recall_0.3=(0, 34) / 37]eval:   1%|          | 13/2330 [01:04<53:10,  1.38s/it, recall_0.3=(0, 34) / 37]  eval:   1%|          | 13/2330 [01:05<53:10,  1.38s/it, recall_0.3=(0, 41) / 45]eval:   1%|          | 14/2330 [01:05<47:49,  1.24s/it, recall_0.3=(0, 41) / 45]eval:   1%|          | 14/2330 [01:06<47:49,  1.24s/it, recall_0.3=(0, 45) / 49]eval:   1%|          | 15/2330 [01:06<43:26,  1.13s/it, recall_0.3=(0, 45) / 49]eval:   1%|          | 15/2330 [01:07<43:26,  1.13s/it, recall_0.3=(0, 50) / 54]eval:   1%|          | 16/2330 [01:07<40:39,  1.05s/it, recall_0.3=(0, 50) / 54]eval:   1%|          | 16/2330 [01:08<40:39,  1.05s/it, recall_0.3=(0, 56) / 60]eval:   1%|          | 17/2330 [01:08<38:22,  1.00it/s, recall_0.3=(0, 56) / 60]eval:   1%|          | 17/2330 [01:08<38:22,  1.00it/s, recall_0.3=(0, 58) / 63]eval:   1%|          | 18/2330 [01:08<36:58,  1.04it/s, recall_0.3=(0, 58) / 63]eval:   1%|          | 18/2330 [01:09<36:58,  1.04it/s, recall_0.3=(0, 59) / 64]eval:   1%|          | 19/2330 [01:09<33:55,  1.14it/s, recall_0.3=(0, 59) / 64]eval:   1%|          | 19/2330 [01:10<33:55,  1.14it/s, recall_0.3=(0, 61) / 66]eval:   1%|          | 20/2330 [01:10<33:25,  1.15it/s, recall_0.3=(0, 61) / 66]eval:   1%|          | 20/2330 [01:11<33:25,  1.15it/s, recall_0.3=(0, 70) / 75]eval:   1%|          | 21/2330 [01:11<33:32,  1.15it/s, recall_0.3=(0, 70) / 75]eval:   1%|          | 21/2330 [01:11<33:32,  1.15it/s, recall_0.3=(0, 71) / 76]eval:   1%|          | 22/2330 [01:11<33:31,  1.15it/s, recall_0.3=(0, 74) / 79]eval:   1%|          | 23/2330 [01:12<33:30,  1.15it/s, recall_0.3=(0, 75) / 80]eval:   1%|          | 24/2330 [01:12<20:35,  1.87it/s, recall_0.3=(0, 75) / 80]eval:   1%|          | 24/2330 [01:12<20:35,  1.87it/s, recall_0.3=(0, 79) / 85]eval:   1%|          | 25/2330 [01:12<23:04,  1.67it/s, recall_0.3=(0, 79) / 85]eval:   1%|          | 25/2330 [01:13<23:04,  1.67it/s, recall_0.3=(0, 80) / 87]eval:   1%|          | 26/2330 [01:13<23:03,  1.67it/s, recall_0.3=(0, 84) / 94]eval:   1%|          | 27/2330 [01:13<21:31,  1.78it/s, recall_0.3=(0, 84) / 94]eval:   1%|          | 27/2330 [01:15<21:31,  1.78it/s, recall_0.3=(0, 88) / 98]eval:   1%|          | 28/2330 [01:15<26:50,  1.43it/s, recall_0.3=(0, 88) / 98]eval:   1%|          | 28/2330 [01:16<26:50,  1.43it/s, recall_0.3=(0, 95) / 105]eval:   1%|          | 29/2330 [01:16<28:17,  1.36it/s, recall_0.3=(0, 95) / 105]eval:   1%|          | 29/2330 [01:16<28:17,  1.36it/s, recall_0.3=(0, 99) / 109]eval:   1%|▏         | 30/2330 [01:16<29:03,  1.32it/s, recall_0.3=(0, 99) / 109]eval:   1%|▏         | 30/2330 [01:16<29:03,  1.32it/s, recall_0.3=(0, 100) / 110]eval:   1%|▏         | 31/2330 [01:17<29:03,  1.32it/s, recall_0.3=(0, 102) / 112]eval:   1%|▏         | 32/2330 [01:17<24:36,  1.56it/s, recall_0.3=(0, 102) / 112]eval:   1%|▏         | 32/2330 [01:18<24:36,  1.56it/s, recall_0.3=(0, 104) / 117]eval:   1%|▏         | 33/2330 [01:18<26:34,  1.44it/s, recall_0.3=(0, 104) / 117]eval:   1%|▏         | 33/2330 [01:19<26:34,  1.44it/s, recall_0.3=(0, 105) / 118]eval:   1%|▏         | 34/2330 [01:19<26:43,  1.43it/s, recall_0.3=(0, 105) / 118]eval:   1%|▏         | 34/2330 [01:20<26:43,  1.43it/s, recall_0.3=(0, 112) / 125]eval:   2%|▏         | 35/2330 [01:20<28:53,  1.32it/s, recall_0.3=(0, 112) / 125]eval:   2%|▏         | 35/2330 [01:21<28:53,  1.32it/s, recall_0.3=(0, 115) / 128]eval:   2%|▏         | 36/2330 [01:21<29:42,  1.29it/s, recall_0.3=(0, 115) / 128]eval:   2%|▏         | 36/2330 [01:21<29:42,  1.29it/s, recall_0.3=(0, 116) / 129]eval:   2%|▏         | 37/2330 [01:21<28:48,  1.33it/s, recall_0.3=(0, 116) / 129]eval:   2%|▏         | 37/2330 [01:21<28:48,  1.33it/s, recall_0.3=(0, 120) / 133]eval:   2%|▏         | 38/2330 [01:21<28:47,  1.33it/s, recall_0.3=(0, 123) / 136]eval:   2%|▏         | 39/2330 [01:22<28:47,  1.33it/s, recall_0.3=(0, 124) / 137]eval:   2%|▏         | 40/2330 [01:22<19:35,  1.95it/s, recall_0.3=(0, 124) / 137]eval:   2%|▏         | 40/2330 [01:23<19:35,  1.95it/s, recall_0.3=(0, 126) / 141]eval:   2%|▏         | 41/2330 [01:23<21:55,  1.74it/s, recall_0.3=(0, 126) / 141]eval:   2%|▏         | 41/2330 [01:24<21:55,  1.74it/s, recall_0.3=(0, 128) / 145]eval:   2%|▏         | 42/2330 [01:24<23:57,  1.59it/s, recall_0.3=(0, 128) / 145]eval:   2%|▏         | 42/2330 [01:25<23:57,  1.59it/s, recall_0.3=(0, 136) / 153]eval:   2%|▏         | 43/2330 [01:25<25:53,  1.47it/s, recall_0.3=(0, 136) / 153]eval:   2%|▏         | 43/2330 [01:26<25:53,  1.47it/s, recall_0.3=(0, 147) / 166]eval:   2%|▏         | 44/2330 [01:26<28:05,  1.36it/s, recall_0.3=(0, 147) / 166]eval:   2%|▏         | 44/2330 [01:27<28:05,  1.36it/s, recall_0.3=(0, 161) / 182]eval:   2%|▏         | 45/2330 [01:27<29:50,  1.28it/s, recall_0.3=(0, 161) / 182]eval:   2%|▏         | 45/2330 [01:27<29:50,  1.28it/s, recall_0.3=(0, 163) / 184]eval:   2%|▏         | 46/2330 [01:28<29:49,  1.28it/s, recall_0.3=(0, 173) / 194]eval:   2%|▏         | 47/2330 [01:28<24:53,  1.53it/s, recall_0.3=(0, 173) / 194]eval:   2%|▏         | 47/2330 [01:28<24:53,  1.53it/s, recall_0.3=(0, 181) / 202]eval:   2%|▏         | 48/2330 [01:28<27:00,  1.41it/s, recall_0.3=(0, 181) / 202]eval:   2%|▏         | 48/2330 [01:28<27:00,  1.41it/s, recall_0.3=(0, 182) / 203]eval:   2%|▏         | 49/2330 [01:29<26:59,  1.41it/s, recall_0.3=(0, 186) / 207]eval:   2%|▏         | 50/2330 [01:29<23:31,  1.62it/s, recall_0.3=(0, 186) / 207]eval:   2%|▏         | 50/2330 [01:30<23:31,  1.62it/s, recall_0.3=(0, 189) / 210]eval:   2%|▏         | 51/2330 [01:30<25:48,  1.47it/s, recall_0.3=(0, 189) / 210]eval:   2%|▏         | 51/2330 [01:31<25:48,  1.47it/s, recall_0.3=(0, 198) / 219]eval:   2%|▏         | 52/2330 [01:31<27:38,  1.37it/s, recall_0.3=(0, 198) / 219]eval:   2%|▏         | 52/2330 [01:32<27:38,  1.37it/s, recall_0.3=(0, 201) / 222]eval:   2%|▏         | 53/2330 [01:32<32:57,  1.15it/s, recall_0.3=(0, 201) / 222]eval:   2%|▏         | 53/2330 [01:32<32:57,  1.15it/s, recall_0.3=(0, 203) / 224]eval:   2%|▏         | 54/2330 [01:33<32:56,  1.15it/s, recall_0.3=(0, 204) / 225]eval:   2%|▏         | 55/2330 [01:33<25:11,  1.50it/s, recall_0.3=(0, 204) / 225]eval:   2%|▏         | 55/2330 [01:34<25:11,  1.50it/s, recall_0.3=(0, 214) / 237]eval:   2%|▏         | 56/2330 [01:34<27:17,  1.39it/s, recall_0.3=(0, 214) / 237]eval:   2%|▏         | 56/2330 [01:35<27:17,  1.39it/s, recall_0.3=(0, 218) / 241]eval:   2%|▏         | 57/2330 [01:35<28:25,  1.33it/s, recall_0.3=(0, 218) / 241]eval:   2%|▏         | 57/2330 [01:35<28:25,  1.33it/s, recall_0.3=(0, 226) / 249]eval:   2%|▏         | 58/2330 [01:36<28:24,  1.33it/s, recall_0.3=(0, 236) / 259]eval:   3%|▎         | 59/2330 [01:36<23:37,  1.60it/s, recall_0.3=(0, 236) / 259]eval:   3%|▎         | 59/2330 [01:37<23:37,  1.60it/s, recall_0.3=(0, 241) / 264]eval:   3%|▎         | 60/2330 [01:37<25:32,  1.48it/s, recall_0.3=(0, 241) / 264]eval:   3%|▎         | 60/2330 [01:38<25:32,  1.48it/s, recall_0.3=(0, 243) / 266]eval:   3%|▎         | 61/2330 [01:38<26:47,  1.41it/s, recall_0.3=(0, 243) / 266]eval:   3%|▎         | 61/2330 [01:38<26:47,  1.41it/s, recall_0.3=(0, 249) / 273]eval:   3%|▎         | 62/2330 [01:38<28:23,  1.33it/s, recall_0.3=(0, 249) / 273]eval:   3%|▎         | 62/2330 [01:39<28:23,  1.33it/s, recall_0.3=(0, 255) / 279]eval:   3%|▎         | 63/2330 [01:39<29:11,  1.29it/s, recall_0.3=(0, 255) / 279]eval:   3%|▎         | 63/2330 [01:40<29:11,  1.29it/s, recall_0.3=(0, 263) / 287]eval:   3%|▎         | 64/2330 [01:40<29:55,  1.26it/s, recall_0.3=(0, 263) / 287]eval:   3%|▎         | 64/2330 [01:41<29:55,  1.26it/s, recall_0.3=(0, 265) / 289]eval:   3%|▎         | 65/2330 [01:41<30:20,  1.24it/s, recall_0.3=(0, 265) / 289]eval:   3%|▎         | 65/2330 [01:41<30:20,  1.24it/s, recall_0.3=(0, 267) / 291]eval:   3%|▎         | 66/2330 [01:42<30:19,  1.24it/s, recall_0.3=(0, 270) / 294]eval:   3%|▎         | 67/2330 [01:42<24:50,  1.52it/s, recall_0.3=(0, 270) / 294]eval:   3%|▎         | 67/2330 [01:43<24:50,  1.52it/s, recall_0.3=(0, 275) / 299]eval:   3%|▎         | 68/2330 [01:43<26:19,  1.43it/s, recall_0.3=(0, 275) / 299]eval:   3%|▎         | 68/2330 [01:43<26:19,  1.43it/s, recall_0.3=(0, 276) / 300]eval:   3%|▎         | 69/2330 [01:43<26:24,  1.43it/s, recall_0.3=(0, 276) / 300]eval:   3%|▎         | 69/2330 [01:44<26:24,  1.43it/s, recall_0.3=(0, 284) / 308]eval:   3%|▎         | 70/2330 [01:44<27:32,  1.37it/s, recall_0.3=(0, 284) / 308]eval:   3%|▎         | 70/2330 [01:45<27:32,  1.37it/s, recall_0.3=(0, 290) / 314]eval:   3%|▎         | 71/2330 [01:45<28:41,  1.31it/s, recall_0.3=(0, 290) / 314]eval:   3%|▎         | 71/2330 [01:46<28:41,  1.31it/s, recall_0.3=(0, 292) / 316]eval:   3%|▎         | 72/2330 [01:46<29:00,  1.30it/s, recall_0.3=(0, 292) / 316]eval:   3%|▎         | 72/2330 [01:46<29:00,  1.30it/s, recall_0.3=(0, 294) / 318]eval:   3%|▎         | 73/2330 [01:46<28:59,  1.30it/s, recall_0.3=(0, 295) / 319]eval:   3%|▎         | 74/2330 [01:47<28:58,  1.30it/s, recall_0.3=(0, 300) / 324]eval:   3%|▎         | 75/2330 [01:47<20:35,  1.83it/s, recall_0.3=(0, 300) / 324]eval:   3%|▎         | 75/2330 [01:48<20:35,  1.83it/s, recall_0.3=(0, 311) / 335]eval:   3%|▎         | 76/2330 [01:48<23:23,  1.61it/s, recall_0.3=(0, 311) / 335]eval:   3%|▎         | 76/2330 [01:49<23:23,  1.61it/s, recall_0.3=(0, 317) / 341]eval:   3%|▎         | 77/2330 [01:49<25:29,  1.47it/s, recall_0.3=(0, 317) / 341]eval:   3%|▎         | 77/2330 [01:49<25:29,  1.47it/s, recall_0.3=(0, 318) / 342]eval:   3%|▎         | 78/2330 [01:49<25:29,  1.47it/s, recall_0.3=(0, 319) / 343]eval:   3%|▎         | 79/2330 [01:50<25:28,  1.47it/s, recall_0.3=(0, 328) / 352]eval:   3%|▎         | 80/2330 [01:50<19:35,  1.91it/s, recall_0.3=(0, 328) / 352]eval:   3%|▎         | 80/2330 [01:50<19:35,  1.91it/s, recall_0.3=(0, 331) / 355]eval:   3%|▎         | 81/2330 [01:50<19:34,  1.91it/s, recall_0.3=(0, 332) / 356][2026-04-06 02:28:10,161] torch._dynamo.convert_frame: [WARNING] torch._dynamo hit config.cache_size_limit (64)
+[2026-04-06 02:28:10,161] torch._dynamo.convert_frame: [WARNING]    function: '<resume in generate_recall_record>' (/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/models/detectors/detector3d_template.py:302)
+[2026-04-06 02:28:10,161] torch._dynamo.convert_frame: [WARNING] to diagnose recompilation issues, set env variable TORCHDYNAMO_REPORT_GUARD_FAILURES=1 and also see https://pytorch.org/docs/master/compile/troubleshooting.html.
+[2026-04-06 02:28:10,164] torch._dynamo.convert_frame: [WARNING] torch._dynamo hit config.cache_size_limit (64)
+[2026-04-06 02:28:10,164] torch._dynamo.convert_frame: [WARNING]    function: 'boxes_iou3d_gpu' (/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/ops/iou3d_nms/iou3d_nms_utils.py:48)
+[2026-04-06 02:28:10,164] torch._dynamo.convert_frame: [WARNING] to diagnose recompilation issues, set env variable TORCHDYNAMO_REPORT_GUARD_FAILURES=1 and also see https://pytorch.org/docs/master/compile/troubleshooting.html.
+eval:   4%|▎         | 82/2330 [01:50<19:34,  1.91it/s, recall_0.3=(0, 336) / 360]eval:   4%|▎         | 83/2330 [01:50<12:01,  3.11it/s, recall_0.3=(0, 336) / 360]eval:   4%|▎         | 83/2330 [01:50<12:01,  3.11it/s, recall_0.3=(0, 339) / 363]eval:   4%|▎         | 84/2330 [01:50<12:01,  3.11it/s, recall_0.3=(0, 342) / 366]eval:   4%|▎         | 85/2330 [01:50<10:25,  3.59it/s, recall_0.3=(0, 342) / 366]eval:   4%|▎         | 85/2330 [01:50<10:25,  3.59it/s, recall_0.3=(0, 347) / 372]eval:   4%|▎         | 86/2330 [01:51<10:25,  3.59it/s, recall_0.3=(0, 350) / 375]eval:   4%|▎         | 87/2330 [01:51<09:04,  4.12it/s, recall_0.3=(0, 350) / 375]eval:   4%|▎         | 87/2330 [01:51<09:04,  4.12it/s, recall_0.3=(0, 359) / 385]eval:   4%|▍         | 88/2330 [01:51<09:04,  4.12it/s, recall_0.3=(0, 363) / 389]eval:   4%|▍         | 89/2330 [01:51<07:31,  4.97it/s, recall_0.3=(0, 363) / 389]eval:   4%|▍         | 89/2330 [01:51<07:31,  4.97it/s, recall_0.3=(0, 366) / 392]eval:   4%|▍         | 90/2330 [01:51<07:30,  4.97it/s, recall_0.3=(0, 369) / 395]eval:   4%|▍         | 91/2330 [01:51<07:30,  4.97it/s, recall_0.3=(0, 375) / 401]eval:   4%|▍         | 92/2330 [01:51<05:18,  7.02it/s, recall_0.3=(0, 375) / 401]eval:   4%|▍         | 92/2330 [01:51<05:18,  7.02it/s, recall_0.3=(0, 376) / 402]eval:   4%|▍         | 93/2330 [01:51<05:18,  7.02it/s, recall_0.3=(0, 377) / 403]eval:   4%|▍         | 94/2330 [01:51<04:38,  8.03it/s, recall_0.3=(0, 377) / 403]eval:   4%|▍         | 94/2330 [01:51<04:38,  8.03it/s, recall_0.3=(0, 380) / 406]eval:   4%|▍         | 95/2330 [01:51<04:38,  8.03it/s, recall_0.3=(0, 383) / 410]eval:   4%|▍         | 96/2330 [01:51<04:45,  7.83it/s, recall_0.3=(0, 383) / 410]eval:   4%|▍         | 96/2330 [01:51<04:45,  7.83it/s, recall_0.3=(0, 390) / 417]eval:   4%|▍         | 97/2330 [01:52<04:45,  7.83it/s, recall_0.3=(0, 401) / 429]eval:   4%|▍         | 98/2330 [01:52<04:58,  7.49it/s, recall_0.3=(0, 401) / 429]eval:   4%|▍         | 98/2330 [01:52<04:58,  7.49it/s, recall_0.3=(0, 404) / 432]eval:   4%|▍         | 99/2330 [01:52<04:57,  7.49it/s, recall_0.3=(0, 408) / 436]eval:   4%|▍         | 100/2330 [01:52<04:22,  8.50it/s, recall_0.3=(0, 408) / 436]eval:   4%|▍         | 100/2330 [01:52<04:22,  8.50it/s, recall_0.3=(0, 412) / 441]eval:   4%|▍         | 101/2330 [01:52<04:22,  8.50it/s, recall_0.3=(0, 421) / 450]eval:   4%|▍         | 102/2330 [01:52<04:52,  7.61it/s, recall_0.3=(0, 421) / 450]eval:   4%|▍         | 102/2330 [01:52<04:52,  7.61it/s, recall_0.3=(0, 426) / 457]eval:   4%|▍         | 103/2330 [01:52<04:52,  7.61it/s, recall_0.3=(0, 435) / 467]eval:   4%|▍         | 104/2330 [01:52<04:16,  8.69it/s, recall_0.3=(0, 435) / 467]eval:   4%|▍         | 104/2330 [01:52<04:16,  8.69it/s, recall_0.3=(0, 441) / 473]eval:   5%|▍         | 105/2330 [01:52<04:16,  8.69it/s, recall_0.3=(0, 449) / 481]eval:   5%|▍         | 106/2330 [01:52<04:01,  9.23it/s, recall_0.3=(0, 449) / 481]eval:   5%|▍         | 106/2330 [01:52<04:01,  9.23it/s, recall_0.3=(0, 450) / 482]eval:   5%|▍         | 107/2330 [01:53<04:00,  9.23it/s, recall_0.3=(0, 453) / 485]eval:   5%|▍         | 108/2330 [01:53<04:02,  9.16it/s, recall_0.3=(0, 453) / 485]eval:   5%|▍         | 108/2330 [01:53<04:02,  9.16it/s, recall_0.3=(0, 460) / 495]eval:   5%|▍         | 109/2330 [01:53<04:02,  9.16it/s, recall_0.3=(0, 465) / 501]eval:   5%|▍         | 110/2330 [01:53<04:01,  9.20it/s, recall_0.3=(0, 465) / 501]eval:   5%|▍         | 110/2330 [01:53<04:01,  9.20it/s, recall_0.3=(0, 476) / 512]eval:   5%|▍         | 111/2330 [01:53<04:01,  9.20it/s, recall_0.3=(0, 485) / 521]eval:   5%|▍         | 112/2330 [01:53<04:11,  8.83it/s, recall_0.3=(0, 485) / 521]eval:   5%|▍         | 112/2330 [01:53<04:11,  8.83it/s, recall_0.3=(0, 489) / 525]eval:   5%|▍         | 113/2330 [01:53<04:10,  8.83it/s, recall_0.3=(0, 491) / 529]eval:   5%|▍         | 114/2330 [01:53<04:10,  8.83it/s, recall_0.3=(0, 491) / 529]eval:   5%|▍         | 114/2330 [01:53<04:10,  8.83it/s, recall_0.3=(0, 499) / 537]eval:   5%|▍         | 115/2330 [01:54<04:10,  8.83it/s, recall_0.3=(0, 509) / 549]eval:   5%|▍         | 116/2330 [01:54<04:16,  8.64it/s, recall_0.3=(0, 509) / 549]eval:   5%|▍         | 116/2330 [01:54<04:16,  8.64it/s, recall_0.3=(0, 514) / 554]eval:   5%|▌         | 117/2330 [01:54<04:16,  8.64it/s, recall_0.3=(0, 521) / 562]eval:   5%|▌         | 118/2330 [01:54<03:49,  9.64it/s, recall_0.3=(0, 521) / 562]eval:   5%|▌         | 118/2330 [01:54<03:49,  9.64it/s, recall_0.3=(0, 530) / 571]eval:   5%|▌         | 119/2330 [01:54<03:49,  9.64it/s, recall_0.3=(0, 531) / 572]eval:   5%|▌         | 120/2330 [01:54<03:57,  9.29it/s, recall_0.3=(0, 531) / 572]eval:   5%|▌         | 120/2330 [01:54<03:57,  9.29it/s, recall_0.3=(0, 538) / 579]eval:   5%|▌         | 121/2330 [01:54<03:57,  9.29it/s, recall_0.3=(0, 539) / 580]eval:   5%|▌         | 122/2330 [01:54<03:40, 10.02it/s, recall_0.3=(0, 539) / 580]eval:   5%|▌         | 122/2330 [01:54<03:40, 10.02it/s, recall_0.3=(0, 541) / 582]eval:   5%|▌         | 123/2330 [01:54<03:40, 10.02it/s, recall_0.3=(0, 546) / 587]eval:   5%|▌         | 124/2330 [01:54<04:16,  8.59it/s, recall_0.3=(0, 546) / 587]eval:   5%|▌         | 124/2330 [01:55<04:16,  8.59it/s, recall_0.3=(0, 549) / 590]eval:   5%|▌         | 125/2330 [01:55<04:16,  8.59it/s, recall_0.3=(0, 558) / 600]eval:   5%|▌         | 126/2330 [01:55<03:50,  9.54it/s, recall_0.3=(0, 558) / 600]eval:   5%|▌         | 126/2330 [01:55<03:50,  9.54it/s, recall_0.3=(0, 561) / 604]eval:   5%|▌         | 127/2330 [01:55<03:50,  9.54it/s, recall_0.3=(0, 571) / 614]eval:   5%|▌         | 128/2330 [01:55<03:58,  9.23it/s, recall_0.3=(0, 571) / 614]eval:   5%|▌         | 128/2330 [01:55<03:58,  9.23it/s, recall_0.3=(0, 573) / 616]eval:   6%|▌         | 129/2330 [01:55<04:33,  8.04it/s, recall_0.3=(0, 573) / 616]eval:   6%|▌         | 129/2330 [01:55<04:33,  8.04it/s, recall_0.3=(0, 574) / 617]eval:   6%|▌         | 130/2330 [01:55<04:33,  8.04it/s, recall_0.3=(0, 574) / 618]eval:   6%|▌         | 131/2330 [01:55<04:14,  8.63it/s, recall_0.3=(0, 574) / 618]eval:   6%|▌         | 131/2330 [01:55<04:14,  8.63it/s, recall_0.3=(0, 576) / 620]eval:   6%|▌         | 132/2330 [01:55<04:14,  8.63it/s, recall_0.3=(0, 578) / 622]eval:   6%|▌         | 133/2330 [01:55<04:14,  8.63it/s, recall_0.3=(0, 578) / 622]eval:   6%|▌         | 133/2330 [01:56<04:14,  8.63it/s, recall_0.3=(0, 587) / 631]eval:   6%|▌         | 134/2330 [01:56<04:14,  8.63it/s, recall_0.3=(0, 592) / 636]eval:   6%|▌         | 135/2330 [01:56<04:01,  9.09it/s, recall_0.3=(0, 592) / 636]eval:   6%|▌         | 135/2330 [01:56<04:01,  9.09it/s, recall_0.3=(0, 601) / 648]eval:   6%|▌         | 136/2330 [01:56<04:01,  9.09it/s, recall_0.3=(0, 606) / 654]eval:   6%|▌         | 137/2330 [01:56<04:28,  8.18it/s, recall_0.3=(0, 606) / 654]eval:   6%|▌         | 137/2330 [01:56<04:28,  8.18it/s, recall_0.3=(0, 607) / 655]eval:   6%|▌         | 138/2330 [01:56<04:27,  8.18it/s, recall_0.3=(0, 615) / 663]eval:   6%|▌         | 139/2330 [01:56<04:10,  8.75it/s, recall_0.3=(0, 615) / 663]eval:   6%|▌         | 139/2330 [01:56<04:10,  8.75it/s, recall_0.3=(0, 616) / 664]eval:   6%|▌         | 140/2330 [01:56<04:10,  8.75it/s, recall_0.3=(0, 620) / 668]eval:   6%|▌         | 141/2330 [01:56<04:14,  8.61it/s, recall_0.3=(0, 620) / 668]eval:   6%|▌         | 141/2330 [01:56<04:14,  8.61it/s, recall_0.3=(0, 622) / 670]eval:   6%|▌         | 142/2330 [01:56<04:14,  8.61it/s, recall_0.3=(0, 625) / 673]eval:   6%|▌         | 143/2330 [01:57<03:33, 10.26it/s, recall_0.3=(0, 625) / 673]eval:   6%|▌         | 143/2330 [01:57<03:33, 10.26it/s, recall_0.3=(0, 629) / 677]eval:   6%|▌         | 144/2330 [01:57<03:32, 10.26it/s, recall_0.3=(0, 630) / 678]eval:   6%|▌         | 145/2330 [01:57<03:57,  9.19it/s, recall_0.3=(0, 630) / 678]eval:   6%|▌         | 145/2330 [01:57<03:57,  9.19it/s, recall_0.3=(0, 635) / 683]eval:   6%|▋         | 146/2330 [01:57<03:57,  9.19it/s, recall_0.3=(0, 646) / 694]eval:   6%|▋         | 147/2330 [01:57<03:46,  9.63it/s, recall_0.3=(0, 646) / 694]eval:   6%|▋         | 147/2330 [01:57<03:46,  9.63it/s, recall_0.3=(0, 650) / 698]eval:   6%|▋         | 148/2330 [01:57<03:46,  9.63it/s, recall_0.3=(0, 656) / 704]eval:   6%|▋         | 149/2330 [01:57<03:31, 10.29it/s, recall_0.3=(0, 656) / 704]eval:   6%|▋         | 149/2330 [01:57<03:31, 10.29it/s, recall_0.3=(0, 661) / 709]eval:   6%|▋         | 150/2330 [01:57<03:31, 10.29it/s, recall_0.3=(0, 662) / 710]eval:   6%|▋         | 151/2330 [01:57<03:51,  9.39it/s, recall_0.3=(0, 662) / 710]eval:   6%|▋         | 151/2330 [01:58<03:51,  9.39it/s, recall_0.3=(0, 662) / 711]eval:   7%|▋         | 152/2330 [01:58<03:51,  9.39it/s, recall_0.3=(0, 664) / 713]eval:   7%|▋         | 153/2330 [01:58<04:02,  8.97it/s, recall_0.3=(0, 664) / 713]eval:   7%|▋         | 153/2330 [01:58<04:02,  8.97it/s, recall_0.3=(0, 665) / 714]eval:   7%|▋         | 154/2330 [01:58<04:02,  8.97it/s, recall_0.3=(0, 666) / 715]eval:   7%|▋         | 155/2330 [01:58<03:35, 10.09it/s, recall_0.3=(0, 666) / 715]eval:   7%|▋         | 155/2330 [01:58<03:35, 10.09it/s, recall_0.3=(0, 669) / 719]eval:   7%|▋         | 156/2330 [01:58<03:35, 10.09it/s, recall_0.3=(0, 673) / 723]eval:   7%|▋         | 157/2330 [01:58<03:58,  9.13it/s, recall_0.3=(0, 673) / 723]eval:   7%|▋         | 157/2330 [01:58<03:58,  9.13it/s, recall_0.3=(0, 676) / 727]eval:   7%|▋         | 158/2330 [01:58<03:57,  9.13it/s, recall_0.3=(0, 677) / 728]eval:   7%|▋         | 159/2330 [01:58<03:40,  9.85it/s, recall_0.3=(0, 677) / 728]eval:   7%|▋         | 159/2330 [01:58<03:40,  9.85it/s, recall_0.3=(0, 680) / 731]eval:   7%|▋         | 160/2330 [01:58<03:40,  9.85it/s, recall_0.3=(0, 685) / 736]eval:   7%|▋         | 161/2330 [01:58<03:11, 11.30it/s, recall_0.3=(0, 685) / 736]eval:   7%|▋         | 161/2330 [01:58<03:11, 11.30it/s, recall_0.3=(0, 687) / 738]eval:   7%|▋         | 162/2330 [01:58<03:11, 11.30it/s, recall_0.3=(0, 688) / 739]eval:   7%|▋         | 163/2330 [01:58<03:04, 11.75it/s, recall_0.3=(0, 688) / 739]eval:   7%|▋         | 163/2330 [01:59<03:04, 11.75it/s, recall_0.3=(0, 696) / 747]eval:   7%|▋         | 164/2330 [01:59<03:04, 11.75it/s, recall_0.3=(0, 703) / 754]eval:   7%|▋         | 165/2330 [01:59<03:41,  9.79it/s, recall_0.3=(0, 703) / 754]eval:   7%|▋         | 165/2330 [01:59<03:41,  9.79it/s, recall_0.3=(0, 711) / 763]eval:   7%|▋         | 166/2330 [01:59<03:40,  9.79it/s, recall_0.3=(0, 713) / 765]eval:   7%|▋         | 167/2330 [01:59<03:24, 10.57it/s, recall_0.3=(0, 713) / 765]eval:   7%|▋         | 167/2330 [01:59<03:24, 10.57it/s, recall_0.3=(0, 714) / 766]eval:   7%|▋         | 168/2330 [01:59<03:24, 10.57it/s, recall_0.3=(0, 720) / 772]eval:   7%|▋         | 169/2330 [01:59<03:20, 10.80it/s, recall_0.3=(0, 720) / 772]eval:   7%|▋         | 169/2330 [01:59<03:20, 10.80it/s, recall_0.3=(0, 722) / 774]eval:   7%|▋         | 170/2330 [01:59<03:20, 10.80it/s, recall_0.3=(0, 728) / 780]eval:   7%|▋         | 171/2330 [01:59<03:13, 11.13it/s, recall_0.3=(0, 728) / 780]eval:   7%|▋         | 171/2330 [01:59<03:13, 11.13it/s, recall_0.3=(0, 729) / 781]eval:   7%|▋         | 172/2330 [02:00<03:13, 11.13it/s, recall_0.3=(0, 733) / 785]eval:   7%|▋         | 173/2330 [02:00<03:38,  9.89it/s, recall_0.3=(0, 733) / 785]eval:   7%|▋         | 173/2330 [02:00<03:38,  9.89it/s, recall_0.3=(0, 735) / 787]eval:   7%|▋         | 174/2330 [02:00<03:38,  9.89it/s, recall_0.3=(0, 737) / 790]eval:   8%|▊         | 175/2330 [02:00<03:15, 11.04it/s, recall_0.3=(0, 737) / 790]eval:   8%|▊         | 175/2330 [02:00<03:15, 11.04it/s, recall_0.3=(0, 739) / 792]eval:   8%|▊         | 176/2330 [02:00<03:15, 11.04it/s, recall_0.3=(0, 740) / 793]eval:   8%|▊         | 177/2330 [02:00<02:55, 12.29it/s, recall_0.3=(0, 740) / 793]eval:   8%|▊         | 177/2330 [02:00<02:55, 12.29it/s, recall_0.3=(0, 741) / 795]eval:   8%|▊         | 178/2330 [02:00<02:55, 12.29it/s, recall_0.3=(0, 743) / 797]eval:   8%|▊         | 179/2330 [02:00<03:53,  9.20it/s, recall_0.3=(0, 743) / 797]eval:   8%|▊         | 179/2330 [02:00<03:53,  9.20it/s, recall_0.3=(0, 752) / 806]eval:   8%|▊         | 180/2330 [02:00<03:53,  9.20it/s, recall_0.3=(0, 760) / 818]eval:   8%|▊         | 181/2330 [02:00<03:36,  9.95it/s, recall_0.3=(0, 760) / 818]eval:   8%|▊         | 181/2330 [02:00<03:36,  9.95it/s, recall_0.3=(0, 766) / 824]eval:   8%|▊         | 182/2330 [02:00<03:35,  9.95it/s, recall_0.3=(0, 769) / 827]eval:   8%|▊         | 183/2330 [02:00<03:21, 10.66it/s, recall_0.3=(0, 769) / 827]eval:   8%|▊         | 183/2330 [02:01<03:21, 10.66it/s, recall_0.3=(0, 779) / 837]eval:   8%|▊         | 184/2330 [02:01<03:21, 10.66it/s, recall_0.3=(0, 783) / 841]eval:   8%|▊         | 185/2330 [02:01<03:21, 10.63it/s, recall_0.3=(0, 783) / 841]eval:   8%|▊         | 185/2330 [02:01<03:21, 10.63it/s, recall_0.3=(0, 784) / 842]eval:   8%|▊         | 186/2330 [02:01<03:21, 10.63it/s, recall_0.3=(0, 787) / 845]eval:   8%|▊         | 187/2330 [02:01<03:19, 10.74it/s, recall_0.3=(0, 787) / 845]eval:   8%|▊         | 187/2330 [02:01<03:19, 10.74it/s, recall_0.3=(0, 790) / 848]eval:   8%|▊         | 188/2330 [02:01<03:19, 10.74it/s, recall_0.3=(0, 791) / 850]eval:   8%|▊         | 189/2330 [02:01<03:32, 10.10it/s, recall_0.3=(0, 791) / 850]eval:   8%|▊         | 189/2330 [02:01<03:32, 10.10it/s, recall_0.3=(0, 794) / 853]eval:   8%|▊         | 190/2330 [02:01<03:31, 10.10it/s, recall_0.3=(0, 799) / 859]eval:   8%|▊         | 191/2330 [02:01<03:27, 10.29it/s, recall_0.3=(0, 799) / 859]eval:   8%|▊         | 191/2330 [02:01<03:27, 10.29it/s, recall_0.3=(0, 801) / 861]eval:   8%|▊         | 192/2330 [02:02<03:27, 10.29it/s, recall_0.3=(0, 805) / 865]eval:   8%|▊         | 193/2330 [02:02<04:03,  8.77it/s, recall_0.3=(0, 805) / 865]eval:   8%|▊         | 193/2330 [02:02<04:03,  8.77it/s, recall_0.3=(0, 807) / 867]eval:   8%|▊         | 194/2330 [02:02<04:03,  8.77it/s, recall_0.3=(0, 807) / 867]eval:   8%|▊         | 194/2330 [02:02<04:03,  8.77it/s, recall_0.3=(0, 809) / 869]eval:   8%|▊         | 195/2330 [02:02<04:03,  8.77it/s, recall_0.3=(0, 813) / 874]eval:   8%|▊         | 196/2330 [02:02<04:30,  7.88it/s, recall_0.3=(0, 813) / 874]eval:   8%|▊         | 196/2330 [02:02<04:30,  7.88it/s, recall_0.3=(0, 822) / 884]eval:   8%|▊         | 197/2330 [02:02<04:30,  7.88it/s, recall_0.3=(0, 823) / 885]eval:   8%|▊         | 198/2330 [02:02<03:44,  9.50it/s, recall_0.3=(0, 823) / 885]eval:   8%|▊         | 198/2330 [02:02<03:44,  9.50it/s, recall_0.3=(0, 830) / 893]eval:   9%|▊         | 199/2330 [02:02<03:44,  9.50it/s, recall_0.3=(0, 841) / 904]eval:   9%|▊         | 200/2330 [02:02<03:53,  9.11it/s, recall_0.3=(0, 841) / 904]eval:   9%|▊         | 200/2330 [02:03<21:52,  1.62it/s, recall_0.3=(0, 841) / 904]
+2026-04-06 02:28:23,008   INFO  *************** Performance of EPOCH 7728 *****************
+2026-04-06 02:28:23,009   INFO  Generate label finished(sec_per_example: 0.6160 second).
+2026-04-06 02:28:23,009   INFO  Evaluated first 200 samples (--max_samples=200).
+2026-04-06 02:28:23,009   INFO  recall_roi_0.3: 0.000000
+2026-04-06 02:28:23,009   INFO  recall_rcnn_0.3: 0.930310
+2026-04-06 02:28:23,009   INFO  recall_roi_0.5: 0.000000
+2026-04-06 02:28:23,010   INFO  recall_rcnn_0.5: 0.873894
+2026-04-06 02:28:23,010   INFO  recall_roi_0.7: 0.000000
+2026-04-06 02:28:23,010   INFO  recall_rcnn_0.7: 0.622788
+2026-04-06 02:28:23,011   INFO  Average predicted number of objects(200 samples): 16.510
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/numba/cuda/dispatcher.py:536: NumbaPerformanceWarning: Grid size 1 will likely result in GPU under-utilization due to low occupancy.
+  warn(NumbaPerformanceWarning(msg))
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/numba/cuda/dispatcher.py:536: NumbaPerformanceWarning: Grid size 2 will likely result in GPU under-utilization due to low occupancy.
+  warn(NumbaPerformanceWarning(msg))
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/numba/cuda/dispatcher.py:536: NumbaPerformanceWarning: Grid size 1 will likely result in GPU under-utilization due to low occupancy.
+  warn(NumbaPerformanceWarning(msg))
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/numba/core/typed_passes.py:338: NumbaPerformanceWarning: 
+The keyword argument 'parallel=True' was specified but no transformation for parallel execution was possible.
+
+To find out why, try turning on parallel diagnostics, see https://numba.readthedocs.io/en/stable/user/parallel.html#diagnostics for help.
+
+File "../pcdet/datasets/kitti/kitti_object_eval_python/eval.py", line 122:
+@numba.jit(nopython=True, parallel=True)
+def d3_box_overlap_kernel(boxes, qboxes, rinc, criterion=-1):
+^
+
+  warnings.warn(errors.NumbaPerformanceWarning(msg,
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/numba/cuda/dispatcher.py:536: NumbaPerformanceWarning: Grid size 1 will likely result in GPU under-utilization due to low occupancy.
+  warn(NumbaPerformanceWarning(msg))
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/numba/cuda/dispatcher.py:536: NumbaPerformanceWarning: Grid size 2 will likely result in GPU under-utilization due to low occupancy.
+  warn(NumbaPerformanceWarning(msg))
+2026-04-06 02:28:40,591   INFO  Car AP@0.70, 0.70, 0.70:
+bbox AP:90.7837, 89.2840, 87.8707
+bev  AP:88.7232, 83.9265, 83.1304
+3d   AP:83.9346, 76.8707, 74.2857
+aos  AP:90.77, 89.09, 87.65
+Car AP_R40@0.70, 0.70, 0.70:
+bbox AP:95.1476, 91.9401, 90.4469
+bev  AP:90.0405, 85.7672, 84.5395
+3d   AP:84.7329, 76.6432, 74.9744
+aos  AP:95.14, 91.76, 90.21
+Car AP@0.70, 0.50, 0.50:
+bbox AP:90.7837, 89.2840, 87.8707
+bev  AP:90.8464, 90.0404, 89.3028
+3d   AP:90.8464, 89.9634, 88.9233
+aos  AP:90.77, 89.09, 87.65
+Car AP_R40@0.70, 0.50, 0.50:
+bbox AP:95.1476, 91.9401, 90.4469
+bev  AP:95.2899, 94.8449, 93.7487
+3d   AP:95.2372, 94.3858, 91.6023
+aos  AP:95.14, 91.76, 90.21
+Pedestrian AP@0.50, 0.50, 0.50:
+bbox AP:70.0923, 64.0169, 59.8846
+bev  AP:70.0969, 60.1337, 53.3949
+3d   AP:69.5480, 57.0815, 52.1151
+aos  AP:55.12, 45.47, 41.88
+Pedestrian AP_R40@0.50, 0.50, 0.50:
+bbox AP:69.4919, 64.0249, 59.4128
+bev  AP:70.7004, 59.9119, 52.2666
+3d   AP:69.3983, 57.4917, 50.6133
+aos  AP:53.95, 42.84, 38.84
+Pedestrian AP@0.50, 0.25, 0.25:
+bbox AP:70.0923, 64.0169, 59.8846
+bev  AP:75.4690, 72.0006, 65.9560
+3d   AP:75.4690, 72.0006, 65.9560
+aos  AP:55.12, 45.47, 41.88
+Pedestrian AP_R40@0.50, 0.25, 0.25:
+bbox AP:69.4919, 64.0249, 59.4128
+bev  AP:77.3454, 73.1902, 66.3135
+3d   AP:77.3454, 73.1902, 66.3135
+aos  AP:53.95, 42.84, 38.84
+Cyclist AP@0.50, 0.50, 0.50:
+bbox AP:32.0000, 46.0648, 51.6654
+bev  AP:31.6498, 42.6894, 44.8427
+3d   AP:31.6498, 42.6894, 44.8427
+aos  AP:31.92, 45.43, 51.19
+Cyclist AP_R40@0.50, 0.50, 0.50:
+bbox AP:28.5509, 44.0228, 49.7292
+bev  AP:27.7431, 40.1741, 42.6502
+3d   AP:27.7431, 40.1741, 42.6502
+aos  AP:28.46, 43.38, 49.06
+Cyclist AP@0.50, 0.25, 0.25:
+bbox AP:32.0000, 46.0648, 51.6654
+bev  AP:32.0000, 45.0519, 50.2688
+3d   AP:32.0000, 45.0519, 50.2688
+aos  AP:31.92, 45.43, 51.19
+Cyclist AP_R40@0.50, 0.25, 0.25:
+bbox AP:28.5509, 44.0228, 49.7292
+bev  AP:28.5509, 42.9632, 48.3858
+3d   AP:28.5509, 42.9632, 48.3858
+aos  AP:28.46, 43.38, 49.06
+
+2026-04-06 02:28:40,593   INFO  Result is saved to /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/kitti_eval_run
+2026-04-06 02:28:40,593   INFO  ****************Evaluation done.*****************
+2026-04-06 02:28:40,683   INFO  Wrote /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/kitti_eval_metrics.json
+[collect_research_metrics] exec: /home/ubuntu/miniconda3/envs/mls/bin/python /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/profile_suite.py --cfg_file /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml --ckpt /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth --output_dir /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_FP32/profile --warmup 300 --steps 50 --batch_size 1 --workers 2 --cuda_id 0 --compile --measurement_burnin_steps 20
+2026-04-06 02:29:02,836   INFO  Profile suite — output dir: /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_FP32/profile
+2026-04-06 02:29:02,847   INFO  Loading KITTI dataset
+2026-04-06 02:29:02,969   INFO  Total samples for KITTI dataset: 2330
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3526.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+2026-04-06 02:29:03,395   INFO  ==> Loading parameters from checkpoint /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-06 02:29:03,432   INFO  ==> Done (loaded 127/127)
+2026-04-06 02:29:03,594   INFO  Wrapping model with torch.compile()
+2026-04-06 02:29:05,838   INFO  Running 300 warmup steps...
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/torch/_dynamo/utils.py:1397: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:83.)
+  return node.target(*args, **kwargs)
+[2026-04-06 02:31:10,175] torch._dynamo.convert_frame: [WARNING] torch._dynamo hit config.cache_size_limit (64)
+[2026-04-06 02:31:10,175] torch._dynamo.convert_frame: [WARNING]    function: '<resume in generate_recall_record>' (/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/models/detectors/detector3d_template.py:302)
+[2026-04-06 02:31:10,175] torch._dynamo.convert_frame: [WARNING] to diagnose recompilation issues, set env variable TORCHDYNAMO_REPORT_GUARD_FAILURES=1 and also see https://pytorch.org/docs/master/compile/troubleshooting.html.
+[2026-04-06 02:31:10,190] torch._dynamo.convert_frame: [WARNING] torch._dynamo hit config.cache_size_limit (64)
+[2026-04-06 02:31:10,190] torch._dynamo.convert_frame: [WARNING]    function: 'boxes_iou3d_gpu' (/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/ops/iou3d_nms/iou3d_nms_utils.py:48)
+[2026-04-06 02:31:10,190] torch._dynamo.convert_frame: [WARNING] to diagnose recompilation issues, set env variable TORCHDYNAMO_REPORT_GUARD_FAILURES=1 and also see https://pytorch.org/docs/master/compile/troubleshooting.html.
+2026-04-06 02:31:52,514   INFO  Measurement burn-in: 20 steps (before profiler loop)
+2026-04-06 02:31:55,710   INFO  Profiling 50 steps (KITTI RT CPU stages)...
+STAGE:2026-04-06 02:31:55 7999:7999 ActivityProfilerController.cpp:312] Completed Stage: Warm Up
+STAGE:2026-04-06 02:32:04 7999:7999 ActivityProfilerController.cpp:318] Completed Stage: Collection
+STAGE:2026-04-06 02:32:04 7999:7999 ActivityProfilerController.cpp:322] Completed Stage: Post Processing
+2026-04-06 02:32:11,408   INFO  Chrome trace saved → /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_FP32/profile/torch_profile_trace.json
+2026-04-06 02:32:13,825   INFO  ======================================================================
+2026-04-06 02:32:13,825   INFO    PointPillars Profile Suite — 2026-04-06 02:32:13
+2026-04-06 02:32:13,825   INFO  ======================================================================
+2026-04-06 02:32:13,825   INFO    Config  : /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+2026-04-06 02:32:13,825   INFO    Ckpt    : /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth
+2026-04-06 02:32:13,825   INFO    Compile : True
+2026-04-06 02:32:13,825   INFO    AMP (fp16): False
+2026-04-06 02:32:13,825   INFO    Memory opt scatter (HWC write): False
+2026-04-06 02:32:13,825   INFO    Memory opt conv2d (channels_last): False
+2026-04-06 02:32:13,825   INFO    Preprocess GPU (voxelize on GPU): False
+2026-04-06 02:32:13,825   INFO    Compile voxelizer: False
+2026-04-06 02:32:13,825   INFO    INT8    : False  (CPU dynamic Linear PTQ if true)
+2026-04-06 02:32:13,825   INFO    Traced  : none
+2026-04-06 02:32:13,825   INFO    Nsight NVTX: False
+2026-04-06 02:32:13,826   INFO    Warmup  : 300 steps   Measured: 50 steps   Batch: 1   Meas. burn-in: 20
+2026-04-06 02:32:13,826   INFO  
+2026-04-06 02:32:13,826   INFO  ── Per-stage latency (mean / p50 / p95 / p99 / std) [ms] ─────────────
+2026-04-06 02:32:13,826   INFO  Stage                   mean         p50         p95         p99         std
+2026-04-06 02:32:13,826   INFO  ----------------------------------------------------------------------------
+2026-04-06 02:32:13,826   INFO  read_points (excl.T_rt)       39.47       24.35      106.73      153.39       34.11
+2026-04-06 02:32:13,826   INFO  pre_processing         79.42       79.73      121.85      129.51       21.45
+2026-04-06 02:32:13,826   INFO  data_to_gpu             4.75        5.27        7.14       10.43        2.17
+2026-04-06 02:32:13,826   INFO  Forward (GPU)          44.63       47.32       56.25       60.57        9.03
+2026-04-06 02:32:13,826   INFO  PostProcess             1.45        1.22        2.07        2.35        0.43
+2026-04-06 02:32:13,826   INFO  ── Onboard frame ──       52.50       55.53       65.37       71.26       11.21
+2026-04-06 02:32:13,826   INFO  ── T_rt (onboard) ──      130.24      126.95      162.94      176.05       19.58
+2026-04-06 02:32:13,826   INFO  
+2026-04-06 02:32:13,826   INFO  ── Throughput & Memory ─────────────────────────────────────────
+2026-04-06 02:32:13,826   INFO    Throughput         : 7.7 samples/s  (batch=1, mean T_rt=130.24 ms)
+2026-04-06 02:32:13,826   INFO    Peak GPU Memory    : 2996.0 MB  (NMS/recall on GPU; backbone mostly CPU when INT8)
+2026-04-06 02:32:13,826   INFO    Peak GPU Mem (steady): 2996.0 MB  (steps with forward <= 200.0 ms)
+2026-04-06 02:32:13,827   INFO    Mean peak per step : 2831.5 MB
+2026-04-06 02:32:13,827   INFO    CUDA kernel events : 29836
+2026-04-06 02:32:13,827   INFO    T_rt mean (onboard, excl. read_points): 130.24 ms
+2026-04-06 02:32:13,827   INFO  
+2026-04-06 02:32:13,827   INFO  ── Outputs ──────────────────────────────────────────────────────
+2026-04-06 02:32:13,827   INFO    Chrome trace       : /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_FP32/profile/torch_profile_trace.json
+2026-04-06 02:32:13,827   INFO    Summary            : /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_FP32/profile/profile_summary.txt
+2026-04-06 02:32:13,827   INFO  ======================================================================
+[collect_research_metrics] exec: /home/ubuntu/miniconda3/envs/mls/bin/python /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/energy_monitor.py --cfg_file /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml --ckpt /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth --output_dir /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_FP32/energy --warmup 300 --steps 50 --batch_size 1 --workers 2 --cuda_id 0 --compile --energy_exclude_compile_over_ms 200.0 --measurement_burnin_steps 20
+2026-04-06 02:32:31,234   INFO  GPU [0]: NVIDIA TITAN RTX
+2026-04-06 02:32:31,268   INFO  Loading KITTI dataset
+2026-04-06 02:32:31,406   INFO  Total samples for KITTI dataset: 2330
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3526.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+2026-04-06 02:32:31,755   INFO  ==> Loading parameters from checkpoint /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-06 02:32:31,785   INFO  ==> Done (loaded 127/127)
+2026-04-06 02:32:31,830   INFO  Wrapping model with torch.compile()
+2026-04-06 02:32:34,011   INFO  Running 300 warmup steps (no measurement)...
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/torch/_dynamo/utils.py:1397: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:83.)
+  return node.target(*args, **kwargs)
+[2026-04-06 02:34:25,991] torch._dynamo.convert_frame: [WARNING] torch._dynamo hit config.cache_size_limit (64)
+[2026-04-06 02:34:25,991] torch._dynamo.convert_frame: [WARNING]    function: '<resume in generate_recall_record>' (/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/models/detectors/detector3d_template.py:302)
+[2026-04-06 02:34:25,991] torch._dynamo.convert_frame: [WARNING] to diagnose recompilation issues, set env variable TORCHDYNAMO_REPORT_GUARD_FAILURES=1 and also see https://pytorch.org/docs/master/compile/troubleshooting.html.
+[2026-04-06 02:34:25,995] torch._dynamo.convert_frame: [WARNING] torch._dynamo hit config.cache_size_limit (64)
+[2026-04-06 02:34:25,995] torch._dynamo.convert_frame: [WARNING]    function: 'boxes_iou3d_gpu' (/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/ops/iou3d_nms/iou3d_nms_utils.py:48)
+[2026-04-06 02:34:25,995] torch._dynamo.convert_frame: [WARNING] to diagnose recompilation issues, set env variable TORCHDYNAMO_REPORT_GUARD_FAILURES=1 and also see https://pytorch.org/docs/master/compile/troubleshooting.html.
+2026-04-06 02:34:49,590   INFO  Measuring energy over 50 steps...
+2026-04-06 02:34:49,592   INFO  Measurement burn-in: 20 steps (power sampled, excluded from reported energy)
+2026-04-06 02:35:09,144   INFO  =================================================================
+2026-04-06 02:35:09,145   INFO    PointPillars Energy Monitor — 2026-04-06 02:35:09
+2026-04-06 02:35:09,145   INFO  =================================================================
+2026-04-06 02:35:09,145   INFO    GPU            : NVIDIA TITAN RTX
+2026-04-06 02:35:09,145   INFO    Config         : /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+2026-04-06 02:35:09,145   INFO    Compile        : True  Traced: none
+2026-04-06 02:35:09,145   INFO    AMP (fp16)     : False
+2026-04-06 02:35:09,145   INFO    Memory opt scatter (HWC write): False
+2026-04-06 02:35:09,145   INFO    Memory opt conv2d (channels_last): False
+2026-04-06 02:35:09,146   INFO    Preprocess GPU (voxelize on GPU): False
+2026-04-06 02:35:09,146   INFO    Compile voxelizer: False
+2026-04-06 02:35:09,146   INFO    INT8 (CPU PTQ) : False
+2026-04-06 02:35:09,146   INFO    Warmup         : 300   Steps: 50   Batch: 1
+2026-04-06 02:35:09,146   INFO    Meas. burn-in  : 20  (power sampled; excluded from NVML J window)
+2026-04-06 02:35:09,146   INFO  
+2026-04-06 02:35:09,146   INFO  ── Latency (ms) ─────────────────────────────────────────
+2026-04-06 02:35:09,146   INFO    Mean : 49.24   p50 : 46.93   p95 : 91.23   p99 : 144.99
+2026-04-06 02:35:09,146   INFO  
+2026-04-06 02:35:09,146   INFO  ── Throughput ───────────────────────────────────────────
+2026-04-06 02:35:09,146   INFO    11.70 samples/s  (total_samples=50, wall=4.27 s)
+2026-04-06 02:35:09,146   INFO  
+2026-04-06 02:35:09,147   INFO  ── Power & Energy ───────────────────────────────────────
+2026-04-06 02:35:09,147   INFO    Mean power     : 196.8 W
+2026-04-06 02:35:09,147   INFO    Peak power     : 282.0 W
+2026-04-06 02:35:09,147   INFO    Total energy   : 840.22 J  (NVML window=4.27 s, 83 power samples)
+2026-04-06 02:35:09,147   INFO  
+2026-04-06 02:35:09,147   INFO  ── Performance-per-Watt ─────────────────────────────────
+2026-04-06 02:35:09,147   INFO    0.0595 samples/s/W  (throughput / mean_power)
+2026-04-06 02:35:09,147   INFO    0.0595 samples/J   (steady_samples / steady_energy; spike intervals omitted when enabled)
+2026-04-06 02:35:09,147   INFO    Interpretation: higher = more efficient per unit energy
+2026-04-06 02:35:09,147   INFO  
+2026-04-06 02:35:09,147   INFO  ── Outputs ──────────────────────────────────────────────
+2026-04-06 02:35:09,147   INFO    Summary  : /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_FP32/energy/energy_summary.txt
+2026-04-06 02:35:09,148   INFO    Raw CSV  : /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_FP32/energy/energy_samples.csv
+2026-04-06 02:35:09,148   INFO  =================================================================
+2026-04-06 02:35:09,150   INFO  Raw power samples → /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_FP32/energy/energy_samples.csv
+2026-04-06 02:35:09,154   INFO  Per-step forward latency → /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_FP32/energy/energy_latency_per_step.csv
+[collect_research_metrics] exec: /home/ubuntu/miniconda3/envs/mls/bin/python /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/kitti_eval_export.py --cfg_file /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml --ckpt /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth --output_json /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_FP32/kitti_eval_metrics.json --eval_result_dir /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_FP32/kitti_eval_run --cuda_id 0 --batch_size 1 --workers 2 --warmup 20 --max_samples 200 --compile
+2026-04-06 02:35:27,287   INFO  ********************** kitti_eval_export **********************
+2026-04-06 02:35:27,287   INFO  cfg_file                 /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+2026-04-06 02:35:27,287   INFO  ckpt                     /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth
+2026-04-06 02:35:27,287   INFO  cuda_id                  0
+2026-04-06 02:35:27,287   INFO  batch_size               1
+2026-04-06 02:35:27,287   INFO  workers                  2
+2026-04-06 02:35:27,288   INFO  compile                  True
+2026-04-06 02:35:27,288   INFO  amp                      False
+2026-04-06 02:35:27,288   INFO  memory_opt_scatter       False
+2026-04-06 02:35:27,288   INFO  memory_opt_conv2d        False
+2026-04-06 02:35:27,288   INFO  int8                     False
+2026-04-06 02:35:27,288   INFO  warmup                   20
+2026-04-06 02:35:27,288   INFO  infer_time               False
+2026-04-06 02:35:27,288   INFO  max_samples              200
+2026-04-06 02:35:27,288   INFO  save_to_file             False
+2026-04-06 02:35:27,288   INFO  launcher                 none
+2026-04-06 02:35:27,288   INFO  profile                  False
+2026-04-06 02:35:27,288   INFO  nsight                   False
+2026-04-06 02:35:27,288   INFO  traced_model             None
+2026-04-06 02:35:27,289   INFO  pretrained_model         None
+2026-04-06 02:35:27,289   INFO  compile_debug            False
+2026-04-06 02:35:27,289   INFO  preprocess_gpu           False
+2026-04-06 02:35:27,289   INFO  compile_voxelizer        False
+2026-04-06 02:35:27,289   INFO  cfg.ROOT_DIR: /home/nas/polin/cmu-berlin/MLS/OpenPCDet
+2026-04-06 02:35:27,289   INFO  cfg.LOCAL_RANK: 0
+2026-04-06 02:35:27,289   INFO  cfg.CLASS_NAMES: ['Car', 'Pedestrian', 'Cyclist']
+2026-04-06 02:35:27,289   INFO  ----------- DATA_CONFIG -----------
+2026-04-06 02:35:27,289   INFO  cfg.DATA_CONFIG.DATASET: KittiDataset
+2026-04-06 02:35:27,289   INFO  cfg.DATA_CONFIG.DATA_PATH: ../data/kitti
+2026-04-06 02:35:27,289   INFO  cfg.DATA_CONFIG.POINT_CLOUD_RANGE: [0, -39.68, -3, 69.12, 39.68, 1]
+2026-04-06 02:35:27,289   INFO  ----------- DATA_SPLIT -----------
+2026-04-06 02:35:27,289   INFO  cfg.DATA_CONFIG.DATA_SPLIT.train: train
+2026-04-06 02:35:27,289   INFO  cfg.DATA_CONFIG.DATA_SPLIT.test: val
+2026-04-06 02:35:27,290   INFO  ----------- INFO_PATH -----------
+2026-04-06 02:35:27,290   INFO  cfg.DATA_CONFIG.INFO_PATH.train: ['kitti_infos_train.pkl']
+2026-04-06 02:35:27,290   INFO  cfg.DATA_CONFIG.INFO_PATH.test: ['kitti_infos_val.pkl']
+2026-04-06 02:35:27,290   INFO  cfg.DATA_CONFIG.GET_ITEM_LIST: ['points']
+2026-04-06 02:35:27,290   INFO  cfg.DATA_CONFIG.FOV_POINTS_ONLY: True
+2026-04-06 02:35:27,290   INFO  ----------- DATA_AUGMENTOR -----------
+2026-04-06 02:35:27,290   INFO  cfg.DATA_CONFIG.DATA_AUGMENTOR.DISABLE_AUG_LIST: ['placeholder']
+2026-04-06 02:35:27,290   INFO  cfg.DATA_CONFIG.DATA_AUGMENTOR.AUG_CONFIG_LIST: [{'NAME': 'gt_sampling', 'USE_ROAD_PLANE': True, 'DB_INFO_PATH': ['kitti_dbinfos_train.pkl'], 'PREPARE': {'filter_by_min_points': ['Car:5', 'Pedestrian:5', 'Cyclist:5'], 'filter_by_difficulty': [-1]}, 'SAMPLE_GROUPS': ['Car:15', 'Pedestrian:15', 'Cyclist:15'], 'NUM_POINT_FEATURES': 4, 'DATABASE_WITH_FAKELIDAR': False, 'REMOVE_EXTRA_WIDTH': [0.0, 0.0, 0.0], 'LIMIT_WHOLE_SCENE': False}, {'NAME': 'random_world_flip', 'ALONG_AXIS_LIST': ['x']}, {'NAME': 'random_world_rotation', 'WORLD_ROT_ANGLE': [-0.78539816, 0.78539816]}, {'NAME': 'random_world_scaling', 'WORLD_SCALE_RANGE': [0.95, 1.05]}]
+2026-04-06 02:35:27,290   INFO  ----------- POINT_FEATURE_ENCODING -----------
+2026-04-06 02:35:27,290   INFO  cfg.DATA_CONFIG.POINT_FEATURE_ENCODING.encoding_type: absolute_coordinates_encoding
+2026-04-06 02:35:27,290   INFO  cfg.DATA_CONFIG.POINT_FEATURE_ENCODING.used_feature_list: ['x', 'y', 'z', 'intensity']
+2026-04-06 02:35:27,290   INFO  cfg.DATA_CONFIG.POINT_FEATURE_ENCODING.src_feature_list: ['x', 'y', 'z', 'intensity']
+2026-04-06 02:35:27,291   INFO  cfg.DATA_CONFIG.DATA_PROCESSOR: [{'NAME': 'mask_points_and_boxes_outside_range', 'REMOVE_OUTSIDE_BOXES': True}, {'NAME': 'shuffle_points', 'SHUFFLE_ENABLED': {'train': True, 'test': False}}, {'NAME': 'transform_points_to_voxels', 'VOXEL_SIZE': [0.16, 0.16, 4], 'MAX_POINTS_PER_VOXEL': 32, 'MAX_NUMBER_OF_VOXELS': {'train': 16000, 'test': 40000}}]
+2026-04-06 02:35:27,291   INFO  cfg.DATA_CONFIG._BASE_CONFIG_: cfgs/dataset_configs/kitti_dataset.yaml
+2026-04-06 02:35:27,291   INFO  ----------- MODEL -----------
+2026-04-06 02:35:27,291   INFO  cfg.MODEL.NAME: PointPillar
+2026-04-06 02:35:27,291   INFO  ----------- VFE -----------
+2026-04-06 02:35:27,291   INFO  cfg.MODEL.VFE.NAME: PillarVFE
+2026-04-06 02:35:27,291   INFO  cfg.MODEL.VFE.WITH_DISTANCE: False
+2026-04-06 02:35:27,291   INFO  cfg.MODEL.VFE.USE_ABSLOTE_XYZ: True
+2026-04-06 02:35:27,291   INFO  cfg.MODEL.VFE.USE_NORM: True
+2026-04-06 02:35:27,291   INFO  cfg.MODEL.VFE.NUM_FILTERS: [64]
+2026-04-06 02:35:27,291   INFO  ----------- MAP_TO_BEV -----------
+2026-04-06 02:35:27,291   INFO  cfg.MODEL.MAP_TO_BEV.NAME: PointPillarScatter
+2026-04-06 02:35:27,291   INFO  cfg.MODEL.MAP_TO_BEV.NUM_BEV_FEATURES: 64
+2026-04-06 02:35:27,291   INFO  ----------- BACKBONE_2D -----------
+2026-04-06 02:35:27,292   INFO  cfg.MODEL.BACKBONE_2D.NAME: BaseBEVBackbone
+2026-04-06 02:35:27,292   INFO  cfg.MODEL.BACKBONE_2D.LAYER_NUMS: [3, 5, 5]
+2026-04-06 02:35:27,292   INFO  cfg.MODEL.BACKBONE_2D.LAYER_STRIDES: [2, 2, 2]
+2026-04-06 02:35:27,292   INFO  cfg.MODEL.BACKBONE_2D.NUM_FILTERS: [64, 128, 256]
+2026-04-06 02:35:27,292   INFO  cfg.MODEL.BACKBONE_2D.UPSAMPLE_STRIDES: [1, 2, 4]
+2026-04-06 02:35:27,292   INFO  cfg.MODEL.BACKBONE_2D.NUM_UPSAMPLE_FILTERS: [128, 128, 128]
+2026-04-06 02:35:27,292   INFO  ----------- DENSE_HEAD -----------
+2026-04-06 02:35:27,292   INFO  cfg.MODEL.DENSE_HEAD.NAME: AnchorHeadSingle
+2026-04-06 02:35:27,292   INFO  cfg.MODEL.DENSE_HEAD.CLASS_AGNOSTIC: False
+2026-04-06 02:35:27,292   INFO  cfg.MODEL.DENSE_HEAD.USE_DIRECTION_CLASSIFIER: True
+2026-04-06 02:35:27,292   INFO  cfg.MODEL.DENSE_HEAD.DIR_OFFSET: 0.78539
+2026-04-06 02:35:27,292   INFO  cfg.MODEL.DENSE_HEAD.DIR_LIMIT_OFFSET: 0.0
+2026-04-06 02:35:27,292   INFO  cfg.MODEL.DENSE_HEAD.NUM_DIR_BINS: 2
+2026-04-06 02:35:27,292   INFO  cfg.MODEL.DENSE_HEAD.ANCHOR_GENERATOR_CONFIG: [{'class_name': 'Car', 'anchor_sizes': [[3.9, 1.6, 1.56]], 'anchor_rotations': [0, 1.57], 'anchor_bottom_heights': [-1.78], 'align_center': False, 'feature_map_stride': 2, 'matched_threshold': 0.6, 'unmatched_threshold': 0.45}, {'class_name': 'Pedestrian', 'anchor_sizes': [[0.8, 0.6, 1.73]], 'anchor_rotations': [0, 1.57], 'anchor_bottom_heights': [-0.6], 'align_center': False, 'feature_map_stride': 2, 'matched_threshold': 0.5, 'unmatched_threshold': 0.35}, {'class_name': 'Cyclist', 'anchor_sizes': [[1.76, 0.6, 1.73]], 'anchor_rotations': [0, 1.57], 'anchor_bottom_heights': [-0.6], 'align_center': False, 'feature_map_stride': 2, 'matched_threshold': 0.5, 'unmatched_threshold': 0.35}]
+2026-04-06 02:35:27,293   INFO  ----------- TARGET_ASSIGNER_CONFIG -----------
+2026-04-06 02:35:27,293   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.NAME: AxisAlignedTargetAssigner
+2026-04-06 02:35:27,293   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.POS_FRACTION: -1.0
+2026-04-06 02:35:27,293   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.SAMPLE_SIZE: 512
+2026-04-06 02:35:27,293   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.NORM_BY_NUM_EXAMPLES: False
+2026-04-06 02:35:27,293   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.MATCH_HEIGHT: False
+2026-04-06 02:35:27,293   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.BOX_CODER: ResidualCoder
+2026-04-06 02:35:27,293   INFO  ----------- LOSS_CONFIG -----------
+2026-04-06 02:35:27,293   INFO  ----------- LOSS_WEIGHTS -----------
+2026-04-06 02:35:27,293   INFO  cfg.MODEL.DENSE_HEAD.LOSS_CONFIG.LOSS_WEIGHTS.cls_weight: 1.0
+2026-04-06 02:35:27,293   INFO  cfg.MODEL.DENSE_HEAD.LOSS_CONFIG.LOSS_WEIGHTS.loc_weight: 2.0
+2026-04-06 02:35:27,293   INFO  cfg.MODEL.DENSE_HEAD.LOSS_CONFIG.LOSS_WEIGHTS.dir_weight: 0.2
+2026-04-06 02:35:27,293   INFO  cfg.MODEL.DENSE_HEAD.LOSS_CONFIG.LOSS_WEIGHTS.code_weights: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+2026-04-06 02:35:27,293   INFO  ----------- POST_PROCESSING -----------
+2026-04-06 02:35:27,294   INFO  cfg.MODEL.POST_PROCESSING.RECALL_THRESH_LIST: [0.3, 0.5, 0.7]
+2026-04-06 02:35:27,294   INFO  cfg.MODEL.POST_PROCESSING.SCORE_THRESH: 0.1
+2026-04-06 02:35:27,294   INFO  cfg.MODEL.POST_PROCESSING.OUTPUT_RAW_SCORE: False
+2026-04-06 02:35:27,294   INFO  cfg.MODEL.POST_PROCESSING.EVAL_METRIC: kitti
+2026-04-06 02:35:27,294   INFO  ----------- NMS_CONFIG -----------
+2026-04-06 02:35:27,294   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.MULTI_CLASSES_NMS: False
+2026-04-06 02:35:27,294   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.NMS_TYPE: nms_gpu
+2026-04-06 02:35:27,294   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.NMS_THRESH: 0.01
+2026-04-06 02:35:27,294   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.NMS_PRE_MAXSIZE: 4096
+2026-04-06 02:35:27,294   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.NMS_POST_MAXSIZE: 500
+2026-04-06 02:35:27,294   INFO  ----------- OPTIMIZATION -----------
+2026-04-06 02:35:27,294   INFO  cfg.OPTIMIZATION.BATCH_SIZE_PER_GPU: 4
+2026-04-06 02:35:27,294   INFO  cfg.OPTIMIZATION.NUM_EPOCHS: 80
+2026-04-06 02:35:27,294   INFO  cfg.OPTIMIZATION.OPTIMIZER: adam_onecycle
+2026-04-06 02:35:27,295   INFO  cfg.OPTIMIZATION.LR: 0.003
+2026-04-06 02:35:27,295   INFO  cfg.OPTIMIZATION.WEIGHT_DECAY: 0.01
+2026-04-06 02:35:27,295   INFO  cfg.OPTIMIZATION.MOMENTUM: 0.9
+2026-04-06 02:35:27,295   INFO  cfg.OPTIMIZATION.MOMS: [0.95, 0.85]
+2026-04-06 02:35:27,295   INFO  cfg.OPTIMIZATION.PCT_START: 0.4
+2026-04-06 02:35:27,295   INFO  cfg.OPTIMIZATION.DIV_FACTOR: 10
+2026-04-06 02:35:27,295   INFO  cfg.OPTIMIZATION.DECAY_STEP_LIST: [35, 45]
+2026-04-06 02:35:27,295   INFO  cfg.OPTIMIZATION.LR_DECAY: 0.1
+2026-04-06 02:35:27,295   INFO  cfg.OPTIMIZATION.LR_CLIP: 1e-07
+2026-04-06 02:35:27,295   INFO  cfg.OPTIMIZATION.LR_WARMUP: False
+2026-04-06 02:35:27,295   INFO  cfg.OPTIMIZATION.WARMUP_EPOCH: 1
+2026-04-06 02:35:27,295   INFO  cfg.OPTIMIZATION.GRAD_NORM_CLIP: 10
+2026-04-06 02:35:27,295   INFO  cfg.TAG: pointpillar
+2026-04-06 02:35:27,295   INFO  cfg.EXP_GROUP_PATH: home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models
+2026-04-06 02:35:27,324   INFO  Loading KITTI dataset
+2026-04-06 02:35:27,445   INFO  Total samples for KITTI dataset: 2330
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3526.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+2026-04-06 02:35:27,821   INFO  ==> Loading parameters from checkpoint /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-06 02:35:27,852   INFO  ==> Done (loaded 127/127)
+2026-04-06 02:35:27,874   INFO  Wrapping model with torch.compile()
+2026-04-06 02:35:30,004   INFO  *************** EPOCH 7728 EVALUATION *****************
+eval:   0%|          | 0/2330 [00:00<?, ?it/s]/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/torch/_dynamo/utils.py:1397: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:83.)
+  return node.target(*args, **kwargs)
+eval:   0%|          | 0/2330 [00:36<?, ?it/s, recall_0.3=(0, 1) / 1]eval:   0%|          | 1/2330 [00:36<23:49:20, 36.82s/it, recall_0.3=(0, 1) / 1]eval:   0%|          | 1/2330 [00:47<23:49:20, 36.82s/it, recall_0.3=(0, 3) / 3]eval:   0%|          | 2/2330 [00:47<13:49:46, 21.39s/it, recall_0.3=(0, 3) / 3]eval:   0%|          | 2/2330 [00:48<13:49:46, 21.39s/it, recall_0.3=(0, 9) / 9]eval:   0%|          | 3/2330 [00:48<7:46:11, 12.02s/it, recall_0.3=(0, 9) / 9] eval:   0%|          | 3/2330 [00:49<7:46:11, 12.02s/it, recall_0.3=(0, 11) / 11]eval:   0%|          | 4/2330 [00:49<4:54:38,  7.60s/it, recall_0.3=(0, 11) / 11]eval:   0%|          | 4/2330 [00:49<4:54:38,  7.60s/it, recall_0.3=(0, 13) / 13]eval:   0%|          | 5/2330 [00:49<3:19:54,  5.16s/it, recall_0.3=(0, 13) / 13]eval:   0%|          | 5/2330 [00:50<3:19:54,  5.16s/it, recall_0.3=(0, 15) / 16]eval:   0%|          | 6/2330 [00:50<2:25:00,  3.74s/it, recall_0.3=(0, 15) / 16]eval:   0%|          | 6/2330 [00:58<2:25:00,  3.74s/it, recall_0.3=(0, 15) / 17]eval:   0%|          | 7/2330 [00:58<3:19:11,  5.14s/it, recall_0.3=(0, 15) / 17]eval:   0%|          | 7/2330 [00:59<3:19:11,  5.14s/it, recall_0.3=(0, 16) / 18]eval:   0%|          | 8/2330 [00:59<2:25:02,  3.75s/it, recall_0.3=(0, 16) / 18]eval:   0%|          | 8/2330 [01:00<2:25:02,  3.75s/it, recall_0.3=(0, 20) / 22]eval:   0%|          | 9/2330 [01:00<1:50:45,  2.86s/it, recall_0.3=(0, 20) / 22]eval:   0%|          | 9/2330 [01:00<1:50:45,  2.86s/it, recall_0.3=(0, 22) / 24]eval:   0%|          | 10/2330 [01:01<1:50:42,  2.86s/it, recall_0.3=(0, 26) / 29]eval:   0%|          | 11/2330 [01:01<1:07:18,  1.74s/it, recall_0.3=(0, 26) / 29]eval:   0%|          | 11/2330 [01:02<1:07:18,  1.74s/it, recall_0.3=(0, 32) / 35]eval:   1%|          | 12/2330 [01:02<59:04,  1.53s/it, recall_0.3=(0, 32) / 35]  eval:   1%|          | 12/2330 [01:03<59:04,  1.53s/it, recall_0.3=(0, 34) / 37]eval:   1%|          | 13/2330 [01:03<51:57,  1.35s/it, recall_0.3=(0, 34) / 37]eval:   1%|          | 13/2330 [01:04<51:57,  1.35s/it, recall_0.3=(0, 41) / 45]eval:   1%|          | 14/2330 [01:04<47:09,  1.22s/it, recall_0.3=(0, 41) / 45]eval:   1%|          | 14/2330 [01:05<47:09,  1.22s/it, recall_0.3=(0, 45) / 49]eval:   1%|          | 15/2330 [01:05<43:09,  1.12s/it, recall_0.3=(0, 45) / 49]eval:   1%|          | 15/2330 [01:05<43:09,  1.12s/it, recall_0.3=(0, 50) / 54]eval:   1%|          | 16/2330 [01:05<40:16,  1.04s/it, recall_0.3=(0, 50) / 54]eval:   1%|          | 16/2330 [01:06<40:16,  1.04s/it, recall_0.3=(0, 56) / 60]eval:   1%|          | 17/2330 [01:06<37:43,  1.02it/s, recall_0.3=(0, 56) / 60]eval:   1%|          | 17/2330 [01:07<37:43,  1.02it/s, recall_0.3=(0, 58) / 63]eval:   1%|          | 18/2330 [01:07<36:38,  1.05it/s, recall_0.3=(0, 58) / 63]eval:   1%|          | 18/2330 [01:08<36:38,  1.05it/s, recall_0.3=(0, 59) / 64]eval:   1%|          | 19/2330 [01:08<33:47,  1.14it/s, recall_0.3=(0, 59) / 64]eval:   1%|          | 19/2330 [01:09<33:47,  1.14it/s, recall_0.3=(0, 61) / 66]eval:   1%|          | 20/2330 [01:09<32:45,  1.18it/s, recall_0.3=(0, 61) / 66]eval:   1%|          | 20/2330 [01:10<32:45,  1.18it/s, recall_0.3=(0, 70) / 75]eval:   1%|          | 21/2330 [01:10<33:27,  1.15it/s, recall_0.3=(0, 70) / 75]eval:   1%|          | 21/2330 [01:10<33:27,  1.15it/s, recall_0.3=(0, 71) / 76]eval:   1%|          | 22/2330 [01:10<33:27,  1.15it/s, recall_0.3=(0, 74) / 79]eval:   1%|          | 23/2330 [01:11<33:26,  1.15it/s, recall_0.3=(0, 75) / 80]eval:   1%|          | 24/2330 [01:11<21:34,  1.78it/s, recall_0.3=(0, 75) / 80]eval:   1%|          | 24/2330 [01:11<21:34,  1.78it/s, recall_0.3=(0, 79) / 85]eval:   1%|          | 25/2330 [01:11<23:57,  1.60it/s, recall_0.3=(0, 79) / 85]eval:   1%|          | 25/2330 [01:11<23:57,  1.60it/s, recall_0.3=(0, 80) / 87]eval:   1%|          | 26/2330 [01:12<23:56,  1.60it/s, recall_0.3=(0, 84) / 94]eval:   1%|          | 27/2330 [01:12<21:52,  1.75it/s, recall_0.3=(0, 84) / 94]eval:   1%|          | 27/2330 [01:14<21:52,  1.75it/s, recall_0.3=(0, 88) / 98]eval:   1%|          | 28/2330 [01:14<27:26,  1.40it/s, recall_0.3=(0, 88) / 98]eval:   1%|          | 28/2330 [01:14<27:26,  1.40it/s, recall_0.3=(0, 95) / 105]eval:   1%|          | 29/2330 [01:14<28:51,  1.33it/s, recall_0.3=(0, 95) / 105]eval:   1%|          | 29/2330 [01:15<28:51,  1.33it/s, recall_0.3=(0, 99) / 109]eval:   1%|▏         | 30/2330 [01:15<30:04,  1.27it/s, recall_0.3=(0, 99) / 109]eval:   1%|▏         | 30/2330 [01:15<30:04,  1.27it/s, recall_0.3=(0, 100) / 110]eval:   1%|▏         | 31/2330 [01:16<30:03,  1.27it/s, recall_0.3=(0, 102) / 112]eval:   1%|▏         | 32/2330 [01:16<25:11,  1.52it/s, recall_0.3=(0, 102) / 112]eval:   1%|▏         | 32/2330 [01:17<25:11,  1.52it/s, recall_0.3=(0, 104) / 117]eval:   1%|▏         | 33/2330 [01:17<27:16,  1.40it/s, recall_0.3=(0, 104) / 117]eval:   1%|▏         | 33/2330 [01:18<27:16,  1.40it/s, recall_0.3=(0, 105) / 118]eval:   1%|▏         | 34/2330 [01:18<27:30,  1.39it/s, recall_0.3=(0, 105) / 118]eval:   1%|▏         | 34/2330 [01:19<27:30,  1.39it/s, recall_0.3=(0, 112) / 125]eval:   2%|▏         | 35/2330 [01:19<28:53,  1.32it/s, recall_0.3=(0, 112) / 125]eval:   2%|▏         | 35/2330 [01:20<28:53,  1.32it/s, recall_0.3=(0, 115) / 128]eval:   2%|▏         | 36/2330 [01:20<30:28,  1.25it/s, recall_0.3=(0, 115) / 128]eval:   2%|▏         | 36/2330 [01:20<30:28,  1.25it/s, recall_0.3=(0, 116) / 129]eval:   2%|▏         | 37/2330 [01:20<30:24,  1.26it/s, recall_0.3=(0, 116) / 129]eval:   2%|▏         | 37/2330 [01:21<30:24,  1.26it/s, recall_0.3=(0, 120) / 133]eval:   2%|▏         | 38/2330 [01:21<30:23,  1.26it/s, recall_0.3=(0, 123) / 136]eval:   2%|▏         | 39/2330 [01:21<30:22,  1.26it/s, recall_0.3=(0, 124) / 137]eval:   2%|▏         | 40/2330 [01:21<20:00,  1.91it/s, recall_0.3=(0, 124) / 137]eval:   2%|▏         | 40/2330 [01:22<20:00,  1.91it/s, recall_0.3=(0, 126) / 141]eval:   2%|▏         | 41/2330 [01:22<22:22,  1.71it/s, recall_0.3=(0, 126) / 141]eval:   2%|▏         | 41/2330 [01:23<22:22,  1.71it/s, recall_0.3=(0, 128) / 145]eval:   2%|▏         | 42/2330 [01:23<24:54,  1.53it/s, recall_0.3=(0, 128) / 145]eval:   2%|▏         | 42/2330 [01:24<24:54,  1.53it/s, recall_0.3=(0, 136) / 153]eval:   2%|▏         | 43/2330 [01:24<26:56,  1.41it/s, recall_0.3=(0, 136) / 153]eval:   2%|▏         | 43/2330 [01:25<26:56,  1.41it/s, recall_0.3=(0, 147) / 166]eval:   2%|▏         | 44/2330 [01:25<29:10,  1.31it/s, recall_0.3=(0, 147) / 166]eval:   2%|▏         | 44/2330 [01:26<29:10,  1.31it/s, recall_0.3=(0, 161) / 182]eval:   2%|▏         | 45/2330 [01:26<30:01,  1.27it/s, recall_0.3=(0, 161) / 182]eval:   2%|▏         | 45/2330 [01:26<30:01,  1.27it/s, recall_0.3=(0, 163) / 184]eval:   2%|▏         | 46/2330 [01:27<30:01,  1.27it/s, recall_0.3=(0, 173) / 194]eval:   2%|▏         | 47/2330 [01:27<24:22,  1.56it/s, recall_0.3=(0, 173) / 194]eval:   2%|▏         | 47/2330 [01:28<24:22,  1.56it/s, recall_0.3=(0, 181) / 202]eval:   2%|▏         | 48/2330 [01:28<26:20,  1.44it/s, recall_0.3=(0, 181) / 202]eval:   2%|▏         | 48/2330 [01:28<26:20,  1.44it/s, recall_0.3=(0, 182) / 203]eval:   2%|▏         | 49/2330 [01:28<26:20,  1.44it/s, recall_0.3=(0, 186) / 207]eval:   2%|▏         | 50/2330 [01:28<23:10,  1.64it/s, recall_0.3=(0, 186) / 207]eval:   2%|▏         | 50/2330 [01:29<23:10,  1.64it/s, recall_0.3=(0, 189) / 210]eval:   2%|▏         | 51/2330 [01:29<25:49,  1.47it/s, recall_0.3=(0, 189) / 210]eval:   2%|▏         | 51/2330 [01:30<25:49,  1.47it/s, recall_0.3=(0, 198) / 219]eval:   2%|▏         | 52/2330 [01:30<27:36,  1.38it/s, recall_0.3=(0, 198) / 219]eval:   2%|▏         | 52/2330 [01:31<27:36,  1.38it/s, recall_0.3=(0, 201) / 222]eval:   2%|▏         | 53/2330 [01:31<28:58,  1.31it/s, recall_0.3=(0, 201) / 222]eval:   2%|▏         | 53/2330 [01:31<28:58,  1.31it/s, recall_0.3=(0, 203) / 224]eval:   2%|▏         | 54/2330 [01:32<28:57,  1.31it/s, recall_0.3=(0, 204) / 225]eval:   2%|▏         | 55/2330 [01:32<26:24,  1.44it/s, recall_0.3=(0, 204) / 225]eval:   2%|▏         | 55/2330 [01:33<26:24,  1.44it/s, recall_0.3=(0, 214) / 237]eval:   2%|▏         | 56/2330 [01:33<28:11,  1.34it/s, recall_0.3=(0, 214) / 237]eval:   2%|▏         | 56/2330 [01:34<28:11,  1.34it/s, recall_0.3=(0, 218) / 241]eval:   2%|▏         | 57/2330 [01:34<29:05,  1.30it/s, recall_0.3=(0, 218) / 241]eval:   2%|▏         | 57/2330 [01:34<29:05,  1.30it/s, recall_0.3=(0, 226) / 249]eval:   2%|▏         | 58/2330 [01:35<29:04,  1.30it/s, recall_0.3=(0, 236) / 259]eval:   3%|▎         | 59/2330 [01:35<24:30,  1.54it/s, recall_0.3=(0, 236) / 259]eval:   3%|▎         | 59/2330 [01:36<24:30,  1.54it/s, recall_0.3=(0, 241) / 264]eval:   3%|▎         | 60/2330 [01:36<26:27,  1.43it/s, recall_0.3=(0, 241) / 264]eval:   3%|▎         | 60/2330 [01:37<26:27,  1.43it/s, recall_0.3=(0, 243) / 266]eval:   3%|▎         | 61/2330 [01:37<27:59,  1.35it/s, recall_0.3=(0, 243) / 266]eval:   3%|▎         | 61/2330 [01:38<27:59,  1.35it/s, recall_0.3=(0, 249) / 273]eval:   3%|▎         | 62/2330 [01:38<29:48,  1.27it/s, recall_0.3=(0, 249) / 273]eval:   3%|▎         | 62/2330 [01:39<29:48,  1.27it/s, recall_0.3=(0, 255) / 279]eval:   3%|▎         | 63/2330 [01:39<31:15,  1.21it/s, recall_0.3=(0, 255) / 279]eval:   3%|▎         | 63/2330 [01:40<31:15,  1.21it/s, recall_0.3=(0, 263) / 287]eval:   3%|▎         | 64/2330 [01:40<31:56,  1.18it/s, recall_0.3=(0, 263) / 287]eval:   3%|▎         | 64/2330 [01:40<31:56,  1.18it/s, recall_0.3=(0, 265) / 289]eval:   3%|▎         | 65/2330 [01:40<31:40,  1.19it/s, recall_0.3=(0, 265) / 289]eval:   3%|▎         | 65/2330 [01:40<31:40,  1.19it/s, recall_0.3=(0, 267) / 291]eval:   3%|▎         | 66/2330 [01:41<31:39,  1.19it/s, recall_0.3=(0, 270) / 294]eval:   3%|▎         | 67/2330 [01:41<25:46,  1.46it/s, recall_0.3=(0, 270) / 294]eval:   3%|▎         | 67/2330 [01:42<25:46,  1.46it/s, recall_0.3=(0, 275) / 299]eval:   3%|▎         | 68/2330 [01:42<27:40,  1.36it/s, recall_0.3=(0, 275) / 299]eval:   3%|▎         | 68/2330 [01:43<27:40,  1.36it/s, recall_0.3=(0, 276) / 300]eval:   3%|▎         | 69/2330 [01:43<27:47,  1.36it/s, recall_0.3=(0, 276) / 300]eval:   3%|▎         | 69/2330 [01:44<27:47,  1.36it/s, recall_0.3=(0, 284) / 308]eval:   3%|▎         | 70/2330 [01:44<28:38,  1.31it/s, recall_0.3=(0, 284) / 308]eval:   3%|▎         | 70/2330 [01:45<28:38,  1.31it/s, recall_0.3=(0, 290) / 314]eval:   3%|▎         | 71/2330 [01:45<29:16,  1.29it/s, recall_0.3=(0, 290) / 314]eval:   3%|▎         | 71/2330 [01:45<29:16,  1.29it/s, recall_0.3=(0, 292) / 316]eval:   3%|▎         | 72/2330 [01:45<29:27,  1.28it/s, recall_0.3=(0, 292) / 316]eval:   3%|▎         | 72/2330 [01:45<29:27,  1.28it/s, recall_0.3=(0, 294) / 318]eval:   3%|▎         | 73/2330 [01:46<29:26,  1.28it/s, recall_0.3=(0, 295) / 319]eval:   3%|▎         | 74/2330 [01:47<29:25,  1.28it/s, recall_0.3=(0, 300) / 324]eval:   3%|▎         | 75/2330 [01:47<21:06,  1.78it/s, recall_0.3=(0, 300) / 324]eval:   3%|▎         | 75/2330 [01:48<21:06,  1.78it/s, recall_0.3=(0, 311) / 335]eval:   3%|▎         | 76/2330 [01:48<24:05,  1.56it/s, recall_0.3=(0, 311) / 335]eval:   3%|▎         | 76/2330 [01:48<24:05,  1.56it/s, recall_0.3=(0, 317) / 341]eval:   3%|▎         | 77/2330 [01:48<26:13,  1.43it/s, recall_0.3=(0, 317) / 341]eval:   3%|▎         | 77/2330 [01:48<26:13,  1.43it/s, recall_0.3=(0, 318) / 342]eval:   3%|▎         | 78/2330 [01:49<26:13,  1.43it/s, recall_0.3=(0, 319) / 343]eval:   3%|▎         | 79/2330 [01:49<16:48,  2.23it/s, recall_0.3=(0, 319) / 343]eval:   3%|▎         | 79/2330 [01:50<16:48,  2.23it/s, recall_0.3=(0, 328) / 352]eval:   3%|▎         | 80/2330 [01:50<21:49,  1.72it/s, recall_0.3=(0, 328) / 352]eval:   3%|▎         | 80/2330 [01:50<21:49,  1.72it/s, recall_0.3=(0, 331) / 355]eval:   3%|▎         | 81/2330 [01:50<21:48,  1.72it/s, recall_0.3=(0, 332) / 356]eval:   4%|▎         | 82/2330 [01:50<14:09,  2.64it/s, recall_0.3=(0, 332) / 356][2026-04-06 02:37:20,262] torch._dynamo.convert_frame: [WARNING] torch._dynamo hit config.cache_size_limit (64)
+[2026-04-06 02:37:20,262] torch._dynamo.convert_frame: [WARNING]    function: '<resume in generate_recall_record>' (/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/models/detectors/detector3d_template.py:302)
+[2026-04-06 02:37:20,262] torch._dynamo.convert_frame: [WARNING] to diagnose recompilation issues, set env variable TORCHDYNAMO_REPORT_GUARD_FAILURES=1 and also see https://pytorch.org/docs/master/compile/troubleshooting.html.
+[2026-04-06 02:37:20,267] torch._dynamo.convert_frame: [WARNING] torch._dynamo hit config.cache_size_limit (64)
+[2026-04-06 02:37:20,267] torch._dynamo.convert_frame: [WARNING]    function: 'boxes_iou3d_gpu' (/home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/../pcdet/ops/iou3d_nms/iou3d_nms_utils.py:48)
+[2026-04-06 02:37:20,267] torch._dynamo.convert_frame: [WARNING] to diagnose recompilation issues, set env variable TORCHDYNAMO_REPORT_GUARD_FAILURES=1 and also see https://pytorch.org/docs/master/compile/troubleshooting.html.
+eval:   4%|▎         | 82/2330 [01:50<14:09,  2.64it/s, recall_0.3=(0, 336) / 360]eval:   4%|▎         | 83/2330 [01:50<11:59,  3.12it/s, recall_0.3=(0, 336) / 360]eval:   4%|▎         | 83/2330 [01:50<11:59,  3.12it/s, recall_0.3=(0, 339) / 363]eval:   4%|▎         | 84/2330 [01:50<11:59,  3.12it/s, recall_0.3=(0, 342) / 366]eval:   4%|▎         | 85/2330 [01:50<11:58,  3.12it/s, recall_0.3=(0, 347) / 372]eval:   4%|▎         | 86/2330 [01:50<07:04,  5.29it/s, recall_0.3=(0, 347) / 372]eval:   4%|▎         | 86/2330 [01:50<07:04,  5.29it/s, recall_0.3=(0, 350) / 375]eval:   4%|▎         | 87/2330 [01:50<07:03,  5.29it/s, recall_0.3=(0, 359) / 385]eval:   4%|▍         | 88/2330 [01:50<06:05,  6.14it/s, recall_0.3=(0, 359) / 385]eval:   4%|▍         | 88/2330 [01:50<06:05,  6.14it/s, recall_0.3=(0, 363) / 389]eval:   4%|▍         | 89/2330 [01:50<06:05,  6.14it/s, recall_0.3=(0, 366) / 392]eval:   4%|▍         | 90/2330 [01:50<05:28,  6.81it/s, recall_0.3=(0, 366) / 392]eval:   4%|▍         | 90/2330 [01:51<05:28,  6.81it/s, recall_0.3=(0, 369) / 395]eval:   4%|▍         | 91/2330 [01:51<05:28,  6.81it/s, recall_0.3=(0, 375) / 401]eval:   4%|▍         | 92/2330 [01:51<05:25,  6.87it/s, recall_0.3=(0, 375) / 401]eval:   4%|▍         | 92/2330 [01:51<05:25,  6.87it/s, recall_0.3=(0, 376) / 402]eval:   4%|▍         | 93/2330 [01:51<05:25,  6.87it/s, recall_0.3=(0, 377) / 403]eval:   4%|▍         | 94/2330 [01:51<05:04,  7.35it/s, recall_0.3=(0, 377) / 403]eval:   4%|▍         | 94/2330 [01:51<05:04,  7.35it/s, recall_0.3=(0, 380) / 406]eval:   4%|▍         | 95/2330 [01:51<05:03,  7.35it/s, recall_0.3=(0, 383) / 410]eval:   4%|▍         | 96/2330 [01:51<05:17,  7.03it/s, recall_0.3=(0, 383) / 410]eval:   4%|▍         | 96/2330 [01:51<05:17,  7.03it/s, recall_0.3=(0, 390) / 417]eval:   4%|▍         | 97/2330 [01:51<05:17,  7.03it/s, recall_0.3=(0, 401) / 429]eval:   4%|▍         | 98/2330 [01:51<04:47,  7.77it/s, recall_0.3=(0, 401) / 429]eval:   4%|▍         | 98/2330 [01:51<04:47,  7.77it/s, recall_0.3=(0, 404) / 432]eval:   4%|▍         | 99/2330 [01:52<04:47,  7.77it/s, recall_0.3=(0, 408) / 436]eval:   4%|▍         | 100/2330 [01:52<04:07,  9.01it/s, recall_0.3=(0, 408) / 436]eval:   4%|▍         | 100/2330 [01:52<04:07,  9.01it/s, recall_0.3=(0, 412) / 441]eval:   4%|▍         | 101/2330 [01:52<04:07,  9.01it/s, recall_0.3=(0, 421) / 450]eval:   4%|▍         | 102/2330 [01:52<04:36,  8.07it/s, recall_0.3=(0, 421) / 450]eval:   4%|▍         | 102/2330 [01:52<04:36,  8.07it/s, recall_0.3=(0, 426) / 457]eval:   4%|▍         | 103/2330 [01:52<04:35,  8.07it/s, recall_0.3=(0, 435) / 467]eval:   4%|▍         | 104/2330 [01:52<04:19,  8.59it/s, recall_0.3=(0, 435) / 467]eval:   4%|▍         | 104/2330 [01:52<04:19,  8.59it/s, recall_0.3=(0, 441) / 473]eval:   5%|▍         | 105/2330 [01:52<04:18,  8.59it/s, recall_0.3=(0, 449) / 481]eval:   5%|▍         | 106/2330 [01:52<04:49,  7.69it/s, recall_0.3=(0, 449) / 481]eval:   5%|▍         | 106/2330 [01:52<04:49,  7.69it/s, recall_0.3=(0, 450) / 482]eval:   5%|▍         | 107/2330 [01:53<04:48,  7.69it/s, recall_0.3=(0, 453) / 485]eval:   5%|▍         | 108/2330 [01:53<04:32,  8.15it/s, recall_0.3=(0, 453) / 485]eval:   5%|▍         | 108/2330 [01:53<04:32,  8.15it/s, recall_0.3=(0, 460) / 495]eval:   5%|▍         | 109/2330 [01:53<04:32,  8.15it/s, recall_0.3=(0, 465) / 501]eval:   5%|▍         | 110/2330 [01:53<04:06,  9.00it/s, recall_0.3=(0, 465) / 501]eval:   5%|▍         | 110/2330 [01:53<04:06,  9.00it/s, recall_0.3=(0, 476) / 512]eval:   5%|▍         | 111/2330 [01:53<04:06,  9.00it/s, recall_0.3=(0, 485) / 521]eval:   5%|▍         | 112/2330 [01:53<04:17,  8.62it/s, recall_0.3=(0, 485) / 521]eval:   5%|▍         | 112/2330 [01:53<04:17,  8.62it/s, recall_0.3=(0, 489) / 525]eval:   5%|▍         | 113/2330 [01:53<04:17,  8.62it/s, recall_0.3=(0, 491) / 529]eval:   5%|▍         | 114/2330 [01:53<04:09,  8.88it/s, recall_0.3=(0, 491) / 529]eval:   5%|▍         | 114/2330 [01:53<04:09,  8.88it/s, recall_0.3=(0, 499) / 537]eval:   5%|▍         | 115/2330 [01:54<04:09,  8.88it/s, recall_0.3=(0, 509) / 549]eval:   5%|▍         | 116/2330 [01:54<04:42,  7.85it/s, recall_0.3=(0, 509) / 549]eval:   5%|▍         | 116/2330 [01:54<04:42,  7.85it/s, recall_0.3=(0, 514) / 554]eval:   5%|▌         | 117/2330 [01:54<04:42,  7.85it/s, recall_0.3=(0, 521) / 562]eval:   5%|▌         | 118/2330 [01:54<04:08,  8.89it/s, recall_0.3=(0, 521) / 562]eval:   5%|▌         | 118/2330 [01:54<04:08,  8.89it/s, recall_0.3=(0, 530) / 571]eval:   5%|▌         | 119/2330 [01:54<04:08,  8.89it/s, recall_0.3=(0, 531) / 572]eval:   5%|▌         | 120/2330 [01:54<04:17,  8.58it/s, recall_0.3=(0, 531) / 572]eval:   5%|▌         | 120/2330 [01:54<04:17,  8.58it/s, recall_0.3=(0, 538) / 579]eval:   5%|▌         | 121/2330 [01:54<04:17,  8.58it/s, recall_0.3=(0, 539) / 580]eval:   5%|▌         | 122/2330 [01:54<04:13,  8.69it/s, recall_0.3=(0, 539) / 580]eval:   5%|▌         | 122/2330 [01:54<04:13,  8.69it/s, recall_0.3=(0, 541) / 582]eval:   5%|▌         | 123/2330 [01:54<04:13,  8.69it/s, recall_0.3=(0, 546) / 587]eval:   5%|▌         | 124/2330 [01:54<04:05,  9.00it/s, recall_0.3=(0, 546) / 587]eval:   5%|▌         | 124/2330 [01:54<04:05,  9.00it/s, recall_0.3=(0, 549) / 590]eval:   5%|▌         | 125/2330 [01:55<04:04,  9.00it/s, recall_0.3=(0, 558) / 600]eval:   5%|▌         | 126/2330 [01:55<03:44,  9.83it/s, recall_0.3=(0, 558) / 600]eval:   5%|▌         | 126/2330 [01:55<03:44,  9.83it/s, recall_0.3=(0, 561) / 604]eval:   5%|▌         | 127/2330 [01:55<03:44,  9.83it/s, recall_0.3=(0, 571) / 614]eval:   5%|▌         | 128/2330 [01:55<03:51,  9.51it/s, recall_0.3=(0, 571) / 614]eval:   5%|▌         | 128/2330 [01:55<03:51,  9.51it/s, recall_0.3=(0, 573) / 616]eval:   6%|▌         | 129/2330 [01:55<03:51,  9.51it/s, recall_0.3=(0, 574) / 617]eval:   6%|▌         | 130/2330 [01:55<03:43,  9.84it/s, recall_0.3=(0, 574) / 617]eval:   6%|▌         | 130/2330 [01:55<03:43,  9.84it/s, recall_0.3=(0, 574) / 618]eval:   6%|▌         | 131/2330 [01:55<03:43,  9.84it/s, recall_0.3=(0, 576) / 620]eval:   6%|▌         | 132/2330 [01:55<04:30,  8.12it/s, recall_0.3=(0, 576) / 620]eval:   6%|▌         | 132/2330 [01:55<04:30,  8.12it/s, recall_0.3=(0, 578) / 622]eval:   6%|▌         | 133/2330 [01:55<04:30,  8.12it/s, recall_0.3=(0, 587) / 631]eval:   6%|▌         | 134/2330 [01:55<04:10,  8.78it/s, recall_0.3=(0, 587) / 631]eval:   6%|▌         | 134/2330 [01:56<04:10,  8.78it/s, recall_0.3=(0, 592) / 636]eval:   6%|▌         | 135/2330 [01:56<04:09,  8.78it/s, recall_0.3=(0, 601) / 648]eval:   6%|▌         | 136/2330 [01:56<04:09,  8.80it/s, recall_0.3=(0, 601) / 648]eval:   6%|▌         | 136/2330 [01:56<04:09,  8.80it/s, recall_0.3=(0, 606) / 654]eval:   6%|▌         | 137/2330 [01:56<04:09,  8.80it/s, recall_0.3=(0, 607) / 655]eval:   6%|▌         | 138/2330 [01:56<04:13,  8.65it/s, recall_0.3=(0, 607) / 655]eval:   6%|▌         | 138/2330 [01:56<04:13,  8.65it/s, recall_0.3=(0, 615) / 663]eval:   6%|▌         | 139/2330 [01:56<04:10,  8.75it/s, recall_0.3=(0, 615) / 663]eval:   6%|▌         | 139/2330 [01:56<04:10,  8.75it/s, recall_0.3=(0, 616) / 664]eval:   6%|▌         | 140/2330 [01:56<04:10,  8.75it/s, recall_0.3=(0, 620) / 668]eval:   6%|▌         | 141/2330 [01:56<03:34, 10.19it/s, recall_0.3=(0, 620) / 668]eval:   6%|▌         | 141/2330 [01:56<03:34, 10.19it/s, recall_0.3=(0, 622) / 670]eval:   6%|▌         | 142/2330 [01:56<03:34, 10.19it/s, recall_0.3=(0, 625) / 673]eval:   6%|▌         | 143/2330 [01:56<03:45,  9.71it/s, recall_0.3=(0, 625) / 673]eval:   6%|▌         | 143/2330 [01:56<03:45,  9.71it/s, recall_0.3=(0, 629) / 677]eval:   6%|▌         | 144/2330 [01:57<03:45,  9.71it/s, recall_0.3=(0, 630) / 678]eval:   6%|▌         | 145/2330 [01:57<03:13, 11.29it/s, recall_0.3=(0, 630) / 678]eval:   6%|▌         | 145/2330 [01:57<03:13, 11.29it/s, recall_0.3=(0, 635) / 683]eval:   6%|▋         | 146/2330 [01:57<03:13, 11.29it/s, recall_0.3=(0, 646) / 694]eval:   6%|▋         | 147/2330 [01:57<03:47,  9.59it/s, recall_0.3=(0, 646) / 694]eval:   6%|▋         | 147/2330 [01:57<03:47,  9.59it/s, recall_0.3=(0, 650) / 698]eval:   6%|▋         | 148/2330 [01:57<03:47,  9.59it/s, recall_0.3=(0, 656) / 704]eval:   6%|▋         | 149/2330 [01:57<04:11,  8.67it/s, recall_0.3=(0, 656) / 704]eval:   6%|▋         | 149/2330 [01:57<04:11,  8.67it/s, recall_0.3=(0, 661) / 709]eval:   6%|▋         | 150/2330 [01:57<04:11,  8.67it/s, recall_0.3=(0, 662) / 710]eval:   6%|▋         | 151/2330 [01:57<03:33, 10.22it/s, recall_0.3=(0, 662) / 710]eval:   6%|▋         | 151/2330 [01:57<03:33, 10.22it/s, recall_0.3=(0, 662) / 711]eval:   7%|▋         | 152/2330 [01:57<03:33, 10.22it/s, recall_0.3=(0, 664) / 713]eval:   7%|▋         | 153/2330 [01:57<03:35, 10.10it/s, recall_0.3=(0, 664) / 713]eval:   7%|▋         | 153/2330 [01:57<03:35, 10.10it/s, recall_0.3=(0, 665) / 714]eval:   7%|▋         | 154/2330 [01:58<03:35, 10.10it/s, recall_0.3=(0, 666) / 715]eval:   7%|▋         | 155/2330 [01:58<04:06,  8.83it/s, recall_0.3=(0, 666) / 715]eval:   7%|▋         | 155/2330 [01:58<04:06,  8.83it/s, recall_0.3=(0, 669) / 719]eval:   7%|▋         | 156/2330 [01:58<04:06,  8.83it/s, recall_0.3=(0, 673) / 723]eval:   7%|▋         | 157/2330 [01:58<03:31, 10.28it/s, recall_0.3=(0, 673) / 723]eval:   7%|▋         | 157/2330 [01:58<03:31, 10.28it/s, recall_0.3=(0, 676) / 727]eval:   7%|▋         | 158/2330 [01:58<03:31, 10.28it/s, recall_0.3=(0, 677) / 728]eval:   7%|▋         | 159/2330 [01:58<03:13, 11.23it/s, recall_0.3=(0, 677) / 728]eval:   7%|▋         | 159/2330 [01:58<03:13, 11.23it/s, recall_0.3=(0, 680) / 731]eval:   7%|▋         | 160/2330 [01:58<03:13, 11.23it/s, recall_0.3=(0, 685) / 736]eval:   7%|▋         | 161/2330 [01:58<03:19, 10.85it/s, recall_0.3=(0, 685) / 736]eval:   7%|▋         | 161/2330 [01:58<03:19, 10.85it/s, recall_0.3=(0, 687) / 738]eval:   7%|▋         | 162/2330 [01:58<03:19, 10.85it/s, recall_0.3=(0, 688) / 739]eval:   7%|▋         | 163/2330 [01:58<02:57, 12.24it/s, recall_0.3=(0, 688) / 739]eval:   7%|▋         | 163/2330 [01:58<02:57, 12.24it/s, recall_0.3=(0, 696) / 747]eval:   7%|▋         | 164/2330 [01:59<02:56, 12.24it/s, recall_0.3=(0, 703) / 754]eval:   7%|▋         | 165/2330 [01:59<03:27, 10.42it/s, recall_0.3=(0, 703) / 754]eval:   7%|▋         | 165/2330 [01:59<03:27, 10.42it/s, recall_0.3=(0, 711) / 763]eval:   7%|▋         | 166/2330 [01:59<03:27, 10.42it/s, recall_0.3=(0, 713) / 765]eval:   7%|▋         | 167/2330 [01:59<03:23, 10.64it/s, recall_0.3=(0, 713) / 765]eval:   7%|▋         | 167/2330 [01:59<03:23, 10.64it/s, recall_0.3=(0, 714) / 766]eval:   7%|▋         | 168/2330 [01:59<03:23, 10.64it/s, recall_0.3=(0, 720) / 772]eval:   7%|▋         | 169/2330 [01:59<03:46,  9.53it/s, recall_0.3=(0, 720) / 772]eval:   7%|▋         | 169/2330 [01:59<03:46,  9.53it/s, recall_0.3=(0, 722) / 774]eval:   7%|▋         | 170/2330 [01:59<03:46,  9.53it/s, recall_0.3=(0, 728) / 780]eval:   7%|▋         | 171/2330 [01:59<03:48,  9.44it/s, recall_0.3=(0, 728) / 780]eval:   7%|▋         | 171/2330 [01:59<03:48,  9.44it/s, recall_0.3=(0, 729) / 781]eval:   7%|▋         | 172/2330 [01:59<03:48,  9.44it/s, recall_0.3=(0, 733) / 785]eval:   7%|▋         | 173/2330 [01:59<03:19, 10.81it/s, recall_0.3=(0, 733) / 785]eval:   7%|▋         | 173/2330 [02:00<03:19, 10.81it/s, recall_0.3=(0, 735) / 787]eval:   7%|▋         | 174/2330 [02:00<03:19, 10.81it/s, recall_0.3=(0, 737) / 790]eval:   8%|▊         | 175/2330 [02:00<04:30,  7.97it/s, recall_0.3=(0, 737) / 790]eval:   8%|▊         | 175/2330 [02:00<04:30,  7.97it/s, recall_0.3=(0, 739) / 792]eval:   8%|▊         | 176/2330 [02:00<04:30,  7.97it/s, recall_0.3=(0, 740) / 793]eval:   8%|▊         | 177/2330 [02:00<04:02,  8.87it/s, recall_0.3=(0, 740) / 793]eval:   8%|▊         | 177/2330 [02:00<04:02,  8.87it/s, recall_0.3=(0, 741) / 795]eval:   8%|▊         | 178/2330 [02:00<04:02,  8.87it/s, recall_0.3=(0, 743) / 797]eval:   8%|▊         | 179/2330 [02:00<03:27, 10.36it/s, recall_0.3=(0, 743) / 797]eval:   8%|▊         | 179/2330 [02:00<03:27, 10.36it/s, recall_0.3=(0, 752) / 806]eval:   8%|▊         | 180/2330 [02:00<03:27, 10.36it/s, recall_0.3=(0, 760) / 818]eval:   8%|▊         | 181/2330 [02:00<03:41,  9.70it/s, recall_0.3=(0, 760) / 818]eval:   8%|▊         | 181/2330 [02:00<03:41,  9.70it/s, recall_0.3=(0, 766) / 824]eval:   8%|▊         | 182/2330 [02:00<03:41,  9.70it/s, recall_0.3=(0, 769) / 827]eval:   8%|▊         | 183/2330 [02:00<03:12, 11.18it/s, recall_0.3=(0, 769) / 827]eval:   8%|▊         | 183/2330 [02:01<03:12, 11.18it/s, recall_0.3=(0, 779) / 837]eval:   8%|▊         | 184/2330 [02:01<03:11, 11.18it/s, recall_0.3=(0, 783) / 841]eval:   8%|▊         | 185/2330 [02:01<03:43,  9.58it/s, recall_0.3=(0, 783) / 841]eval:   8%|▊         | 185/2330 [02:01<03:43,  9.58it/s, recall_0.3=(0, 784) / 842]eval:   8%|▊         | 186/2330 [02:01<03:43,  9.58it/s, recall_0.3=(0, 787) / 845]eval:   8%|▊         | 187/2330 [02:01<03:12, 11.16it/s, recall_0.3=(0, 787) / 845]eval:   8%|▊         | 187/2330 [02:01<03:12, 11.16it/s, recall_0.3=(0, 790) / 848]eval:   8%|▊         | 188/2330 [02:01<03:11, 11.16it/s, recall_0.3=(0, 791) / 850]eval:   8%|▊         | 189/2330 [02:01<03:14, 10.99it/s, recall_0.3=(0, 791) / 850]eval:   8%|▊         | 189/2330 [02:01<03:14, 10.99it/s, recall_0.3=(0, 794) / 853]eval:   8%|▊         | 190/2330 [02:01<03:14, 10.99it/s, recall_0.3=(0, 799) / 859]eval:   8%|▊         | 191/2330 [02:01<03:59,  8.94it/s, recall_0.3=(0, 799) / 859]eval:   8%|▊         | 191/2330 [02:01<03:59,  8.94it/s, recall_0.3=(0, 801) / 861]eval:   8%|▊         | 192/2330 [02:01<03:59,  8.94it/s, recall_0.3=(0, 805) / 865]eval:   8%|▊         | 193/2330 [02:01<03:20, 10.67it/s, recall_0.3=(0, 805) / 865]eval:   8%|▊         | 193/2330 [02:01<03:20, 10.67it/s, recall_0.3=(0, 807) / 867]eval:   8%|▊         | 194/2330 [02:01<03:20, 10.67it/s, recall_0.3=(0, 809) / 869]eval:   8%|▊         | 195/2330 [02:01<02:59, 11.87it/s, recall_0.3=(0, 809) / 869]eval:   8%|▊         | 195/2330 [02:02<02:59, 11.87it/s, recall_0.3=(0, 813) / 874]eval:   8%|▊         | 196/2330 [02:02<02:59, 11.87it/s, recall_0.3=(0, 822) / 884]eval:   8%|▊         | 197/2330 [02:02<03:31, 10.10it/s, recall_0.3=(0, 822) / 884]eval:   8%|▊         | 197/2330 [02:02<03:31, 10.10it/s, recall_0.3=(0, 823) / 885]eval:   8%|▊         | 198/2330 [02:02<03:31, 10.10it/s, recall_0.3=(0, 830) / 893]eval:   9%|▊         | 199/2330 [02:02<03:34,  9.95it/s, recall_0.3=(0, 830) / 893]eval:   9%|▊         | 199/2330 [02:02<03:34,  9.95it/s, recall_0.3=(0, 841) / 904]eval:   9%|▊         | 200/2330 [02:02<21:48,  1.63it/s, recall_0.3=(0, 841) / 904]
+2026-04-06 02:37:32,874   INFO  *************** Performance of EPOCH 7728 *****************
+2026-04-06 02:37:32,875   INFO  Generate label finished(sec_per_example: 0.6143 second).
+2026-04-06 02:37:32,876   INFO  Evaluated first 200 samples (--max_samples=200).
+2026-04-06 02:37:32,876   INFO  recall_roi_0.3: 0.000000
+2026-04-06 02:37:32,876   INFO  recall_rcnn_0.3: 0.930310
+2026-04-06 02:37:32,876   INFO  recall_roi_0.5: 0.000000
+2026-04-06 02:37:32,876   INFO  recall_rcnn_0.5: 0.876106
+2026-04-06 02:37:32,876   INFO  recall_roi_0.7: 0.000000
+2026-04-06 02:37:32,876   INFO  recall_rcnn_0.7: 0.620575
+2026-04-06 02:37:32,878   INFO  Average predicted number of objects(200 samples): 16.535
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/numba/cuda/dispatcher.py:536: NumbaPerformanceWarning: Grid size 1 will likely result in GPU under-utilization due to low occupancy.
+  warn(NumbaPerformanceWarning(msg))
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/numba/cuda/dispatcher.py:536: NumbaPerformanceWarning: Grid size 2 will likely result in GPU under-utilization due to low occupancy.
+  warn(NumbaPerformanceWarning(msg))
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/numba/cuda/dispatcher.py:536: NumbaPerformanceWarning: Grid size 1 will likely result in GPU under-utilization due to low occupancy.
+  warn(NumbaPerformanceWarning(msg))
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/numba/core/typed_passes.py:338: NumbaPerformanceWarning: 
+The keyword argument 'parallel=True' was specified but no transformation for parallel execution was possible.
+
+To find out why, try turning on parallel diagnostics, see https://numba.readthedocs.io/en/stable/user/parallel.html#diagnostics for help.
+
+File "../pcdet/datasets/kitti/kitti_object_eval_python/eval.py", line 122:
+@numba.jit(nopython=True, parallel=True)
+def d3_box_overlap_kernel(boxes, qboxes, rinc, criterion=-1):
+^
+
+  warnings.warn(errors.NumbaPerformanceWarning(msg,
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/numba/cuda/dispatcher.py:536: NumbaPerformanceWarning: Grid size 1 will likely result in GPU under-utilization due to low occupancy.
+  warn(NumbaPerformanceWarning(msg))
+/home/ubuntu/miniconda3/envs/mls/lib/python3.11/site-packages/numba/cuda/dispatcher.py:536: NumbaPerformanceWarning: Grid size 2 will likely result in GPU under-utilization due to low occupancy.
+  warn(NumbaPerformanceWarning(msg))
+2026-04-06 02:37:49,573   INFO  Car AP@0.70, 0.70, 0.70:
+bbox AP:90.7837, 89.2840, 87.8533
+bev  AP:88.7232, 83.9224, 83.1654
+3d   AP:83.9173, 76.8400, 74.1107
+aos  AP:90.77, 89.09, 87.63
+Car AP_R40@0.70, 0.70, 0.70:
+bbox AP:95.1425, 91.9535, 90.4413
+bev  AP:90.0360, 85.7717, 84.5494
+3d   AP:84.7282, 76.6335, 74.9037
+aos  AP:95.13, 91.77, 90.20
+Car AP@0.70, 0.50, 0.50:
+bbox AP:90.7837, 89.2840, 87.8533
+bev  AP:90.8464, 90.0404, 89.2974
+3d   AP:90.8464, 89.9634, 88.9602
+aos  AP:90.77, 89.09, 87.63
+Car AP_R40@0.70, 0.50, 0.50:
+bbox AP:95.1425, 91.9535, 90.4413
+bev  AP:95.2846, 94.8495, 93.7512
+3d   AP:95.2319, 94.3931, 91.6302
+aos  AP:95.13, 91.77, 90.20
+Pedestrian AP@0.50, 0.50, 0.50:
+bbox AP:70.1442, 64.0195, 59.8846
+bev  AP:70.0969, 60.1675, 53.3967
+3d   AP:69.5873, 57.0740, 52.1151
+aos  AP:55.16, 45.48, 41.88
+Pedestrian AP_R40@0.50, 0.50, 0.50:
+bbox AP:69.5288, 64.0454, 59.4198
+bev  AP:70.7298, 59.9365, 52.2882
+3d   AP:69.4267, 57.4995, 50.6150
+aos  AP:53.98, 42.85, 38.85
+Pedestrian AP@0.50, 0.25, 0.25:
+bbox AP:70.1442, 64.0195, 59.8846
+bev  AP:75.5450, 72.0425, 65.9492
+3d   AP:75.5450, 72.0425, 65.9492
+aos  AP:55.16, 45.48, 41.88
+Pedestrian AP_R40@0.50, 0.25, 0.25:
+bbox AP:69.5288, 64.0454, 59.4198
+bev  AP:77.3899, 73.2275, 66.3320
+3d   AP:77.3899, 73.2275, 66.3320
+aos  AP:53.98, 42.85, 38.85
+Cyclist AP@0.50, 0.50, 0.50:
+bbox AP:32.1970, 46.0648, 51.6884
+bev  AP:31.8182, 42.6894, 44.8427
+3d   AP:31.8182, 42.6894, 44.8427
+aos  AP:32.12, 45.43, 51.22
+Cyclist AP_R40@0.50, 0.50, 0.50:
+bbox AP:28.6050, 44.0714, 49.7809
+bev  AP:27.7894, 40.2099, 42.6858
+3d   AP:27.7894, 40.2099, 42.6858
+aos  AP:28.52, 43.43, 49.11
+Cyclist AP@0.50, 0.25, 0.25:
+bbox AP:32.1970, 46.0648, 51.6884
+bev  AP:32.1970, 45.0519, 50.2868
+3d   AP:32.1970, 45.0519, 50.2868
+aos  AP:32.12, 45.43, 51.22
+Cyclist AP_R40@0.50, 0.25, 0.25:
+bbox AP:28.6050, 44.0714, 49.7809
+bev  AP:28.6050, 43.0080, 48.4330
+3d   AP:28.6050, 43.0080, 48.4330
+aos  AP:28.52, 43.43, 49.11
+
+2026-04-06 02:37:49,575   INFO  Result is saved to /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_FP32/kitti_eval_run
+2026-04-06 02:37:49,575   INFO  ****************Evaluation done.*****************
+2026-04-06 02:37:49,723   INFO  Wrote /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_FP32/kitti_eval_metrics.json

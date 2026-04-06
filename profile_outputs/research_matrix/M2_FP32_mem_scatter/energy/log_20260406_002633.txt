@@ -1,0 +1,41 @@
+2026-04-06 00:26:33,437   INFO  GPU [0]: NVIDIA TITAN RTX
+2026-04-06 00:26:33,439   INFO  Loading KITTI dataset
+2026-04-06 00:26:33,604   INFO  Total samples for KITTI dataset: 2330
+2026-04-06 00:26:33,917   INFO  ==> Loading parameters from checkpoint /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-06 00:26:33,953   INFO  ==> Done (loaded 127/127)
+2026-04-06 00:26:34,271   INFO  Running 100 warmup steps (no measurement)...
+2026-04-06 00:26:43,719   INFO  Measuring energy over 50 steps...
+2026-04-06 00:26:48,763   INFO  =================================================================
+2026-04-06 00:26:48,764   INFO    PointPillars Energy Monitor — 2026-04-06 00:26:48
+2026-04-06 00:26:48,764   INFO  =================================================================
+2026-04-06 00:26:48,764   INFO    GPU            : NVIDIA TITAN RTX
+2026-04-06 00:26:48,764   INFO    Config         : /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+2026-04-06 00:26:48,764   INFO    Compile        : False  Traced: none
+2026-04-06 00:26:48,764   INFO    AMP (fp16)     : False
+2026-04-06 00:26:48,764   INFO    Memory opt scatter (HWC write): True
+2026-04-06 00:26:48,764   INFO    Memory opt conv2d (channels_last): False
+2026-04-06 00:26:48,764   INFO    INT8 (CPU PTQ) : False
+2026-04-06 00:26:48,764   INFO    Warmup         : 100   Steps: 50   Batch: 1
+2026-04-06 00:26:48,764   INFO  
+2026-04-06 00:26:48,764   INFO  ── Latency (ms) ─────────────────────────────────────────
+2026-04-06 00:26:48,765   INFO    Mean : 44.53   p50 : 39.70   p95 : 91.57   p99 : 102.11
+2026-04-06 00:26:48,765   INFO  
+2026-04-06 00:26:48,765   INFO  ── Throughput ───────────────────────────────────────────
+2026-04-06 00:26:48,765   INFO    10.34 samples/s  (total_samples=50, wall=4.83 s)
+2026-04-06 00:26:48,765   INFO  
+2026-04-06 00:26:48,765   INFO  ── Power & Energy ───────────────────────────────────────
+2026-04-06 00:26:48,765   INFO    Mean power     : 199.4 W
+2026-04-06 00:26:48,765   INFO    Peak power     : 274.3 W
+2026-04-06 00:26:48,765   INFO    Total energy   : 964.23 J  (over 4.83 s, 93 samples)
+2026-04-06 00:26:48,765   INFO  
+2026-04-06 00:26:48,765   INFO  ── Performance-per-Watt ─────────────────────────────────
+2026-04-06 00:26:48,765   INFO    0.0519 samples/s/W  (throughput / mean_power)
+2026-04-06 00:26:48,766   INFO    0.0519 samples/J   (total_samples / total_energy)
+2026-04-06 00:26:48,766   INFO    Interpretation: higher = more efficient per unit energy
+2026-04-06 00:26:48,766   INFO  
+2026-04-06 00:26:48,766   INFO  ── Outputs ──────────────────────────────────────────────
+2026-04-06 00:26:48,766   INFO    Summary  : /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M2_FP32_mem_scatter/energy/energy_summary.txt
+2026-04-06 00:26:48,766   INFO    Raw CSV  : /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M2_FP32_mem_scatter/energy/energy_samples.csv
+2026-04-06 00:26:48,766   INFO  =================================================================
+2026-04-06 00:26:48,768   INFO  Raw power samples → /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M2_FP32_mem_scatter/energy/energy_samples.csv
+2026-04-06 00:26:48,771   INFO  Per-step forward latency → /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M2_FP32_mem_scatter/energy/energy_latency_per_step.csv

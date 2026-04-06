@@ -1,0 +1,16 @@
+cell_id,model_variant,precision_mode,variant_name,status,compile,amp,int8,nhwc,preprocess_gpu,compile_voxelizer,skip_reason
+M1_P1,M1,FP32,M1_baseline_fp32,runnable,false,false,false,false,false,false,
+M1_P2,M1,AMP_FP16,M1_fp16_amp,runnable,false,true,false,false,false,false,
+M1_P3,M1,INT8,M1_int8,future,false,false,true,false,false,false,INT8 PTQ inference path not wired to profile_suite/energy_monitor; see RESEARCH_EXPERIMENT_MATRIX.md
+M2_P1,M2,FP32,M2_torch_compile_fp32,runnable,true,false,false,false,false,false,
+M2_P2,M2,AMP_FP16,M2_compile_amp,blocked,true,true,false,false,false,false,Excluded from auto benchmark: compile+AMP may run on PyTorch 2.1+ but needs large warmup for fair latency; some envs hit dynamo/NumPy batch_dict issues (see RESEARCH_EXPERIMENT_MATRIX.md § M2_P2)
+M2_P3,M2,INT8,M2_compile_int8,future,true,false,true,false,false,false,INT8 pipeline not implemented; compile+INT8 export TBD
+M3_P1,M3,FP32,M3_nhwc_fp32,future,false,false,false,true,false,false,NHWC/channels_last not integrated into profile_suite/energy_monitor loop
+M3_P2,M3,AMP_FP16,M3_nhwc_amp,future,false,true,false,true,false,false,NHWC integration pending
+M3_P3,M3,INT8,M3_nhwc_int8,future,false,false,true,true,false,false,NHWC + INT8 integration pending
+M4_P1,M4,FP32,M4_preprocess_fp32,future,false,false,false,false,true,false,GPU preprocess path not unified with profile_suite dataloader loop; use inference.py protocol or extend harness
+M4_P2,M4,AMP_FP16,M4_preprocess_amp,future,false,true,false,false,true,false,Same harness gap as M4_P1
+M4_P3,M4,INT8,M4_preprocess_int8,future,false,false,true,false,true,false,Preprocess offload + INT8 not implemented
+M5_P1,M5,FP32,M5_all_fp32,future,true,false,false,true,true,true,Full M5 stack not wired into profile_suite; definition in M5_ALL_APPLIED_DEFINITION
+M5_P2,M5,AMP_FP16,M5_all_amp,future,false,true,false,true,true,true,M5 stack without compile for AMP; harness not implemented
+M5_P3,M5,INT8,M5_all_int8,future,true,false,true,true,true,true,Full M5 + INT8 not implemented

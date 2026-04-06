@@ -1,0 +1,49 @@
+2026-04-06 02:19:09,468   INFO  Profile suite — output dir: /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/profile
+2026-04-06 02:19:09,503   INFO  Loading KITTI dataset
+2026-04-06 02:19:09,677   INFO  Total samples for KITTI dataset: 2330
+2026-04-06 02:19:10,063   INFO  ==> Loading parameters from checkpoint /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-06 02:19:10,091   INFO  ==> Done (loaded 127/127)
+2026-04-06 02:19:10,114   INFO  Wrapping model with torch.compile()
+2026-04-06 02:19:12,135   INFO  Running 300 warmup steps...
+2026-04-06 02:22:25,539   INFO  Measurement burn-in: 20 steps (before profiler loop)
+2026-04-06 02:22:29,371   INFO  Profiling 50 steps (KITTI RT CPU stages)...
+2026-04-06 02:22:45,283   INFO  Chrome trace saved → /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/profile/torch_profile_trace.json
+2026-04-06 02:22:47,289   INFO  ======================================================================
+2026-04-06 02:22:47,289   INFO    PointPillars Profile Suite — 2026-04-06 02:22:47
+2026-04-06 02:22:47,289   INFO  ======================================================================
+2026-04-06 02:22:47,289   INFO    Config  : /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+2026-04-06 02:22:47,289   INFO    Ckpt    : /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth
+2026-04-06 02:22:47,289   INFO    Compile : True
+2026-04-06 02:22:47,289   INFO    AMP (fp16): True
+2026-04-06 02:22:47,289   INFO    Memory opt scatter (HWC write): False
+2026-04-06 02:22:47,289   INFO    Memory opt conv2d (channels_last): False
+2026-04-06 02:22:47,290   INFO    Preprocess GPU (voxelize on GPU): False
+2026-04-06 02:22:47,290   INFO    Compile voxelizer: False
+2026-04-06 02:22:47,290   INFO    INT8    : False  (CPU dynamic Linear PTQ if true)
+2026-04-06 02:22:47,290   INFO    Traced  : none
+2026-04-06 02:22:47,290   INFO    Nsight NVTX: False
+2026-04-06 02:22:47,290   INFO    Warmup  : 300 steps   Measured: 50 steps   Batch: 1   Meas. burn-in: 20
+2026-04-06 02:22:47,290   INFO  
+2026-04-06 02:22:47,290   INFO  ── Per-stage latency (mean / p50 / p95 / p99 / std) [ms] ─────────────
+2026-04-06 02:22:47,290   INFO  Stage                   mean         p50         p95         p99         std
+2026-04-06 02:22:47,290   INFO  ----------------------------------------------------------------------------
+2026-04-06 02:22:47,290   INFO  read_points (excl.T_rt)       51.72       36.46      121.33      137.53       34.59
+2026-04-06 02:22:47,290   INFO  pre_processing         80.89       75.12      128.56      140.55       27.55
+2026-04-06 02:22:47,290   INFO  data_to_gpu             4.57        5.25        6.79        7.05        1.78
+2026-04-06 02:22:47,290   INFO  Forward (GPU)          41.81       42.06       57.09       64.97       10.06
+2026-04-06 02:22:47,290   INFO  PostProcess             1.49        1.35        2.06        2.14        0.37
+2026-04-06 02:22:47,290   INFO  ── Onboard frame ──       49.67       50.68       67.30       76.40       11.72
+2026-04-06 02:22:47,290   INFO  ── T_rt (onboard) ──      128.75      122.58      168.89      178.10       22.48
+2026-04-06 02:22:47,290   INFO  
+2026-04-06 02:22:47,290   INFO  ── Throughput & Memory ─────────────────────────────────────────
+2026-04-06 02:22:47,290   INFO    Throughput         : 7.8 samples/s  (batch=1, mean T_rt=128.75 ms)
+2026-04-06 02:22:47,291   INFO    Peak GPU Memory    : 2667.3 MB  (NMS/recall on GPU; backbone mostly CPU when INT8)
+2026-04-06 02:22:47,291   INFO    Peak GPU Mem (steady): 2667.3 MB  (steps with forward <= 200.0 ms)
+2026-04-06 02:22:47,291   INFO    Mean peak per step : 2504.4 MB
+2026-04-06 02:22:47,291   INFO    CUDA kernel events : 24925
+2026-04-06 02:22:47,291   INFO    T_rt mean (onboard, excl. read_points): 128.75 ms
+2026-04-06 02:22:47,291   INFO  
+2026-04-06 02:22:47,291   INFO  ── Outputs ──────────────────────────────────────────────────────
+2026-04-06 02:22:47,291   INFO    Chrome trace       : /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/profile/torch_profile_trace.json
+2026-04-06 02:22:47,291   INFO    Summary            : /home/nas/polin/cmu-berlin/MLS/profile_outputs/research_matrix/M1_AMP/profile/profile_summary.txt
+2026-04-06 02:22:47,291   INFO  ======================================================================

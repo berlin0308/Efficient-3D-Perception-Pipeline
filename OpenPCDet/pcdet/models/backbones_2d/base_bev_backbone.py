@@ -86,6 +86,8 @@ class BaseBEVBackbone(nn.Module):
         Returns:
         """
         spatial_features = data_dict['spatial_features']
+        if getattr(self, 'memory_opt_conv2d', False):
+            spatial_features = spatial_features.contiguous(memory_format=torch.channels_last)
         ups = []
         ret_dict = {}
         x = spatial_features
@@ -325,6 +327,8 @@ class BaseBEVResBackbone(nn.Module):
         Returns:
         """
         spatial_features = data_dict['spatial_features']
+        if getattr(self, 'memory_opt_conv2d', False):
+            spatial_features = spatial_features.contiguous(memory_format=torch.channels_last)
         ups = []
         ret_dict = {}
         x = spatial_features

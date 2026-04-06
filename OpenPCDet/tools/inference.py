@@ -43,6 +43,18 @@ def parse_config():
     parser.add_argument('--compile', action='store_true', help='wrap model with torch.compile()')
     parser.add_argument('--amp', action='store_true', default=False,
                         help='enable mixed-precision inference with fp16 autocast')
+    parser.add_argument(
+        '--memory_opt_scatter',
+        action='store_true',
+        default=False,
+        help='HWC coalesced PointPillar scatter',
+    )
+    parser.add_argument(
+        '--memory_opt_conv2d',
+        action='store_true',
+        default=False,
+        help='channels_last BEV / Conv2d path',
+    )
     parser.add_argument('--cuda_id', type=int, default=0, help='CUDA device ID (default: 0)')
     parser.add_argument('--rate', type=float, default=None,
                         help='simulate lidar rate in Hz (e.g. 10); sleep after each frame to match period')

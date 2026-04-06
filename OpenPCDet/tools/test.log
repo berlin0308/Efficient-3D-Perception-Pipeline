@@ -1,0 +1,8 @@
+2026-04-05 11:26:47,024   INFO  Loading KITTI dataset
+2026-04-05 11:26:47,145   INFO  Total samples for KITTI dataset: 2330
+2026-04-05 11:26:47,576   INFO  ==> Loading parameters from checkpoint ckpt/pointpillar_7728.pth to CPU
+2026-04-05 11:26:47,610   INFO  ==> Done (loaded 127/127)
+2026-04-05 11:27:16,101   INFO  Loading KITTI dataset
+2026-04-05 11:27:16,220   INFO  Total samples for KITTI dataset: 2330
+2026-04-05 11:27:16,529   INFO  ==> Loading parameters from checkpoint ckpt/pointpillar_7728.pth to CPU
+2026-04-05 11:27:16,565   INFO  ==> Done (loaded 127/127)

@@ -1,0 +1,31 @@
+======================================================================
+  PointPillars Profile Suite — 2026-04-05 23:59:11
+======================================================================
+  Config  : cfgs/kitti_models/pointpillar.yaml
+  Ckpt    : ckpt/pointpillar_7728.pth
+  Compile : False
+  AMP (fp16): False
+  Memory-bound opt (channels_last): False
+  INT8    : False  (CPU dynamic Linear PTQ if true)
+  Traced  : none
+  Warmup  : 80 steps   Measured: 40 steps   Batch: 1
+
+── Per-stage latency (mean / p50 / p95 / p99 / std) [ms] ─────────────
+Stage                   mean         p50         p95         p99         std
+----------------------------------------------------------------------------
+DataLoader (CPU)       17.33        0.54       98.38      172.17       40.78
+H2D Transfer            4.83        5.06        7.73        9.83        2.00
+Forward (GPU)          70.86       56.82      156.09      167.27       34.30
+PostProcess             1.94        1.90        2.59        3.18        0.41
+── Full Frame ──       81.06       66.93      174.65      187.63       38.29
+
+── Throughput & Memory ─────────────────────────────────────────
+  Throughput         : 12.3 samples/s  (batch=1, mean_frame=81.06 ms)
+  Peak GPU Memory    : 330.9 MB  (NMS/recall on GPU; backbone mostly CPU when INT8)
+  Mean peak per step : 330.6 MB
+  CUDA kernel events : 28734
+
+── Outputs ──────────────────────────────────────────────────────
+  Chrome trace       : /home/nas/polin/cmu-berlin/MLS/profile_outputs/compare_memopt/baseline/torch_profile_trace.json
+  Summary            : /home/nas/polin/cmu-berlin/MLS/profile_outputs/compare_memopt/baseline/profile_summary.txt
+======================================================================
