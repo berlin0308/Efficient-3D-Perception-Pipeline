@@ -44,14 +44,24 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
-from plot_latency_breakdown import (
-    MLSYS_PLOT_RC,
-    _slug_for_filename,
-    list_distinct_gpus,
-    load_filtered_latest,
-    normalize_runs_csv_path,
-    sort_by_m_group,
-)
+try:
+    from plot_latency import (
+        MLSYS_PLOT_RC,
+        _slug_for_filename,
+        list_distinct_gpus,
+        load_filtered_latest,
+        normalize_runs_csv_path,
+        sort_by_m_group,
+    )
+except ImportError:
+    from plot_latency_breakdown import (
+        MLSYS_PLOT_RC,
+        _slug_for_filename,
+        list_distinct_gpus,
+        load_filtered_latest,
+        normalize_runs_csv_path,
+        sort_by_m_group,
+    )
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _V2_FULL = _REPO_ROOT / "modal_mls_results" / "modal_v2_allcells_full" / "runs.csv"

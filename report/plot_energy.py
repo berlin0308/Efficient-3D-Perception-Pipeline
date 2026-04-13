@@ -50,31 +50,54 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from plot_latency_breakdown import (
-    COLOR_BY_STAGE,
-    FORWARD_NVTX_COLORS,
-    FORWARD_NVTX_HATCH,
-    FORWARD_NVTX_HATCH_LINEWIDTH,
-    FORWARD_NVTX_LEGEND_LABEL,
-    LEGEND_ORDER,
-    MLSYS_PLOT_RC,
-    POINTPILLAR_FORWARD_NVTX,
-    STACKED_BARH_FIG_WIDTH,
-    _slug_for_filename,
-    list_distinct_gpus,
-    load_filtered_latest,
-    normalize_runs_csv_path,
-    load_forward_nvtx_fractions_ordered,
-    resolve_forward_nvtx_json_path,
-    sort_by_m_group,
-    stage_matrix,
-    stack_order_for_cell,
-)
+try:
+    from plot_latency import (
+        COLOR_BY_STAGE,
+        FORWARD_NVTX_COLORS,
+        FORWARD_NVTX_HATCH,
+        FORWARD_NVTX_HATCH_LINEWIDTH,
+        FORWARD_NVTX_LEGEND_LABEL,
+        LEGEND_ORDER,
+        MLSYS_PLOT_RC,
+        POINTPILLAR_FORWARD_NVTX,
+        STACKED_BARH_FIG_WIDTH,
+        _slug_for_filename,
+        list_distinct_gpus,
+        load_filtered_latest,
+        normalize_runs_csv_path,
+        load_forward_nvtx_fractions_ordered,
+        resolve_forward_nvtx_json_path,
+        sort_by_m_group,
+        stage_matrix,
+        stack_order_for_cell,
+    )
+except ImportError:
+    from plot_latency_breakdown import (
+        COLOR_BY_STAGE,
+        FORWARD_NVTX_COLORS,
+        FORWARD_NVTX_HATCH,
+        FORWARD_NVTX_HATCH_LINEWIDTH,
+        FORWARD_NVTX_LEGEND_LABEL,
+        LEGEND_ORDER,
+        MLSYS_PLOT_RC,
+        POINTPILLAR_FORWARD_NVTX,
+        STACKED_BARH_FIG_WIDTH,
+        _slug_for_filename,
+        list_distinct_gpus,
+        load_filtered_latest,
+        normalize_runs_csv_path,
+        load_forward_nvtx_fractions_ordered,
+        resolve_forward_nvtx_json_path,
+        sort_by_m_group,
+        stage_matrix,
+        stack_order_for_cell,
+    )
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _V2_FULL = _REPO_ROOT / "modal_mls_results" / "modal_v2_allcells_full" / "runs.csv"
 _V2 = _REPO_ROOT / "modal_mls_results" / "modal_v2" / "runs.csv"
 DEFAULT_RUNS_CSV = _V2_FULL if _V2_FULL.is_file() else _V2
+DEFAULT_FORWARD_NVTX_ROOT = _REPO_ROOT / "modal_outputs" / "modal_v2_a10"
 DEFAULT_GPU = "A10"
 
 _TOOLS = _REPO_ROOT / "OpenPCDet" / "tools"
@@ -179,6 +202,13 @@ def parse_args():
         "(e.g. from nsys_nvtx_breakdown.write_forward_nvtx_json after local nsys export)",
     )
     parser.add_argument(
+        "--forward-nvtx-root",
+        type=Path,
+        default=DEFAULT_FORWARD_NVTX_ROOT,
+        help="runs mode: root directory containing <cell>/artifacts/forward_nvtx_ms.json "
+        "(default: modal_outputs/modal_v2_a10)",
+    )
+    parser.add_argument(
         "--out",
         type=Path,
         default=None,
@@ -228,6 +258,16 @@ def _existing_json_path(candidate: Path | None, repo_root: Path) -> Path | None:
         return p.resolve()
     q = (repo_root / p).resolve()
     return q if q.is_file() else None
+
+
+def _existing_dir_path(candidate: Path | None, repo_root: Path) -> Path | None:
+    if candidate is None:
+        return None
+    p = candidate.expanduser()
+    if p.is_dir():
+        return p.resolve()
+    q = (repo_root / p).resolve()
+    return q if q.is_dir() else None
 
 
 def integrate_csv(csv_path):
@@ -367,6 +407,7 @@ def plot_runs_energy_stacked(
     repo_root: Path | None = None,
     runs_csv: Path | None = None,
     forward_nvtx_json_fallback: Path | None = None,
+    forward_nvtx_root: Path | None = None,
 ) -> None:
     """Horizontal stacked bars: mJ per sample per stage (same stages as plot_latency_breakdown)."""
     labels = df["experiment_cell_id"].astype(str).tolist()
@@ -379,6 +420,7 @@ def plot_runs_energy_stacked(
     fig_h = max(6.0, 0.35 * len(labels) + 2.0)
     root = repo_root or _REPO_ROOT
     fb_json = _existing_json_path(forward_nvtx_json_fallback, root)
+    nvtx_root = _existing_dir_path(forward_nvtx_root, root)
 
     pipe_legend_handles = [
         mpatches.Patch(
@@ -415,6 +457,12 @@ def plot_runs_energy_stacked(
             nvtx_path: Path | None = None
             if nest_forward_from_artifacts:
                 nvtx_path = resolve_forward_nvtx_json_path(df.iloc[yi], root, runs_csv=runs_csv)
+                if nvtx_path is None and nvtx_root is not None:
+                    cell = str(df.iloc[yi].get("experiment_cell_id", "") or "").strip()
+                    if cell:
+                        cand = nvtx_root / cell / "artifacts" / "forward_nvtx_ms.json"
+                        if cand.is_file():
+                            nvtx_path = cand.resolve()
                 if nvtx_path is None:
                     nvtx_path = fb_json
                 if nvtx_path is not None:
@@ -689,6 +737,7 @@ def main_runs(args: argparse.Namespace) -> None:
         repo_root=_REPO_ROOT,
         runs_csv=csv_path,
         forward_nvtx_json_fallback=getattr(args, "forward_nvtx_json", None),
+        forward_nvtx_root=getattr(args, "forward_nvtx_root", None),
     )
 
 

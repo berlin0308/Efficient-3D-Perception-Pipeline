@@ -2,42 +2,48 @@
 
 ---
 
-## 0. Profile PointPillars (Baseline)
+## Plot Modal Outputs
 
-**Script:** `OpenPCDet/scripts/profile_pointpillar_baseline.sh`
+Run from repo root (`/home/nas/polin/cmu-berlin/MLS`):
 
-**Results** (`profile_outputs/pointpillars/openpcdet/`):
+### `report/plot_latency.py`
 
-| Output | Path | How to view |
-|--------|------|-------------|
-| Torch Profiler (Chrome trace) | [torch_profile_trace.json](profile_outputs/pointpillars/openpcdet/torch_profile_trace.json) | Open in Chrome: `chrome://tracing/` → Load |
-| TorchScript model | [pointpillar_traced.pt](profile_outputs/pointpillars/openpcdet/pointpillar_traced.pt) | [Netron](https://netron.app) |
-| Nsight Systems report | `profile_outputs/pointpillars/openpcdet/nsight_report_*_baseline.nsys-rep` | Nsight Systems GUI (open `.nsys-rep` file) |
-| Nsight stats | [nsight_stats_20260226_123607_baseline.txt](profile_outputs/pointpillars/openpcdet/nsight_stats_20260226_123607_baseline.txt) | Text summary from `nsys stats` |
+```bash
+python3 report/plot_latency.py --csv modal_outputs/modal_v2_a10 --gpu A10 --nest-forward-from-artifacts
+python3 report/plot_latency.py --csv modal_outputs/modal_v2_h100 --gpu H100 --nest-forward-from-artifacts
+python3 report/plot_latency.py --csv modal_outputs/modal_v2_t4 --gpu T4 --nest-forward-from-artifacts
+```
+
+### `report/plot_energy.py`
+
+```bash
+python3 report/plot_energy.py --csv modal_outputs/modal_v2_a10 --gpu A10 --nest-forward-from-artifacts --forward-nvtx-root modal_outputs/modal_v2_a10
+python3 report/plot_energy.py --csv modal_outputs/modal_v2_h100 --gpu H100 --nest-forward-from-artifacts --forward-nvtx-root modal_outputs/modal_v2_h100
+python3 report/plot_energy.py --csv modal_outputs/modal_v2_t4 --gpu T4 --nest-forward-from-artifacts --forward-nvtx-root modal_outputs/modal_v2_t4
+```
+
+### `report/plot_latency_energy_pareto.py`
+
+```bash
+python3 report/plot_latency_energy_pareto.py --csv modal_outputs/modal_v2_a10 --gpu A10
+python3 report/plot_latency_energy_pareto.py --csv modal_outputs/modal_v2_h100 --gpu H100
+python3 report/plot_latency_energy_pareto.py --csv modal_outputs/modal_v2_t4 --gpu T4
+```
+
+### `report/plot_roofline_forward.py`
+
+```bash
+python3 report/plot_roofline_forward.py --csv modal_outputs/modal_v2_a10 --gpu A10
+python3 report/plot_roofline_forward.py --csv modal_outputs/modal_v2_h100 --gpu H100
+python3 report/plot_roofline_forward.py --csv modal_outputs/modal_v2_t4 --gpu T4
+```
 
 ---
 
-## 1. Profile PointPillars (Compiled)
-
-**Script:** `OpenPCDet/scripts/profile_pointpillar_compiled.sh`
-
-**Results:**
-
-| Output | Path | How to view |
-|--------|------|-------------|
-| TorchScript (compiled) | [pointpillar_traced_compiled.pt](profile_outputs/pointpillars/openpcdet/pointpillar_traced_compiled.pt) | [Netron](https://netron.app) |
-| Nsight Systems report | `profile_outputs/pointpillars/openpcdet_compiled/nsight_report_*_compiled.nsys-rep` | Nsight Systems GUI |
-| Nsight stats | [nsight_stats_20260226_123310_compiled.txt](profile_outputs/pointpillars/openpcdet_compiled/nsight_stats_20260226_123310_compiled.txt) | Text summary from `nsys stats` |
-
-**Comparison (Baseline vs. Compiled):** [profile_outputs/nsight_comparison_plan.md](profile_outputs/nsight_comparison_plan.md)
 
 ---
 
-
-
----
-
-## Test pipeline vs real-time onboard inference (discrepancies)
+## Test pipeline vs real-time onboard inference
 
 The current eval pipeline (`OpenPCDet/tools/test.py` + `eval_utils.py`) is **offline**: load dataset from disk → CPU preprocessing (DataLoader workers) → CPU→GPU → inference → GPU→CPU → evaluation. This differs from **real-time onboard** inference in the following ways; keep these in mind when comparing latency or designing a deployment path.
 
