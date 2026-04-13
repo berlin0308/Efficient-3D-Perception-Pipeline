@@ -46,6 +46,9 @@ eggs/
 *.ncu-rep
 *.sqlite
 
+# torch.profiler Chrome trace export (large; keep other JSON artifacts)
+**/torch_profile_trace.json
+
 # Personal notes (keep local only)
 reports/*.md
 profile_outputs/**/*.md
