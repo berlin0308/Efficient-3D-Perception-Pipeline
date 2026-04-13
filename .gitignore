@@ -11,6 +11,7 @@ output/
 **/ckpt/
 **/*.pth
 *.ckpt
+profile_outputs/
 
 # Python
 __pycache__/

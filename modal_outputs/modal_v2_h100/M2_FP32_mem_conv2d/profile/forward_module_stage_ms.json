@@ -1,0 +1,7 @@
+{
+  "PillarVFE": 1.4627085472078287,
+  "PointPillarScatter": 0.8278833327812606,
+  "BaseBEVBackbone": 5.156692390298664,
+  "AnchorHeadSingle": 1.384972854012691,
+  "post_processing": 2.7143392485283195
+}

@@ -1,0 +1,46 @@
+2026-04-12 05:11:13,711   INFO  GPU [0]: NVIDIA H100 80GB HBM3
+2026-04-12 05:11:13,712   INFO  Loading KITTI dataset
+2026-04-12 05:11:13,937   INFO  Total samples for KITTI dataset: 7481
+2026-04-12 05:11:15,074   INFO  ==> Loading parameters from checkpoint /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-12 05:11:15,098   INFO  ==> Done (loaded 127/127)
+2026-04-12 05:11:15,104   INFO  memory_opt_conv2d: model.to(memory_format=torch.channels_last)
+2026-04-12 05:11:15,228   INFO  Running 500 warmup steps (no measurement)...
+2026-04-12 05:11:22,086   INFO  Measuring energy over 200 steps...
+2026-04-12 05:11:22,090   INFO  Measurement burn-in: 100 steps (power sampled, excluded from reported energy)
+2026-04-12 05:11:25,848   INFO  =================================================================
+2026-04-12 05:11:25,849   INFO    PointPillars Energy Monitor — 2026-04-12 05:11:25
+2026-04-12 05:11:25,849   INFO  =================================================================
+2026-04-12 05:11:25,849   INFO    GPU            : NVIDIA H100 80GB HBM3
+2026-04-12 05:11:25,850   INFO    Config         : /opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+2026-04-12 05:11:25,850   INFO    Compile        : False  Traced: none
+2026-04-12 05:11:25,850   INFO    AMP (fp16)     : True
+2026-04-12 05:11:25,850   INFO    Memory opt scatter (HWC write): True
+2026-04-12 05:11:25,850   INFO    Memory opt conv2d (channels_last): True
+2026-04-12 05:11:25,851   INFO    Preprocess GPU (voxelize on GPU): False
+2026-04-12 05:11:25,851   INFO    Compile voxelizer: False
+2026-04-12 05:11:25,851   INFO    INT8 (CPU PTQ) : False
+2026-04-12 05:11:25,851   INFO    Warmup         : 500   Steps: 200   Batch: 1
+2026-04-12 05:11:25,852   INFO    Meas. burn-in  : 100  (power sampled; excluded from NVML J window)
+2026-04-12 05:11:25,852   INFO  
+2026-04-12 05:11:25,852   INFO  ── Latency (ms) ─────────────────────────────────────────
+2026-04-12 05:11:25,852   INFO    Mean : 5.43   p50 : 5.04   p95 : 7.51   p99 : 7.88
+2026-04-12 05:11:25,853   INFO  
+2026-04-12 05:11:25,853   INFO  ── Throughput ───────────────────────────────────────────
+2026-04-12 05:11:25,853   INFO    84.46 samples/s  (total_samples=200, wall=2.37 s)
+2026-04-12 05:11:25,853   INFO  
+2026-04-12 05:11:25,853   INFO  ── Power & Energy ───────────────────────────────────────
+2026-04-12 05:11:25,854   INFO    Mean power     : 147.0 W
+2026-04-12 05:11:25,854   INFO    Peak power     : 148.1 W
+2026-04-12 05:11:25,854   INFO    Total energy   : 348.12 J  (NVML window=2.37 s, 48 power samples)
+2026-04-12 05:11:25,854   INFO  
+2026-04-12 05:11:25,854   INFO  ── Performance-per-Watt ─────────────────────────────────
+2026-04-12 05:11:25,855   INFO    0.5745 samples/s/W  (throughput / mean_power)
+2026-04-12 05:11:25,855   INFO    0.5745 samples/J   (steady_samples / steady_energy; spike intervals omitted when enabled)
+2026-04-12 05:11:25,855   INFO    Interpretation: higher = more efficient per unit energy
+2026-04-12 05:11:25,855   INFO  
+2026-04-12 05:11:25,855   INFO  ── Outputs ──────────────────────────────────────────────
+2026-04-12 05:11:25,856   INFO    Summary  : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2_h100/M2_AMP_mem_both/energy/energy_summary.txt
+2026-04-12 05:11:25,856   INFO    Raw CSV  : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2_h100/M2_AMP_mem_both/energy/energy_samples.csv
+2026-04-12 05:11:25,856   INFO  =================================================================
+2026-04-12 05:11:25,857   INFO  Raw power samples → /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2_h100/M2_AMP_mem_both/energy/energy_samples.csv
+2026-04-12 05:11:25,861   INFO  Per-step forward latency → /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2_h100/M2_AMP_mem_both/energy/energy_latency_per_step.csv

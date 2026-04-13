@@ -1,0 +1,12 @@
+{
+  "runs_schema_version": "2",
+  "run_id": "119e857fb726",
+  "timestamp_iso": "2026-04-11T20:38:19.695352+00:00",
+  "experiment_cell_id": "M2_AMP_mem_conv2d",
+  "variant_name": "M2_AMP_mem_conv2d",
+  "profile_output_dir": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2/research_matrix/M2_AMP_mem_conv2d/profile",
+  "energy_output_dir": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2/research_matrix/M2_AMP_mem_conv2d/energy",
+  "nsys_rep_path": "",
+  "nsys_sqlite_path": "",
+  "artifacts_forward_nvtx_json": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2/research_matrix/M2_AMP_mem_conv2d/artifacts/forward_nvtx_ms.json"
+}

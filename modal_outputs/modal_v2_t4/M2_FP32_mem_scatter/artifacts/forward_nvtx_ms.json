@@ -1,0 +1,31 @@
+{
+  "schema": "forward_nvtx_ms_v1",
+  "mean_ms": {
+    "PillarVFE": 3.2158892265100203,
+    "PointPillarScatter": 5.9476026277219844,
+    "BaseBEVBackbone": 19.06915611677683,
+    "AnchorHeadSingle": 5.03431345494429
+  },
+  "fraction_of_forward_sum": {
+    "PillarVFE": 0.0966691602919031,
+    "PointPillarScatter": 0.1787840660157792,
+    "BaseBEVBackbone": 0.5732160467742654,
+    "AnchorHeadSingle": 0.15133072691805224
+  },
+  "nvtx_stage_order": [
+    "PillarVFE",
+    "PointPillarScatter",
+    "BaseBEVBackbone",
+    "AnchorHeadSingle"
+  ],
+  "has_forward_stage_samples": true,
+  "source": "model_stage_timing_fallback",
+  "energy_total_J_nvml": 432.32,
+  "estimated_forward_substage_J_nvml_proxy": {
+    "PillarVFE": 41.792011377395546,
+    "PointPillarScatter": 77.29192741994166,
+    "BaseBEVBackbone": 247.81276134145043,
+    "AnchorHeadSingle": 65.42329986121234
+  },
+  "note_energy_proxy": "NVML total_J for the run times NVTX fraction of forward GPU time; attributes full measured energy to forward substages as a rough split (not calorimetric per op)."
+}

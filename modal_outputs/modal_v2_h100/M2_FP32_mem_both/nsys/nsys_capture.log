@@ -1,0 +1,61 @@
+2026-04-12 04:56:24,880   INFO  Profile suite — output dir: /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2_h100/M2_FP32_mem_both/profile
+2026-04-12 04:56:24,884   INFO  Loading KITTI dataset
+2026-04-12 04:56:25,198   INFO  Total samples for KITTI dataset: 7481
+/usr/local/lib/python3.11/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3526.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+2026-04-12 04:56:26,044   INFO  ==> Loading parameters from checkpoint /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-12 04:56:26,079   INFO  ==> Done (loaded 127/127)
+2026-04-12 04:56:26,090   INFO  memory_opt_conv2d: model.to(memory_format=torch.channels_last)
+2026-04-12 04:56:26,092   INFO  Running 500 warmup steps...
+/opt/OpenPCDet/tools/../pcdet/ops/iou3d_nms/iou3d_nms_utils.py:66: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:83.)
+  overlaps_bev = torch.cuda.FloatTensor(torch.Size((boxes_a.shape[0], boxes_b.shape[0]))).zero_()  # (N, M)
+2026-04-12 04:56:47,465   INFO  Measurement burn-in: 100 steps (before profiler loop)
+2026-04-12 04:56:51,264   INFO  Profiling 200 steps (KITTI RT CPU stages)...
+2026-04-12 04:56:59,034   INFO  Chrome trace skipped (MLS_PROFILE_NO_TORCH_PROFILER=1; avoids CUPTI conflict with nsys)
+2026-04-12 04:56:59,038   INFO  Nsight: run e.g. nsys profile -o trace python profile_suite.py ... --nsight (same args)
+2026-04-12 04:56:59,042   INFO  ======================================================================
+2026-04-12 04:56:59,042   INFO    PointPillars Profile Suite — 2026-04-12 04:56:59
+2026-04-12 04:56:59,042   INFO  ======================================================================
+2026-04-12 04:56:59,043   INFO    Config  : /opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+2026-04-12 04:56:59,043   INFO    Ckpt    : /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth
+2026-04-12 04:56:59,043   INFO    Compile : False
+2026-04-12 04:56:59,043   INFO    AMP (fp16): False
+2026-04-12 04:56:59,044   INFO    Memory opt scatter (HWC write): True
+2026-04-12 04:56:59,044   INFO    Memory opt conv2d (channels_last): True
+2026-04-12 04:56:59,044   INFO    Preprocess GPU (voxelize on GPU): False
+2026-04-12 04:56:59,044   INFO    Compile voxelizer: False
+2026-04-12 04:56:59,045   INFO    INT8    : False  (CPU dynamic Linear PTQ if true)
+2026-04-12 04:56:59,045   INFO    Traced  : none
+2026-04-12 04:56:59,045   INFO    Nsight NVTX: True
+2026-04-12 04:56:59,045   INFO    Warmup  : 500 steps   Measured: 200 steps   Batch: 1   Meas. burn-in: 100
+2026-04-12 04:56:59,045   INFO  
+2026-04-12 04:56:59,046   INFO  ── Per-stage latency (mean / p50 / p95 / p99 / std) [ms] ─────────────
+2026-04-12 04:56:59,046   INFO  Stage                   mean         p50         p95         p99         std
+2026-04-12 04:56:59,046   INFO  ----------------------------------------------------------------------------
+2026-04-12 04:56:59,046   INFO  read_points (excl.T_rt)        9.47        8.90       12.85       19.72        2.19
+2026-04-12 04:56:59,047   INFO  pre_processing         15.21       15.18       20.56       22.09        3.09
+2026-04-12 04:56:59,047   INFO  data_to_gpu             0.77        0.78        0.94        1.15        0.12
+2026-04-12 04:56:59,048   INFO  Forward (GPU)          12.42       12.01       13.44       15.00        2.67
+2026-04-12 04:56:59,048   INFO  PostProcess             0.55        0.54        0.65        1.01        0.07
+2026-04-12 04:56:59,048   INFO  ── Onboard frame ──       13.97       13.55       15.23       17.04        2.72
+2026-04-12 04:56:59,048   INFO  ── T_rt (onboard) ──       28.96       28.61       35.15       40.31        4.52
+2026-04-12 04:56:59,049   INFO  
+2026-04-12 04:56:59,049   INFO  ── Throughput & Memory ─────────────────────────────────────────
+2026-04-12 04:56:59,049   INFO    Throughput         : 34.5 samples/s  (batch=1, mean T_rt=28.96 ms)
+2026-04-12 04:56:59,050   INFO    Peak GPU Memory    : 316.7 MB  (NMS/recall on GPU; backbone mostly CPU when INT8)
+2026-04-12 04:56:59,050   INFO    Peak GPU Mem (steady): 316.7 MB  (no forward spike filter)
+2026-04-12 04:56:59,050   INFO    Mean peak per step : 316.6 MB
+2026-04-12 04:56:59,051   INFO    CUDA kernel events : 0
+2026-04-12 04:56:59,052   INFO    T_rt mean (onboard, excl. read_points): 28.96 ms
+2026-04-12 04:56:59,052   INFO  
+2026-04-12 04:56:59,053   INFO  ── Outputs ──────────────────────────────────────────────────────
+2026-04-12 04:56:59,053   INFO    Chrome trace       : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2_h100/M2_FP32_mem_both/profile/torch_profile_trace.json
+2026-04-12 04:56:59,054   INFO    Summary            : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2_h100/M2_FP32_mem_both/profile/profile_summary.txt
+2026-04-12 04:56:59,054   INFO  ======================================================================
+2026-04-12 04:56:59,055   INFO  Forward module stage timing saved → /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2_h100/M2_FP32_mem_both/profile/forward_module_stage_ms.json
+FATAL ERROR: /dvs/p4/build/sw/devtools/Agora/Rel/QuadD_CTK/QuadD/Common/GpuTraits/Src/GpuTicksConverter.cpp(376): Throw in function QuadDCommon::TimestampType GpuTraits::GpuTicksConverter::ConvertToCpuTime(const QuadDCommon::Uuid&, uint64_t&) const
+Dynamic exception type: boost::wrapexcept<QuadDCommon::NotFoundException>
+std::exception::what: NotFoundException
+[QuadDCommon::tag_message*] = No GPU associated to the given UUID
+
+Generating '/tmp/nsys-report-8fc4.qdstrm'
