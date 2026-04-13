@@ -1,7 +1,0 @@
-2026-04-06 01:18:24,593   INFO  GPU [0]: NVIDIA TITAN RTX
-2026-04-06 01:18:24,596   INFO  Loading KITTI dataset
-2026-04-06 01:18:24,700   INFO  Total samples for KITTI dataset: 2330
-2026-04-06 01:18:24,701   INFO  Energy monitor: GPU voxelization DataLoader (inference.py-aligned)
-2026-04-06 01:18:25,012   INFO  ==> Loading parameters from checkpoint /home/nas/polin/cmu-berlin/MLS/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
-2026-04-06 01:18:25,044   INFO  ==> Done (loaded 127/127)
-2026-04-06 01:18:25,336   INFO  Running 100 warmup steps (no measurement)...
