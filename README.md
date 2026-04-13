@@ -6,6 +6,12 @@
 
 Run from repo root (`/home/nas/polin/cmu-berlin/MLS`):
 
+### `report/plot_accuracy_latency_energy_3d.py`
+
+```bash
+python3 report/plot_accuracy_latency_energy_3d.py --a10-root modal_outputs/modal_v2_a10 --h100-root modal_outputs/modal_v2_h100 --t4-root modal_outputs/modal_v2_t4
+```
+
 ### `report/plot_latency.py`
 
 ```bash
