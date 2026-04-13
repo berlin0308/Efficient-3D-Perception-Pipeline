@@ -39,21 +39,32 @@ for PointPillars inference on KITTI data.
 ## Output Files
 
 ```
-amp_benchmark/
+profile_outputs/amp_benchmark/
 ├── fp32/
-│   ├── profile_summary.txt       # latency/memory baseline
-│   └── torch_profile_trace.json  # Chrome trace (chrome://tracing)
+│   ├── profile_summary.txt               # latency/memory baseline
+│   └── torch_profile_trace.json          # Chrome trace (chrome://tracing)
 ├── fp16_amp/
-│   ├── profile_summary.txt       # latency/memory with AMP
+│   ├── profile_summary.txt               # latency/memory with AMP
 │   └── torch_profile_trace.json
 ├── energy_fp32/
-│   ├── energy_summary.txt        # power/energy baseline
-│   └── energy_samples.csv        # raw (timestamp_s, power_W) samples
+│   ├── energy_summary.txt                # power/energy baseline
+│   └── energy_samples.csv               # raw (timestamp_s, power_W) samples
 ├── energy_fp16_amp/
-│   ├── energy_summary.txt        # power/energy with AMP
+│   ├── energy_summary.txt                # power/energy with AMP
 │   └── energy_samples.csv
-└── comparison.md                 # detailed notes
+├── pointpillar_energy_breakdown.png      # Figure: Total/DRAM/MAC by precision
+├── pointpillar_energy_per_stage.png      # Figure: energy per pipeline stage
+├── comparison.md                         # detailed notes
+└── README.md                             # this file
 ```
+
+**Scripts (all in `OpenPCDet/tools/`):**
+
+| Script | Purpose |
+|---|---|
+| `profile_suite.py` | Latency, throughput, peak GPU memory |
+| `energy_monitor.py` | Power draw, energy (J), samples/J |
+| `plot_energy.py` | Generates the two energy breakdown PNG plots |
 
 ---
 
@@ -99,10 +110,27 @@ python energy_monitor.py \
   --output_dir profile_outputs/amp_benchmark/energy_fp16_amp
 ```
 
+### Energy Plots
+
+```bash
+python plot_energy.py \
+    --fp32_csv  /path/to/amp_benchmark/energy_fp32/energy_samples.csv \
+    --fp16_csv  /path/to/amp_benchmark/energy_fp16_amp/energy_samples.csv \
+    --nsys_db   /path/to/nsys_baseline/report.sqlite \
+    --fp32_steps 50 --fp16_steps 50 \
+    --output_dir /path/to/amp_benchmark
+```
+
+`plot_energy.py` reads energy directly from the CSV files — no hardcoded values.
+It requires the nsys `report.sqlite` for per-stage timing fractions. Generate it with:
+```bash
+nsys export --type sqlite profile_outputs/nsys_baseline/report.nsys-rep
+```
+
 ### Prerequisites
 
 - Run from `OpenPCDet/tools/`
-- Python env with `torch`, `pcdet` installed
+- Python env with `torch`, `pcdet`, `matplotlib` installed
 - `pip install nvidia-ml-py` (required by `energy_monitor.py`)
 - KITTI velodyne + calib + label data, and `pointpillar_7728.pth` checkpoint
 - Use `--cuda_id 0` for single-GPU machines (check `nvidia-smi` if unsure)

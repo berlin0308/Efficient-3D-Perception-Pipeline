@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-26
 **GPU:** NVIDIA GeForce RTX 3080 Ti Laptop GPU
-**Config:** `cfgs/kitti_models/pointpillar.yaml`, batch=1, 50 measured steps, 10 warmup
+**Config:** `cfgs/kitti_models/pointpillar.yaml`, batch=1, 50 measured steps, 100 warmup
 **Ckpt:** `pointpillar_7728.pth` (Car@R11=77.28)
 
 ## Results

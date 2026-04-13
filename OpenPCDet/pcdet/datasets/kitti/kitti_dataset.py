@@ -399,8 +399,8 @@ class KittiDataset(DatasetTemplate):
 
         return len(self.kitti_infos)
 
-    def __getitem__(self, index):
-        # index = 4
+    def build_input_dict(self, index):
+        """Load raw fields (before prepare_data). Used by __getitem__ and GPU-voxel profiling."""
         if self._merge_all_iters_to_one_epoch:
             index = index % len(self.kitti_infos)
 
@@ -453,8 +453,18 @@ class KittiDataset(DatasetTemplate):
             input_dict["trans_lidar_to_cam"], input_dict["trans_cam_to_img"] = kitti_utils.calib_to_matricies(calib)
 
         input_dict['calib'] = calib
-        data_dict = self.prepare_data(data_dict=input_dict)
+        return input_dict, img_shape
 
+    def __getitem__(self, index):
+        input_dict, img_shape = self.build_input_dict(index)
+        data_dict = self.prepare_data(data_dict=input_dict)
+        data_dict['image_shape'] = img_shape
+        return data_dict
+
+    def fetch_sample_for_gpu_voxel(self, index):
+        """CPU prep through mask/shuffle/encoding; voxelization left to GPU (tools/gpu_voxelizer)."""
+        input_dict, img_shape = self.build_input_dict(index)
+        data_dict = self.prepare_data_for_gpu_voxelization(input_dict)
         data_dict['image_shape'] = img_shape
         return data_dict
 
