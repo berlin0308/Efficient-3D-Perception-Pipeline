@@ -1,0 +1,12 @@
+{
+  "runs_schema_version": "2",
+  "run_id": "9fc5378c43c9",
+  "timestamp_iso": "2026-04-14T03:53:05.989130+00:00",
+  "experiment_cell_id": "M0_FP32",
+  "variant_name": "M0_FP32",
+  "profile_output_dir": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M0_FP32/profile",
+  "energy_output_dir": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M0_FP32/energy",
+  "nsys_rep_path": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M0_FP32/nsys/mls_nsys.nsys-rep",
+  "nsys_sqlite_path": "",
+  "artifacts_forward_nvtx_json": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M0_FP32/profile/forward_nvtx_ms.json"
+}

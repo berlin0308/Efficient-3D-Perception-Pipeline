@@ -1,0 +1,23 @@
+{
+  "schema": "forward_nvtx_ms_v1",
+  "mean_ms": {
+    "PillarVFE": 2.489100819826126,
+    "PointPillarScatter": 1.320719987154007,
+    "BaseBEVBackbone": 9.847723293304444,
+    "AnchorHeadSingle": 3.1906479954719544
+  },
+  "fraction_of_forward_sum": {
+    "PillarVFE": 0.14773696819690485,
+    "PointPillarScatter": 0.07838941885560825,
+    "BaseBEVBackbone": 0.5844973298817469,
+    "AnchorHeadSingle": 0.18937628306574014
+  },
+  "nvtx_stage_order": [
+    "PillarVFE",
+    "PointPillarScatter",
+    "BaseBEVBackbone",
+    "AnchorHeadSingle"
+  ],
+  "has_forward_stage_samples": true,
+  "source": "model_stage_timing_fallback"
+}

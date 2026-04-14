@@ -1,0 +1,35 @@
+=================================================================
+  PointPillars Energy Monitor — 2026-04-14 16:11:18
+=================================================================
+  GPU            : Tesla T4
+  Config         : /opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+  Compile        : True  Traced: none
+  AMP (fp16)     : False
+  Memory opt scatter (HWC write): True
+  Memory opt conv2d (channels_last): True
+  Preprocess GPU (voxelize on GPU): True
+  Compile voxelizer: True
+  INT8 (CPU PTQ) : False
+  Warmup         : 500   Steps: 500   Batch: 1
+  Meas. burn-in  : 0  (power sampled; excluded from NVML J window)
+
+── Latency (ms) ─────────────────────────────────────────
+  Mean : 25.52   p50 : 24.95   p95 : 29.55   p99 : 39.56
+
+── Throughput ───────────────────────────────────────────
+  39.18 samples/s  (total_samples=498, wall=12.71 s)
+
+── Power & Energy ───────────────────────────────────────
+  Mean power     : 108.8 W
+  Peak power     : 88.0 W
+  Total energy   : 1383.02 J  (steady forward wall=12.71 s, 661 power samples)  (spike windows excluded: 2 forward interval(s))
+
+── Performance-per-Watt ─────────────────────────────────
+  0.3601 samples/s/W  (throughput / mean_power)
+  0.3601 samples/J   (steady_samples / steady_energy; spike intervals omitted when enabled)
+  Interpretation: higher = more efficient per unit energy
+
+── Outputs ──────────────────────────────────────────────
+  Summary  : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_t4/M4_FP32/energy/energy_summary.txt
+  Raw CSV  : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_t4/M4_FP32/energy/energy_samples.csv
+=================================================================

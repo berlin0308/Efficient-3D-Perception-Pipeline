@@ -1,0 +1,1 @@
+["--cfg_file", "/opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml", "--ckpt", "/opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth", "--output_dir", "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2_t4/M3_AMP/profile", "--warmup", "500", "--steps", "200", "--batch_size", "1", "--workers", "2", "--cuda_id", "0", "--amp", "--preprocess_gpu", "--measurement_burnin_steps", "100"]

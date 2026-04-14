@@ -1,0 +1,6 @@
+2026-04-11 19:16:37,272   INFO  GPU [0]: NVIDIA A10G
+2026-04-11 19:16:37,273   INFO  Loading KITTI dataset
+2026-04-11 19:16:37,556   INFO  Total samples for KITTI dataset: 7481
+2026-04-11 19:16:37,959   INFO  ==> Loading parameters from checkpoint /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-11 19:16:37,987   INFO  ==> Done (loaded 127/127)
+2026-04-11 19:16:38,221   INFO  Running 500 warmup steps (no measurement)...

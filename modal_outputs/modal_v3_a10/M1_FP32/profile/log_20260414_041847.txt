@@ -1,0 +1,49 @@
+2026-04-14 04:18:47,811   INFO  Profile suite — output dir: /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M1_FP32/profile
+2026-04-14 04:18:47,811   INFO  Loading KITTI dataset
+2026-04-14 04:18:48,009   INFO  Total samples for KITTI dataset: 7481
+2026-04-14 04:18:48,469   INFO  ==> Loading parameters from checkpoint /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-14 04:18:48,490   INFO  ==> Done (loaded 127/127)
+2026-04-14 04:18:48,497   INFO  Wrapping model with torch.compile()
+2026-04-14 04:18:50,316   INFO  Running 500 warmup steps...
+2026-04-14 04:21:07,290   INFO  Profiling 500 steps (KITTI RT CPU stages)...
+2026-04-14 04:21:55,231   INFO  Chrome trace saved → /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M1_FP32/profile/torch_profile_trace.json
+2026-04-14 04:21:55,240   INFO  Nsight: run e.g. nsys profile -o trace python profile_suite.py ... --nsight (same args)
+2026-04-14 04:22:02,244   INFO  ======================================================================
+2026-04-14 04:22:02,245   INFO    PointPillars Profile Suite — 2026-04-14 04:22:02
+2026-04-14 04:22:02,247   INFO  ======================================================================
+2026-04-14 04:22:02,247   INFO    Config  : /opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+2026-04-14 04:22:02,248   INFO    Ckpt    : /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth
+2026-04-14 04:22:02,248   INFO    Compile : True
+2026-04-14 04:22:02,248   INFO    AMP (fp16): False
+2026-04-14 04:22:02,249   INFO    Memory opt scatter (HWC write): False
+2026-04-14 04:22:02,249   INFO    Memory opt conv2d (channels_last): False
+2026-04-14 04:22:02,249   INFO    Preprocess GPU (voxelize on GPU): False
+2026-04-14 04:22:02,250   INFO    Compile voxelizer: False
+2026-04-14 04:22:02,250   INFO    INT8    : False  (CPU dynamic Linear PTQ if true)
+2026-04-14 04:22:02,250   INFO    Traced  : none
+2026-04-14 04:22:02,250   INFO    Nsight NVTX: True
+2026-04-14 04:22:02,251   INFO    Warmup  : 500 steps   Measured: 500 steps   Batch: 1   Meas. burn-in: 0
+2026-04-14 04:22:02,251   INFO  
+2026-04-14 04:22:02,251   INFO  ── Per-stage latency (mean / p50 / p95 / p99 / std) [ms] ─────────────
+2026-04-14 04:22:02,251   INFO  Stage                   mean         p50         p95         p99         std
+2026-04-14 04:22:02,251   INFO  ----------------------------------------------------------------------------
+2026-04-14 04:22:02,252   INFO  read_points (excl.T_rt)        7.93        7.82        9.14       10.51        0.77
+2026-04-14 04:22:02,252   INFO  pre_processing         19.40       19.27       26.07       28.29        4.26
+2026-04-14 04:22:02,252   INFO  data_to_gpu             0.83        0.83        1.04        1.11        0.12
+2026-04-14 04:22:02,253   INFO  Forward (GPU)          18.19       18.02       19.53       20.77        0.77
+2026-04-14 04:22:02,253   INFO  PostProcess             0.57        0.56        0.65        0.67        0.09
+2026-04-14 04:22:02,254   INFO  ── Onboard frame ──       19.79       19.62       21.42       22.54        0.90
+2026-04-14 04:22:02,254   INFO  ── T_rt (onboard) ──       39.00       38.94       46.10       48.44        4.73
+2026-04-14 04:22:02,254   INFO  
+2026-04-14 04:22:02,254   INFO  ── Throughput & Memory ─────────────────────────────────────────
+2026-04-14 04:22:02,254   INFO    Throughput         : 25.6 samples/s  (batch=1, mean T_rt=39.00 ms)
+2026-04-14 04:22:02,255   INFO    Peak GPU Memory    : 7312.1 MB  (NMS/recall on GPU; backbone mostly CPU when INT8)
+2026-04-14 04:22:02,255   INFO    Peak GPU Mem (steady): 7312.1 MB  (steps with forward <= 200.0 ms)
+2026-04-14 04:22:02,255   INFO    Mean peak per step : 5603.0 MB
+2026-04-14 04:22:02,255   INFO    CUDA kernel events : 0
+2026-04-14 04:22:02,255   INFO    T_rt mean (onboard, excl. read_points): 39.00 ms
+2026-04-14 04:22:02,256   INFO  
+2026-04-14 04:22:02,256   INFO  ── Outputs ──────────────────────────────────────────────────────
+2026-04-14 04:22:02,256   INFO    Chrome trace       : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M1_FP32/profile/torch_profile_trace.json
+2026-04-14 04:22:02,256   INFO    Summary            : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M1_FP32/profile/profile_summary.txt
+2026-04-14 04:22:02,257   INFO  ======================================================================

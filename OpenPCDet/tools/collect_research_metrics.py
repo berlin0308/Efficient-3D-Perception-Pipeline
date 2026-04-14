@@ -1107,7 +1107,9 @@ def cmd_run(args: argparse.Namespace) -> None:
             ]
             if kitti_cap is not None:
                 ke_argv.extend(['--max_samples', str(kitti_cap)])
-            if use_compile:
+            # NOTE: torch.compile during full KITTI val eval can OOM on mid-size GPUs (e.g. A10).
+            # Profiling/energy may still use compile per matrix flags; KITTI eval export is decoupled.
+            if bool(getattr(args, 'kitti_eval_compile', False)):
                 ke_argv.append('--compile')
             if use_amp:
                 ke_argv.append('--amp')
@@ -1339,6 +1341,13 @@ def main():
         type=int,
         default=20,
         help='Warmup batches inside KITTI eval loop before infer_time metering (default: 20)',
+    )
+    p_run.add_argument(
+        '--kitti-eval-compile',
+        action='store_true',
+        default=False,
+        dest='kitti_eval_compile',
+        help='Pass --compile to kitti_eval_export.py (NOT recommended for full val on A10-class GPUs).',
     )
     p_run.add_argument(
         '--fresh_runs',

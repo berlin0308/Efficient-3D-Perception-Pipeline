@@ -1,0 +1,12 @@
+{
+  "runs_schema_version": "2",
+  "run_id": "ef09b8d0cc75",
+  "timestamp_iso": "2026-04-14T03:12:14.192171+00:00",
+  "experiment_cell_id": "M2_AMP_mem_scatter",
+  "variant_name": "M2_AMP_mem_scatter",
+  "profile_output_dir": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M2_AMP_mem_scatter/profile",
+  "energy_output_dir": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M2_AMP_mem_scatter/energy",
+  "nsys_rep_path": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M2_AMP_mem_scatter/nsys/mls_nsys.nsys-rep",
+  "nsys_sqlite_path": "",
+  "artifacts_forward_nvtx_json": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M2_AMP_mem_scatter/profile/forward_nvtx_ms.json"
+}

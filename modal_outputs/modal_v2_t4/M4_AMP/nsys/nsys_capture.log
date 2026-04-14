@@ -1,0 +1,210 @@
+2026-04-12 02:26:30,552   INFO  Profile suite — output dir: /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2_t4/M4_AMP/profile
+2026-04-12 02:26:30,553   INFO  Loading KITTI dataset
+2026-04-12 02:26:30,951   INFO  Total samples for KITTI dataset: 7481
+2026-04-12 02:26:31,864   INFO  Voxelizer wrapped with torch.compile(dynamic=True)
+2026-04-12 02:26:34,197   INFO  Using GPU voxelization profiling path (inference.py-aligned); see --preprocess_gpu
+/usr/local/lib/python3.11/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3526.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+2026-04-12 02:26:34,323   INFO  ==> Loading parameters from checkpoint /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-12 02:26:34,354   INFO  ==> Done (loaded 127/127)
+2026-04-12 02:26:34,367   INFO  memory_opt_conv2d: model.to(memory_format=torch.channels_last)
+2026-04-12 02:26:34,369   INFO  Wrapping model with torch.compile()
+2026-04-12 02:26:34,371   INFO  Running 500 warmup steps...
+/usr/local/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/usr/local/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/usr/local/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/usr/local/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/utils.py:1397: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:83.)
+  return node.target(*args, **kwargs)
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py:412: UserWarning: changing options to `torch.compile()` may require calling `torch._dynamo.reset()` to take effect
+  warnings.warn(
+[2026-04-12 02:28:55,632] torch._dynamo.convert_frame: [WARNING] torch._dynamo hit config.cache_size_limit (64)
+[2026-04-12 02:28:55,632] torch._dynamo.convert_frame: [WARNING]    function: '<resume in generate_recall_record>' (/opt/OpenPCDet/tools/../pcdet/models/detectors/detector3d_template.py:302)
+[2026-04-12 02:28:55,632] torch._dynamo.convert_frame: [WARNING] to diagnose recompilation issues, set env variable TORCHDYNAMO_REPORT_GUARD_FAILURES=1 and also see https://pytorch.org/docs/master/compile/troubleshooting.html.
+[2026-04-12 02:28:55,635] torch._dynamo.convert_frame: [WARNING] torch._dynamo hit config.cache_size_limit (64)
+[2026-04-12 02:28:55,635] torch._dynamo.convert_frame: [WARNING]    function: 'boxes_iou3d_gpu' (/opt/OpenPCDet/tools/../pcdet/ops/iou3d_nms/iou3d_nms_utils.py:48)
+[2026-04-12 02:28:55,635] torch._dynamo.convert_frame: [WARNING] to diagnose recompilation issues, set env variable TORCHDYNAMO_REPORT_GUARD_FAILURES=1 and also see https://pytorch.org/docs/master/compile/troubleshooting.html.
+2026-04-12 02:29:11,613   INFO  Measurement burn-in: 100 steps (before profiler loop)
+2026-04-12 02:29:15,224   INFO  Profiling 200 steps...
+2026-04-12 02:29:22,761   INFO  Chrome trace skipped (MLS_PROFILE_NO_TORCH_PROFILER=1; avoids CUPTI conflict with nsys)
+2026-04-12 02:29:22,766   INFO  Nsight: run e.g. nsys profile -o trace python profile_suite.py ... --nsight (same args)
+2026-04-12 02:29:22,771   INFO  ======================================================================
+2026-04-12 02:29:22,771   INFO    PointPillars Profile Suite — 2026-04-12 02:29:22
+2026-04-12 02:29:22,771   INFO  ======================================================================
+2026-04-12 02:29:22,771   INFO    Config  : /opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+2026-04-12 02:29:22,772   INFO    Ckpt    : /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth
+2026-04-12 02:29:22,772   INFO    Compile : True
+2026-04-12 02:29:22,772   INFO    AMP (fp16): True
+2026-04-12 02:29:22,772   INFO    Memory opt scatter (HWC write): True
+2026-04-12 02:29:22,772   INFO    Memory opt conv2d (channels_last): True
+2026-04-12 02:29:22,773   INFO    Preprocess GPU (voxelize on GPU): True
+2026-04-12 02:29:22,773   INFO    Compile voxelizer: True
+2026-04-12 02:29:22,773   INFO    INT8    : False  (CPU dynamic Linear PTQ if true)
+2026-04-12 02:29:22,773   INFO    Traced  : none
+2026-04-12 02:29:22,774   INFO    Nsight NVTX: True
+2026-04-12 02:29:22,774   INFO    Warmup  : 500 steps   Measured: 200 steps   Batch: 1   Meas. burn-in: 100
+2026-04-12 02:29:22,774   INFO  
+2026-04-12 02:29:22,774   INFO  ── Per-stage latency (mean / p50 / p95 / p99 / std) [ms] ─────────────
+2026-04-12 02:29:22,774   INFO  Stage                   mean         p50         p95         p99         std
+2026-04-12 02:29:22,775   INFO  ----------------------------------------------------------------------------
+2026-04-12 02:29:22,775   INFO  read_points (excl.T_rt)        8.97        8.91        9.46       10.21        1.35
+2026-04-12 02:29:22,775   INFO  cpu_prepare             0.79        0.79        0.84        0.86        0.04
+2026-04-12 02:29:22,775   INFO  data_to_gpu             0.30        0.30        0.33        0.35        0.02
+2026-04-12 02:29:22,776   INFO  pre_processing          2.34        2.31        2.43        3.75        0.19
+2026-04-12 02:29:22,776   INFO  h2d (load rest)         0.18        0.18        0.20        0.20        0.01
+2026-04-12 02:29:22,776   INFO  Forward (GPU)          24.01       23.65       26.69       30.65        1.80
+2026-04-12 02:29:22,776   INFO  PostProcess             0.67        0.66        0.70        0.98        0.16
+2026-04-12 02:29:22,776   INFO  ── Onboard frame ──       25.02       24.66       27.70       31.64        1.81
+2026-04-12 02:29:22,777   INFO  ── T_rt (onboard) ──       28.29       27.93       30.94       34.90        1.83
+2026-04-12 02:29:22,777   INFO  
+2026-04-12 02:29:22,777   INFO  ── Throughput & Memory ─────────────────────────────────────────
+2026-04-12 02:29:22,777   INFO    Throughput         : 35.4 samples/s  (batch=1, mean T_rt=28.29 ms)
+2026-04-12 02:29:22,777   INFO    Peak GPU Memory    : 5604.8 MB  (NMS/recall on GPU; backbone mostly CPU when INT8)
+2026-04-12 02:29:22,778   INFO    Peak GPU Mem (steady): 5604.8 MB  (steps with forward <= 200.0 ms)
+2026-04-12 02:29:22,778   INFO    Mean peak per step : 4922.4 MB
+2026-04-12 02:29:22,778   INFO    CUDA kernel events : 0
+2026-04-12 02:29:22,778   INFO    T_rt mean (onboard, excl. read_points): 28.29 ms
+2026-04-12 02:29:22,778   INFO  
+2026-04-12 02:29:22,779   INFO  ── Outputs ──────────────────────────────────────────────────────
+2026-04-12 02:29:22,779   INFO    Chrome trace       : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2_t4/M4_AMP/profile/torch_profile_trace.json
+2026-04-12 02:29:22,779   INFO    Summary            : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2_t4/M4_AMP/profile/profile_summary.txt
+2026-04-12 02:29:22,779   INFO  ======================================================================
+2026-04-12 02:29:22,780   INFO  Forward module stage timing saved → /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2_t4/M4_AMP/profile/forward_module_stage_ms.json
+FATAL ERROR: /dvs/p4/build/sw/devtools/Agora/Rel/QuadD_CTK/QuadD/Common/GpuTraits/Src/GpuTicksConverter.cpp(376): Throw in function QuadDCommon::TimestampType GpuTraits::GpuTicksConverter::ConvertToCpuTime(const QuadDCommon::Uuid&, uint64_t&) const
+Dynamic exception type: boost::wrapexcept<QuadDCommon::NotFoundException>
+std::exception::what: NotFoundException
+[QuadDCommon::tag_message*] = No GPU associated to the given UUID
+
+Generating '/tmp/nsys-report-ea41.qdstrm'

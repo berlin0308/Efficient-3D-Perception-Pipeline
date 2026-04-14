@@ -1,0 +1,49 @@
+2026-04-14 07:11:29,000   INFO  GPU [0]: NVIDIA A10
+2026-04-14 07:11:29,001   INFO  Loading KITTI dataset
+2026-04-14 07:11:29,258   INFO  Total samples for KITTI dataset: 7481
+2026-04-14 07:11:29,567   INFO  Voxelizer wrapped with torch.compile(dynamic=True)
+2026-04-14 07:11:31,174  WARNING  preprocess_gpu: forcing num_workers=0 (GPU voxelization runs in collate; incompatible with forked workers).
+2026-04-14 07:11:31,175   INFO  compile_voxelizer: torch.compile voxelizer active (still num_workers=0).
+2026-04-14 07:11:31,177   INFO  Energy monitor: GPU voxelization DataLoader (inference.py-aligned)
+2026-04-14 07:11:31,303   INFO  ==> Loading parameters from checkpoint /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-14 07:11:31,344   INFO  ==> Done (loaded 127/127)
+2026-04-14 07:11:31,353   INFO  memory_opt_conv2d: model.to(memory_format=torch.channels_last)
+2026-04-14 07:11:31,356   INFO  Running 500 warmup steps (no measurement)...
+2026-04-14 07:11:56,827   INFO  Measuring energy over 500 steps...
+2026-04-14 07:12:12,156   INFO  =================================================================
+2026-04-14 07:12:12,156   INFO    PointPillars Energy Monitor — 2026-04-14 07:12:12
+2026-04-14 07:12:12,156   INFO  =================================================================
+2026-04-14 07:12:12,156   INFO    GPU            : NVIDIA A10
+2026-04-14 07:12:12,156   INFO    Config         : /opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+2026-04-14 07:12:12,157   INFO    Compile        : False  Traced: none
+2026-04-14 07:12:12,157   INFO    AMP (fp16)     : True
+2026-04-14 07:12:12,157   INFO    Memory opt scatter (HWC write): True
+2026-04-14 07:12:12,157   INFO    Memory opt conv2d (channels_last): True
+2026-04-14 07:12:12,158   INFO    Preprocess GPU (voxelize on GPU): True
+2026-04-14 07:12:12,158   INFO    Compile voxelizer: True
+2026-04-14 07:12:12,158   INFO    INT8 (CPU PTQ) : False
+2026-04-14 07:12:12,162   INFO    Warmup         : 500   Steps: 500   Batch: 1
+2026-04-14 07:12:12,162   INFO    Meas. burn-in  : 0  (power sampled; excluded from NVML J window)
+2026-04-14 07:12:12,163   INFO  
+2026-04-14 07:12:12,163   INFO  ── Latency (ms) ─────────────────────────────────────────
+2026-04-14 07:12:12,163   INFO    Mean : 9.38   p50 : 9.30   p95 : 9.81   p99 : 11.26
+2026-04-14 07:12:12,163   INFO  
+2026-04-14 07:12:12,164   INFO  ── Throughput ───────────────────────────────────────────
+2026-04-14 07:12:12,164   INFO    32.86 samples/s  (total_samples=500, wall=15.22 s)
+2026-04-14 07:12:12,164   INFO  
+2026-04-14 07:12:12,165   INFO  ── Power & Energy ───────────────────────────────────────
+2026-04-14 07:12:12,165   INFO    Mean power     : 85.9 W
+2026-04-14 07:12:12,166   INFO    Peak power     : 104.3 W
+2026-04-14 07:12:12,166   INFO    Total energy   : 1290.90 J  (NVML window=15.22 s, 286 power samples)
+2026-04-14 07:12:12,166   INFO  
+2026-04-14 07:12:12,166   INFO  ── Performance-per-Watt ─────────────────────────────────
+2026-04-14 07:12:12,167   INFO    0.3826 samples/s/W  (throughput / mean_power)
+2026-04-14 07:12:12,167   INFO    0.3873 samples/J   (steady_samples / steady_energy; spike intervals omitted when enabled)
+2026-04-14 07:12:12,167   INFO    Interpretation: higher = more efficient per unit energy
+2026-04-14 07:12:12,167   INFO  
+2026-04-14 07:12:12,168   INFO  ── Outputs ──────────────────────────────────────────────
+2026-04-14 07:12:12,168   INFO    Summary  : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M4_AMP/energy/energy_summary.txt
+2026-04-14 07:12:12,168   INFO    Raw CSV  : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M4_AMP/energy/energy_samples.csv
+2026-04-14 07:12:12,168   INFO  =================================================================
+2026-04-14 07:12:12,170   INFO  Raw power samples → /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M4_AMP/energy/energy_samples.csv
+2026-04-14 07:12:12,171   INFO  Per-step forward latency → /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M4_AMP/energy/energy_latency_per_step.csv

@@ -1,0 +1,12 @@
+{
+  "runs_schema_version": "2",
+  "run_id": "50256786a330",
+  "timestamp_iso": "2026-04-11T21:01:29.212909+00:00",
+  "experiment_cell_id": "M4_FP32",
+  "variant_name": "M4_FP32",
+  "profile_output_dir": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2/research_matrix/M4_FP32/profile",
+  "energy_output_dir": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2/research_matrix/M4_FP32/energy",
+  "nsys_rep_path": "",
+  "nsys_sqlite_path": "",
+  "artifacts_forward_nvtx_json": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2/research_matrix/M4_FP32/artifacts/forward_nvtx_ms.json"
+}

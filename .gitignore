@@ -11,6 +11,7 @@ output/
 **/ckpt/
 **/*.pth
 *.ckpt
+profile_outputs/
 
 # Python
 __pycache__/
@@ -28,6 +29,9 @@ dist/
 eggs/
 .eggs/
 
+# Local editor / agent backup copies (do not commit)
+.safety_backups/
+
 # IDE and OS
 .idea/
 .vscode/
@@ -42,9 +46,11 @@ eggs/
 *.tar.gz
 
 # Profile binary outputs
-*.nsys-rep
 *.ncu-rep
 *.sqlite
+
+# torch.profiler Chrome trace export (large; keep other JSON artifacts)
+**/torch_profile_trace.json
 
 # Personal notes (keep local only)
 reports/*.md
