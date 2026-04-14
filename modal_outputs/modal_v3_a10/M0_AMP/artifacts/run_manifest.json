@@ -1,7 +1,7 @@
 {
   "runs_schema_version": "2",
-  "run_id": "cf8f469df22d",
-  "timestamp_iso": "2026-04-14T02:56:05.503919+00:00",
+  "run_id": "b813e68a5918",
+  "timestamp_iso": "2026-04-14T04:15:47.735094+00:00",
   "experiment_cell_id": "M0_AMP",
   "variant_name": "M0_AMP",
   "profile_output_dir": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M0_AMP/profile",

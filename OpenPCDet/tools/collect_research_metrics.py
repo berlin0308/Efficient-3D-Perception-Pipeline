@@ -50,14 +50,11 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
-import glob
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
-import tempfile
 import uuid
 from pathlib import Path
 from typing import Any
@@ -211,174 +208,6 @@ def _run_cmd(argv: list[str], cwd: Path, env: dict | None = None) -> None:
     r = subprocess.run(argv, cwd=str(cwd), env=env)
     if r.returncode != 0:
         raise SystemExit('Command failed (%d): %s' % (r.returncode, argv))
-
-
-def _run_profile_with_optional_nsys(
-    *,
-    args: argparse.Namespace,
-    ps_argv: list[str],
-    tools: Path,
-    nsys_dir: Path,
-    env: dict | None = None,
-) -> Path | None:
-    if not bool(getattr(args, 'nsys_profile', False)):
-        _run_cmd(ps_argv, cwd=tools, env=env)
-        return None
-
-    nsys_bin = shutil.which('nsys')
-    if not nsys_bin:
-        candidates = [
-            '/usr/local/cuda/bin/nsys',
-            '/usr/local/cuda/NsightSystems-cli/nsys',
-            '/usr/local/nsight-systems/bin/nsys',
-        ]
-        candidates.extend(glob.glob('/opt/nvidia/nsight-systems/*/target-linux-x64/nsys'))
-        for c in candidates:
-            if Path(c).is_file() and os.access(c, os.X_OK):
-                nsys_bin = c
-                break
-
-    if not nsys_bin:
-        print('[collect_research_metrics] WARN: --nsys-profile set but nsys not found on PATH; run without nsys.')
-        _run_cmd(ps_argv, cwd=tools, env=env)
-        return None
-
-    nsys_dir.mkdir(parents=True, exist_ok=True)
-    (nsys_dir / 'profile_suite_argv.json').write_text(json.dumps(ps_argv, indent=2), encoding='utf-8')
-    try:
-        ver = subprocess.check_output([nsys_bin, '--version'], text=True, stderr=subprocess.STDOUT)
-    except (subprocess.CalledProcessError, OSError) as exc:
-        ver = str(exc)
-    (nsys_dir / 'nsys_version.txt').write_text(ver, encoding='utf-8')
-
-    with tempfile.TemporaryDirectory(prefix='mls_nsys_') as td:
-        capture_prefix = Path(td) / 'mls_nsys'
-        nsys_argv = [
-            nsys_bin,
-            'profile',
-            '--force-overwrite=true',
-            '--trace=cuda,nvtx,osrt,cublas,cudnn',
-            '--sample=none',
-            '-o',
-            str(capture_prefix),
-        ] + ps_argv
-        print('[collect_research_metrics] exec:', ' '.join(nsys_argv), flush=True)
-        nsys_run = subprocess.run(nsys_argv, cwd=str(tools), env=env)
-
-        rep = Path(str(capture_prefix) + '.nsys-rep')
-        qd = Path(str(capture_prefix) + '.qdstrm')
-        rep_dst = nsys_dir / 'mls_nsys.nsys-rep'
-        qd_dst = nsys_dir / 'nsys_capture.qdstrm'
-        if rep.is_file():
-            shutil.copy2(rep, rep_dst)
-        if qd.is_file():
-            shutil.copy2(qd, qd_dst)
-
-        if nsys_run.returncode == 0 and rep_dst.is_file():
-            print('[collect_research_metrics] nsys report:', rep_dst, flush=True)
-            return rep_dst
-        if rep_dst.is_file():
-            print(
-                '[collect_research_metrics] WARN: nsys exited with code %d but report exists: %s'
-                % (nsys_run.returncode, rep_dst),
-                flush=True,
-            )
-            return rep_dst
-        if nsys_run.returncode != 0:
-            raise SystemExit('Command failed (%d): %s' % (nsys_run.returncode, nsys_argv))
-
-        # Some environments complete nsys with code 0 but do not materialize report on mounted FS.
-        # Fallback: force-generate a tiny report in local tmp and copy it to the expected destination.
-        fallback_prefix = Path(td) / 'mls_nsys_fallback'
-        fb_argv = [
-            nsys_bin,
-            'profile',
-            '--force-overwrite=true',
-            '--trace=osrt',
-            '--sample=none',
-            '-o',
-            str(fallback_prefix),
-            '/bin/true',
-        ]
-        fb_run = subprocess.run(fb_argv, cwd=str(tools), env=env)
-        fb_rep = Path(str(fallback_prefix) + '.nsys-rep')
-        if fb_run.returncode == 0 and fb_rep.is_file():
-            shutil.copy2(fb_rep, rep_dst)
-            print('[collect_research_metrics] nsys report (fallback):', rep_dst, flush=True)
-            return rep_dst
-
-        print('[collect_research_metrics] WARN: nsys completed but .nsys-rep not found:', rep_dst, flush=True)
-        return None
-
-
-def _write_forward_nvtx_json(profile_dir: Path, artifacts_dir: Path) -> Path:
-    """
-    Emit forward_nvtx_ms.json for plotting.
-    Prefer known model-stage events from torch trace; if missing, fallback to fixed fractions.
-    """
-    trace_path = profile_dir / 'torch_profile_trace.json'
-    out_profile = profile_dir / 'forward_nvtx_ms.json'
-    artifacts_dir.mkdir(parents=True, exist_ok=True)
-    out_art = artifacts_dir / 'forward_nvtx_ms.json'
-
-    stage_order = ['PillarVFE', 'PointPillarScatter', 'BaseBEVBackbone', 'AnchorHeadSingle']
-    data = {
-        'schema': 'forward_nvtx_ms_v1',
-        'mean_ms': {},
-        'fraction_of_forward_sum': {},
-        'nvtx_stage_order': stage_order,
-        'has_forward_stage_samples': False,
-        'source': 'model_stage_timing_fallback',
-    }
-
-    means: dict[str, float] = {}
-    try:
-        if trace_path.is_file():
-            obj = json.loads(trace_path.read_text(encoding='utf-8'))
-            events = obj.get('traceEvents', [])
-            buckets: dict[str, list[float]] = {k: [] for k in stage_order}
-            for e in events:
-                name = str(e.get('name', ''))
-                if name not in buckets:
-                    continue
-                dur = e.get('dur', None)
-                if dur is None:
-                    continue
-                try:
-                    ms = float(dur) / 1000.0
-                except (TypeError, ValueError):
-                    continue
-                if ms > 0:
-                    buckets[name].append(ms)
-            for k in stage_order:
-                vals = buckets[k]
-                if vals:
-                    means[k] = float(sum(vals) / len(vals))
-    except Exception:
-        means = {}
-
-    if not means:
-        means = {
-            'PillarVFE': 2.2,
-            'PointPillarScatter': 1.2,
-            'BaseBEVBackbone': 9.5,
-            'AnchorHeadSingle': 3.1,
-        }
-        data['source'] = 'model_stage_timing_fallback'
-        data['has_forward_stage_samples'] = False
-    else:
-        data['source'] = 'torch_profile_trace_nvtx'
-        data['has_forward_stage_samples'] = True
-
-    total = float(sum(means.values())) if means else 0.0
-    fracs = {k: (float(v) / total if total > 0 else 0.0) for k, v in means.items()}
-    data['mean_ms'] = means
-    data['fraction_of_forward_sum'] = fracs
-
-    txt = json.dumps(data, indent=2) + '\n'
-    out_profile.write_text(txt, encoding='utf-8')
-    out_art.write_text(txt, encoding='utf-8')
-    return out_profile
 
 
 def _git_commit(repo: Path) -> str:
@@ -1217,36 +1046,12 @@ def cmd_run(args: argparse.Namespace) -> None:
             ps_argv.append('--preprocess_gpu')
         if prep_cv:
             ps_argv.append('--compile_voxelizer')
-        if bool(getattr(args, 'nsight', False)):
-            ps_argv.append('--nsight')
         if mb > 0:
             ps_argv.extend(['--measurement_burnin_steps', str(mb)])
         pss = getattr(args, 'profile_steady_spike_ms', None)
         if pss is not None:
             ps_argv.extend(['--profile_steady_spike_ms', str(float(pss))])
-        nsys_dir = vdir / 'nsys'
-        nsys_rep_path = _run_profile_with_optional_nsys(
-            args=args,
-            ps_argv=ps_argv,
-            tools=tools,
-            nsys_dir=nsys_dir,
-            env=base_env,
-        )
-        artifacts_dir = vdir / 'artifacts'
-        fwd_nvtx_path = _write_forward_nvtx_json(prof_dir, artifacts_dir)
-        manifest = {
-            'runs_schema_version': '2',
-            'run_id': uuid.uuid4().hex[:12],
-            'timestamp_iso': dt.datetime.now(dt.timezone.utc).isoformat(),
-            'experiment_cell_id': cell_id,
-            'variant_name': vname,
-            'profile_output_dir': str(prof_dir),
-            'energy_output_dir': str(eng_dir),
-            'nsys_rep_path': str(nsys_rep_path) if nsys_rep_path else '',
-            'nsys_sqlite_path': '',
-            'artifacts_forward_nvtx_json': str(fwd_nvtx_path),
-        }
-        (artifacts_dir / 'run_manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
+        _run_cmd(ps_argv, cwd=tools, env=base_env)
 
         em_argv = [
             py, str(tools / 'energy_monitor.py'),
@@ -1302,7 +1107,9 @@ def cmd_run(args: argparse.Namespace) -> None:
             ]
             if kitti_cap is not None:
                 ke_argv.extend(['--max_samples', str(kitti_cap)])
-            if use_compile:
+            # NOTE: torch.compile during full KITTI val eval can OOM on mid-size GPUs (e.g. A10).
+            # Profiling/energy may still use compile per matrix flags; KITTI eval export is decoupled.
+            if bool(getattr(args, 'kitti_eval_compile', False)):
                 ke_argv.append('--compile')
             if use_amp:
                 ke_argv.append('--amp')
@@ -1536,6 +1343,13 @@ def main():
         help='Warmup batches inside KITTI eval loop before infer_time metering (default: 20)',
     )
     p_run.add_argument(
+        '--kitti-eval-compile',
+        action='store_true',
+        default=False,
+        dest='kitti_eval_compile',
+        help='Pass --compile to kitti_eval_export.py (NOT recommended for full val on A10-class GPUs).',
+    )
+    p_run.add_argument(
         '--fresh_runs',
         action='store_true',
         help='Delete runs.csv before appending new rows (clean re-run)',
@@ -1571,19 +1385,6 @@ def main():
         dest='profile_steady_spike_ms',
         metavar='MS',
         help='Forwarded to profile_suite: forward ms above MS drops step from Peak GPU Mem (steady)',
-    )
-    p_run.add_argument(
-        '--nsight',
-        action='store_true',
-        default=False,
-        help='Enable NVTX ranges in profile_suite and emit forward_nvtx_ms.json output.',
-    )
-    p_run.add_argument(
-        '--nsys-profile',
-        action='store_true',
-        dest='nsys_profile',
-        default=False,
-        help='Wrap profile_suite with nsys profile and save <cell>/nsys/mls_nsys.nsys-rep.',
     )
 
     p_matrix = sub.add_parser('matrix', help='Export M0–M4 × (FP32, AMP) experiment matrix CSV')

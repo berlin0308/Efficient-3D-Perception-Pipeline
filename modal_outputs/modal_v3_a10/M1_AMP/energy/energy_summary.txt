@@ -1,5 +1,5 @@
 =================================================================
-  PointPillars Energy Monitor — 2026-04-14 03:07:05
+  PointPillars Energy Monitor — 2026-04-14 06:11:58
 =================================================================
   GPU            : NVIDIA A10
   Config         : /opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
@@ -10,23 +10,23 @@
   Preprocess GPU (voxelize on GPU): False
   Compile voxelizer: False
   INT8 (CPU PTQ) : False
-  Warmup         : 100   Steps: 50   Batch: 1
+  Warmup         : 500   Steps: 500   Batch: 1
   Meas. burn-in  : 0  (power sampled; excluded from NVML J window)
 
 ── Latency (ms) ─────────────────────────────────────────
-  Mean : 7.78   p50 : 7.17   p95 : 10.29   p99 : 13.43
+  Mean : 7.97   p50 : 7.26   p95 : 11.10   p99 : 13.56
 
 ── Throughput ───────────────────────────────────────────
-  128.59 samples/s  (total_samples=48, wall=0.37 s)
+  125.41 samples/s  (total_samples=498, wall=3.97 s)
 
 ── Power & Energy ───────────────────────────────────────
-  Mean power     : 127.5 W
-  Peak power     : 80.3 W
-  Total energy   : 47.61 J  (steady forward wall=0.37 s, 244 power samples)  (spike windows excluded: 2 forward interval(s))
+  Mean power     : 159.3 W
+  Peak power     : 100.0 W
+  Total energy   : 632.48 J  (steady forward wall=3.97 s, 415 power samples)  (spike windows excluded: 2 forward interval(s))
 
 ── Performance-per-Watt ─────────────────────────────────
-  1.0083 samples/s/W  (throughput / mean_power)
-  1.0083 samples/J   (steady_samples / steady_energy; spike intervals omitted when enabled)
+  0.7874 samples/s/W  (throughput / mean_power)
+  0.7874 samples/J   (steady_samples / steady_energy; spike intervals omitted when enabled)
   Interpretation: higher = more efficient per unit energy
 
 ── Outputs ──────────────────────────────────────────────

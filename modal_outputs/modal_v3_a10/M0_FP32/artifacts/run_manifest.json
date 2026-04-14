@@ -1,7 +1,7 @@
 {
   "runs_schema_version": "2",
-  "run_id": "85b99a8c3800",
-  "timestamp_iso": "2026-04-14T02:55:01.632849+00:00",
+  "run_id": "9fc5378c43c9",
+  "timestamp_iso": "2026-04-14T03:53:05.989130+00:00",
   "experiment_cell_id": "M0_FP32",
   "variant_name": "M0_FP32",
   "profile_output_dir": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M0_FP32/profile",
