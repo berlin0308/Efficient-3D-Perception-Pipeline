@@ -1,0 +1,35 @@
+=================================================================
+  PointPillars Energy Monitor — 2026-04-14 03:23:58
+=================================================================
+  GPU            : NVIDIA A10
+  Config         : /opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+  Compile        : False  Traced: none
+  AMP (fp16)     : True
+  Memory opt scatter (HWC write): True
+  Memory opt conv2d (channels_last): True
+  Preprocess GPU (voxelize on GPU): True
+  Compile voxelizer: True
+  INT8 (CPU PTQ) : False
+  Warmup         : 100   Steps: 50   Batch: 1
+  Meas. burn-in  : 0  (power sampled; excluded from NVML J window)
+
+── Latency (ms) ─────────────────────────────────────────
+  Mean : 9.32   p50 : 9.29   p95 : 9.60   p99 : 9.84
+
+── Throughput ───────────────────────────────────────────
+  9.57 samples/s  (total_samples=50, wall=5.22 s)
+
+── Power & Energy ───────────────────────────────────────
+  Mean power     : 67.7 W
+  Peak power     : 104.2 W
+  Total energy   : 351.44 J  (NVML window=5.22 s, 94 power samples)
+
+── Performance-per-Watt ─────────────────────────────────
+  0.1415 samples/s/W  (throughput / mean_power)
+  0.1423 samples/J   (steady_samples / steady_energy; spike intervals omitted when enabled)
+  Interpretation: higher = more efficient per unit energy
+
+── Outputs ──────────────────────────────────────────────
+  Summary  : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M4_AMP/energy/energy_summary.txt
+  Raw CSV  : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M4_AMP/energy/energy_samples.csv
+=================================================================

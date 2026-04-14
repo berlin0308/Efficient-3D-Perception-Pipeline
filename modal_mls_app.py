@@ -167,26 +167,86 @@ def _merge_download_tree(src: Path, dst: Path) -> None:
         shutil.move(str(item), str(target))
 
 
+def _resolve_volume_get_inner(stage: Path, volume_prefix: str) -> Path:
+    """Find the directory whose children are runs.csv / cell dirs after modal volume get."""
+    if not volume_prefix:
+        subs = [x for x in stage.iterdir() if x.is_dir()]
+        if len(subs) == 1:
+            return subs[0]
+        return stage
+    primary = stage / volume_prefix
+    if primary.is_dir():
+        return primary
+    cur = stage
+    for part in Path(volume_prefix).parts:
+        nxt = cur / part
+        if nxt.is_dir():
+            cur = nxt
+        else:
+            break
+    if cur != stage:
+        return cur
+    subs = [x for x in stage.iterdir() if x.is_dir()]
+    if len(subs) == 1:
+        return subs[0]
+    return stage
+
+
 def _download_results_tree_local(volume_prefix: str, local_dir: Path) -> None:
     local_dir = local_dir.resolve()
     local_dir.mkdir(parents=True, exist_ok=True)
     remote = "/" + volume_prefix if volume_prefix else "/"
-    target = local_dir / volume_prefix if volume_prefix else local_dir
     with tempfile.TemporaryDirectory(prefix="modal_vol_get_") as td:
         stage = Path(td)
         subprocess.run(
             _modal_cli_argv() + ["volume", "get", RESULTS_VOLUME_NAME, remote, str(stage), "--force"],
             check=True,
         )
-        inner = stage / volume_prefix if volume_prefix else stage
-        if volume_prefix and not inner.is_dir():
-            inner = stage
+        inner = _resolve_volume_get_inner(stage, volume_prefix)
         if not inner.is_dir():
             raise RuntimeError(
                 "Unexpected layout after modal volume get %r -> %s (expected a directory)"
                 % (remote, stage)
             )
-        _merge_download_tree(inner, target)
+        _merge_download_tree(inner, local_dir)
+
+
+def _backfill_nsys_binaries_local(volume_prefix: str, local_dir: Path) -> None:
+    """
+    Ensure binary Nsight artifacts are present locally.
+    volume get <dir> may skip some large binaries; fetch them explicitly by file path.
+    """
+    pref = volume_prefix.strip("/")
+    nsys_dirs = [p for p in local_dir.rglob("nsys") if p.is_dir()]
+    for nsys_dir in nsys_dirs:
+        rel_dir = nsys_dir.relative_to(local_dir).as_posix()
+        remote_dir = "/".join(x for x in (pref, rel_dir) if x).strip("/")
+        for name in ("mls_nsys.nsys-rep", "nsys_capture.qdstrm"):
+            dest = nsys_dir / name
+            if dest.is_file() and dest.stat().st_size > 0:
+                continue
+            remote_file = "/" + "/".join((remote_dir, name)).lstrip("/")
+            try:
+                subprocess.run(
+                    _modal_cli_argv() + ["volume", "get", RESULTS_VOLUME_NAME, remote_file, str(dest), "--force"],
+                    check=True,
+                )
+            except subprocess.CalledProcessError:
+                continue
+
+
+def _merge_modal_run_extra_args(
+    extra_args: list[str] | None,
+    *,
+    enable_nsight: bool,
+    enable_nsys_profile: bool,
+) -> list[str] | None:
+    merged = list(extra_args or [])
+    if enable_nsight and "--nsight" not in merged:
+        merged.append("--nsight")
+    if enable_nsys_profile and "--nsys-profile" not in merged:
+        merged.append("--nsys-profile")
+    return merged if merged else None
 
 
 def _stream_subprocess_to_logs(
@@ -323,6 +383,7 @@ mls_image = (
         ],
     )
     .run_commands(
+        "set -eux; apt-get update; (apt-get install -y nsight-systems-cli || apt-get install -y nsight-systems || apt-get install -y cuda-nsight-systems-11-8 || true); if [ ! -x /usr/local/bin/nsys ]; then for c in /usr/local/cuda/bin/nsys /usr/local/cuda/NsightSystems-cli/nsys /usr/local/nsight-systems/bin/nsys /opt/nvidia/nsight-systems/*/target-linux-x64/nsys; do if [ -x \"$c\" ]; then ln -sf \"$c\" /usr/local/bin/nsys; break; fi; done; fi; command -v nsys || true; nsys --version || true",
         "cd /opt/OpenPCDet && CC=gcc CXX=g++ pip install -r requirements.txt",
         "cd /opt/OpenPCDet && pip install 'numpy<2' 'setuptools>=58,<70'",
         'cd /opt/OpenPCDet && TORCH_CUDA_ARCH_LIST="7.5;8.0;8.6;8.9;9.0+PTX" python setup.py develop',
@@ -751,7 +812,7 @@ def main(
     extra_args: str = "",
     kitti_path: str = "",
     require_real_kitti: bool = True,
-    output_root: str = "/mnt/results/research_matrix",
+    output_root: str = "/mnt/results/modal_v3_a10",
     matrix: str = "fp32_amp",
     cell: str = "",
     all_cells: bool = False,
@@ -759,8 +820,10 @@ def main(
     precision_p: int = -1,
     runs_csv: str = "",
     output_csv: str = "",
-    download_to: str = "modal_mls_results",
+    download_to: str = "modal_outputs/modal_v3_a10",
     skip_download: bool = False,
+    enable_nsight: bool = True,
+    enable_nsys_profile: bool = True,
     force_kitti_download: bool = False,
     keep_kitti_zips: bool = False,
     kitti_full_val: bool = False,
@@ -808,6 +871,11 @@ def main(
 
     if action == "run":
         extra_list = extra_args.split() if extra_args.strip() else None
+        merged_extra = _merge_modal_run_extra_args(
+            extra_list,
+            enable_nsight=enable_nsight,
+            enable_nsys_profile=enable_nsys_profile,
+        )
         out = run_collect_research_metrics.remote(
             warmup=warmup,
             steps=steps,
@@ -822,7 +890,7 @@ def main(
             precision_p=precision_p,
             runs_csv=runs_csv,
             output_csv=output_csv,
-            extra_args=extra_list,
+            extra_args=merged_extra,
             require_real_kitti=require_real_kitti,
             kitti_full_val=kitti_full_val,
             kitti_max_eval_samples=kitti_max_eval_samples,
@@ -841,6 +909,7 @@ def main(
             dest = Path(download_to)
             print(f"[download] modal volume get {RESULTS_VOLUME_NAME} /{prefix} -> {dest.resolve()}")
             _download_results_tree_local(prefix, dest)
+            _backfill_nsys_binaries_local(prefix, dest)
             print("[download] Done.")
         return
 

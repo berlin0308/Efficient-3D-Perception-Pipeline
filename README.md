@@ -2,6 +2,31 @@
 
 ---
 
+## Run `modal_mls_app.py`
+
+Run from repo root:
+
+Default behavior in `modal_mls_app.py`:
+- GPU: `A10` (override with `MLS_MODAL_RESEARCH_GPU`)
+- Output root on Modal volume: `/mnt/results/modal_v3_a10`
+- Auto download to local: `modal_outputs/modal_v3_a10`
+- Extra args auto-enabled: `--nsight --nsys-profile` (for `forward_nvtx_ms.json` + `.nsys-rep`)
+
+### Run all cells
+
+```bash
+MLS_MODAL_RESEARCH_GPU=A10 modal run -d modal_mls_app.py --action run --matrix fp32_amp --all-cells --download-to modal_outputs/modal_v3_a10
+```
+
+### Run one cell
+
+```bash
+# m: 0..4, p: 1=FP32, 2=AMP
+MLS_MODAL_RESEARCH_GPU=A10 modal run -d modal_mls_app.py --action run --matrix fp32_amp --model-m 1 --precision-p 2 --download-to modal_outputs/modal_v3_a10
+```
+
+---
+
 ## Plot Modal Outputs
 
 Run from repo root (`/home/nas/polin/cmu-berlin/MLS`):

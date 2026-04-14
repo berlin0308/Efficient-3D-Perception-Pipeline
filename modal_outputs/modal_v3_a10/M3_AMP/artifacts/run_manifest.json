@@ -1,0 +1,12 @@
+{
+  "runs_schema_version": "2",
+  "run_id": "4c16e2582eb6",
+  "timestamp_iso": "2026-04-14T03:16:07.525271+00:00",
+  "experiment_cell_id": "M3_AMP",
+  "variant_name": "M3_AMP",
+  "profile_output_dir": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M3_AMP/profile",
+  "energy_output_dir": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M3_AMP/energy",
+  "nsys_rep_path": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M3_AMP/nsys/mls_nsys.nsys-rep",
+  "nsys_sqlite_path": "",
+  "artifacts_forward_nvtx_json": "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M3_AMP/profile/forward_nvtx_ms.json"
+}
