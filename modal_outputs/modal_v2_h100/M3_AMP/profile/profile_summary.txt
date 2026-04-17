@@ -1,0 +1,41 @@
+======================================================================
+  PointPillars Profile Suite — 2026-04-12 05:18:43
+======================================================================
+  Config  : /opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+  Ckpt    : /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth
+  Compile : False
+  AMP (fp16): True
+  Memory opt scatter (HWC write): False
+  Memory opt conv2d (channels_last): False
+  Preprocess GPU (voxelize on GPU): True
+  Compile voxelizer: False
+  INT8    : False  (CPU dynamic Linear PTQ if true)
+  Traced  : none
+  Nsight NVTX: True
+  Warmup  : 500 steps   Measured: 200 steps   Batch: 1   Meas. burn-in: 100
+
+── Per-stage latency (mean / p50 / p95 / p99 / std) [ms] ─────────────
+Stage                   mean         p50         p95         p99         std
+----------------------------------------------------------------------------
+read_points (excl.T_rt)        8.38        8.32        8.86       12.25        0.96
+cpu_prepare             0.72        0.73        0.78        0.81        0.04
+data_to_gpu             0.19        0.19        0.23        0.25        0.02
+pre_processing          2.23        2.22        2.36        2.49        0.08
+h2d (load rest)         0.11        0.11        0.14        0.15        0.01
+Forward (GPU)          10.86       10.83       11.38       11.85        0.28
+PostProcess             0.47        0.47        0.52        0.55        0.05
+── Onboard frame ──       11.57       11.54       12.11       12.61        0.30
+── T_rt (onboard) ──       14.59       14.55       15.20       15.73        0.35
+
+── Throughput & Memory ─────────────────────────────────────────
+  Throughput         : 68.5 samples/s  (batch=1, mean T_rt=14.59 ms)
+  Peak GPU Memory    : 284.5 MB  (NMS/recall on GPU; backbone mostly CPU when INT8)
+  Peak GPU Mem (steady): 284.5 MB  (no forward spike filter)
+  Mean peak per step : 284.3 MB
+  CUDA kernel events : 0
+  T_rt mean (onboard, excl. read_points): 14.59 ms
+
+── Outputs ──────────────────────────────────────────────────────
+  Chrome trace       : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2_h100/M3_AMP/profile/torch_profile_trace.json
+  Summary            : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2_h100/M3_AMP/profile/profile_summary.txt
+======================================================================

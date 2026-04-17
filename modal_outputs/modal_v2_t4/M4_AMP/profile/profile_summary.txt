@@ -1,0 +1,41 @@
+======================================================================
+  PointPillars Profile Suite — 2026-04-12 02:29:22
+======================================================================
+  Config  : /opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+  Ckpt    : /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth
+  Compile : True
+  AMP (fp16): True
+  Memory opt scatter (HWC write): True
+  Memory opt conv2d (channels_last): True
+  Preprocess GPU (voxelize on GPU): True
+  Compile voxelizer: True
+  INT8    : False  (CPU dynamic Linear PTQ if true)
+  Traced  : none
+  Nsight NVTX: True
+  Warmup  : 500 steps   Measured: 200 steps   Batch: 1   Meas. burn-in: 100
+
+── Per-stage latency (mean / p50 / p95 / p99 / std) [ms] ─────────────
+Stage                   mean         p50         p95         p99         std
+----------------------------------------------------------------------------
+read_points (excl.T_rt)        8.97        8.91        9.46       10.21        1.35
+cpu_prepare             0.79        0.79        0.84        0.86        0.04
+data_to_gpu             0.30        0.30        0.33        0.35        0.02
+pre_processing          2.34        2.31        2.43        3.75        0.19
+h2d (load rest)         0.18        0.18        0.20        0.20        0.01
+Forward (GPU)          24.01       23.65       26.69       30.65        1.80
+PostProcess             0.67        0.66        0.70        0.98        0.16
+── Onboard frame ──       25.02       24.66       27.70       31.64        1.81
+── T_rt (onboard) ──       28.29       27.93       30.94       34.90        1.83
+
+── Throughput & Memory ─────────────────────────────────────────
+  Throughput         : 35.4 samples/s  (batch=1, mean T_rt=28.29 ms)
+  Peak GPU Memory    : 5604.8 MB  (NMS/recall on GPU; backbone mostly CPU when INT8)
+  Peak GPU Mem (steady): 5604.8 MB  (steps with forward <= 200.0 ms)
+  Mean peak per step : 4922.4 MB
+  CUDA kernel events : 0
+  T_rt mean (onboard, excl. read_points): 28.29 ms
+
+── Outputs ──────────────────────────────────────────────────────
+  Chrome trace       : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2_t4/M4_AMP/profile/torch_profile_trace.json
+  Summary            : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v2_t4/M4_AMP/profile/profile_summary.txt
+======================================================================

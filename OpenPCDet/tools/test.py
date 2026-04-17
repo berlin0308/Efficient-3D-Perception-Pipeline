@@ -59,6 +59,20 @@ def parse_config():
     parser.add_argument('--compile', action='store_true', help='wrap model with torch.compile() before eval (PyTorch 2.0+)')
     parser.add_argument('--amp', action='store_true', default=False,
                         help='enable mixed-precision inference with fp16 autocast')
+    parser.add_argument(
+        '--memory_opt_scatter',
+        action='store_true',
+        default=False,
+        help='HWC coalesced scatter (same as profile_suite)',
+    )
+    parser.add_argument(
+        '--memory_opt_conv2d',
+        action='store_true',
+        default=False,
+        help='channels_last BEV path (same as profile_suite)',
+    )
+    parser.add_argument('--int8', action='store_true', default=False,
+                        help='CPU dynamic Linear INT8 PTQ + GPU NMS (see int8_utils.py)')
     parser.add_argument('--compile_debug', action='store_true', help='with --compile: log graph_breaks, graph_code, recompiles to stderr; use 2>out.txt to save (many graph breaks explain poor compile perf)')
     parser.add_argument('--traced_model', type=str, default=None, help='path to TorchScript .pt from profile_utils/export.py; use it for forward, post_processing still uses --ckpt model')
     parser.add_argument('--max_samples', type=int, default=None, help='only run evaluation on first N samples (e.g. 100); omit or 0 for full eval')

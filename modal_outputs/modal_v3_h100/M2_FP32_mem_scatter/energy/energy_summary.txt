@@ -1,0 +1,35 @@
+=================================================================
+  PointPillars Energy Monitor — 2026-04-14 14:52:11
+=================================================================
+  GPU            : NVIDIA H100 80GB HBM3
+  Config         : /opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+  Compile        : False  Traced: none
+  AMP (fp16)     : False
+  Memory opt scatter (HWC write): True
+  Memory opt conv2d (channels_last): False
+  Preprocess GPU (voxelize on GPU): False
+  Compile voxelizer: False
+  INT8 (CPU PTQ) : False
+  Warmup         : 500   Steps: 500   Batch: 1
+  Meas. burn-in  : 0  (power sampled; excluded from NVML J window)
+
+── Latency (ms) ─────────────────────────────────────────
+  Mean : 6.19   p50 : 5.25   p95 : 9.42   p99 : 10.24
+
+── Throughput ───────────────────────────────────────────
+  81.69 samples/s  (total_samples=500, wall=6.12 s)
+
+── Power & Energy ───────────────────────────────────────
+  Mean power     : 158.6 W
+  Peak power     : 164.6 W
+  Total energy   : 970.62 J  (NVML window=6.12 s, 122 power samples)
+
+── Performance-per-Watt ─────────────────────────────────
+  0.5152 samples/s/W  (throughput / mean_power)
+  0.5151 samples/J   (steady_samples / steady_energy; spike intervals omitted when enabled)
+  Interpretation: higher = more efficient per unit energy
+
+── Outputs ──────────────────────────────────────────────
+  Summary  : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_h100/M2_FP32_mem_scatter/energy/energy_summary.txt
+  Raw CSV  : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_h100/M2_FP32_mem_scatter/energy/energy_samples.csv
+=================================================================

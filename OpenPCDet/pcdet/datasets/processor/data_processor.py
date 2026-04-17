@@ -1,3 +1,4 @@
+import functools
 from functools import partial
 
 import numpy as np
@@ -341,7 +342,7 @@ class DataProcessor(object):
         data_dict["img_aug_matrix"] = transforms
         return data_dict
 
-    def forward(self, data_dict):
+    def forward(self, data_dict, skip_processor_func_names=None):
         """
         Args:
             data_dict:
@@ -349,11 +350,17 @@ class DataProcessor(object):
                 gt_boxes: optional, (N, 7 + C) [x, y, z, dx, dy, dz, heading, ...]
                 gt_names: optional, (N), string
                 ...
+            skip_processor_func_names: optional set of function __name__ strings to skip
+                (e.g. {'transform_points_to_voxels'} for GPU voxelization in tools/).
 
         Returns:
         """
 
+        skip = skip_processor_func_names or frozenset()
         for cur_processor in self.data_processor_queue:
+            fn = cur_processor.func if isinstance(cur_processor, functools.partial) else cur_processor
+            if getattr(fn, '__name__', '') in skip:
+                continue
             data_dict = cur_processor(data_dict=data_dict)
 
         return data_dict

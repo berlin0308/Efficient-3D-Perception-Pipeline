@@ -12,6 +12,14 @@ from pcdet.models import load_data_to_gpu
 from pcdet.utils import common_utils
 
 
+def _load_eval_batch(batch_dict, args):
+    if getattr(args, 'int8', False):
+        import int8_utils
+        int8_utils.load_batch_to_device(batch_dict, torch.device('cpu'))
+    else:
+        load_data_to_gpu(batch_dict)
+
+
 def _nvtx_range(name):
     """Context manager for NVTX range (no-op if torch.cuda.nvtx not available)."""
     nvtx = getattr(torch.cuda, 'nvtx', None)
@@ -40,9 +48,9 @@ def _forward_model(model, batch_dict, args):
     Run model(batch_dict). When --compile is set, pass only tensor/int/float keys
     so torch.compile (Dynamo) does not see numpy.str_ or other unsupported types.
     """
-    amp_enabled = bool(getattr(args, 'amp', False))
+    amp_enabled = bool(getattr(args, 'amp', False)) and not getattr(args, 'int8', False)
     amp_ctx = torch.autocast(device_type='cuda', dtype=torch.float16, enabled=amp_enabled) \
-        if torch.cuda.is_available() else nullcontext()
+        if torch.cuda.is_available() and not getattr(args, 'int8', False) else nullcontext()
 
     if not getattr(args, 'compile', False):
         with amp_ctx:
@@ -118,7 +126,7 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
             logger.info('Running %d warmup steps (no timing/profiling)' % warmup)
         for _ in range(min(warmup, len(dataloader))):
             batch_dict = next(dataloader_iter)
-            load_data_to_gpu(batch_dict)
+            _load_eval_batch(batch_dict, args)
             with torch.inference_mode():
                 _forward_model(model, batch_dict, args)
         profile_steps = min(getattr(args, 'profile_steps', 20), len(dataloader))
@@ -131,7 +139,7 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
         do_profile_export = use_profile and (cfg.LOCAL_RANK == 0)
 
         def run_one_step(batch_dict):
-            load_data_to_gpu(batch_dict)
+            _load_eval_batch(batch_dict, args)
             step_start = time.time() if getattr(args, 'infer_time', False) else None
             with torch.inference_mode():
                 pred_dicts, ret_dict = _forward_model(model, batch_dict, args)
@@ -185,7 +193,7 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
             logger.info('Running %d warmup steps (no NVTX/timing)' % warmup)
         for _ in range(min(warmup, len(dataloader))):
             batch_dict = next(dataloader_iter)
-            load_data_to_gpu(batch_dict)
+            _load_eval_batch(batch_dict, args)
             with torch.inference_mode():
                 _forward_model(model, batch_dict, args)
         nsight_steps = min(getattr(args, 'nsight_steps', 20), len(dataloader))
@@ -194,7 +202,7 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
 
         def run_one_step_nsight(batch_dict):
             with _nvtx_range('data_to_gpu'):
-                load_data_to_gpu(batch_dict)
+                _load_eval_batch(batch_dict, args)
             step_start = time.time() if getattr(args, 'infer_time', False) else None
             with _nvtx_range('forward'):
                 with torch.inference_mode():
@@ -227,7 +235,7 @@ def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=Fal
         for i, batch_dict in enumerate(dataloader):
             if max_samples is not None and num_samples_evaluated >= max_samples:
                 break
-            load_data_to_gpu(batch_dict)
+            _load_eval_batch(batch_dict, args)
 
             do_timing = getattr(args, 'infer_time', False) and i >= warmup
             if do_timing:

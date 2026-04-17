@@ -1,0 +1,22 @@
+[
+  "/usr/local/bin/python",
+  "/opt/OpenPCDet/tools/profile_suite.py",
+  "--cfg_file",
+  "/opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml",
+  "--ckpt",
+  "/opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth",
+  "--output_dir",
+  "/__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M0_AMP/profile",
+  "--warmup",
+  "500",
+  "--steps",
+  "500",
+  "--batch_size",
+  "1",
+  "--workers",
+  "2",
+  "--cuda_id",
+  "0",
+  "--amp",
+  "--nsight"
+]

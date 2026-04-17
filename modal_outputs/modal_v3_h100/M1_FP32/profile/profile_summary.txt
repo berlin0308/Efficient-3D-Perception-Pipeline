@@ -1,0 +1,39 @@
+======================================================================
+  PointPillars Profile Suite — 2026-04-14 14:35:15
+======================================================================
+  Config  : /opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+  Ckpt    : /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth
+  Compile : True
+  AMP (fp16): False
+  Memory opt scatter (HWC write): False
+  Memory opt conv2d (channels_last): False
+  Preprocess GPU (voxelize on GPU): False
+  Compile voxelizer: False
+  INT8    : False  (CPU dynamic Linear PTQ if true)
+  Traced  : none
+  Nsight NVTX: False
+  Warmup  : 500 steps   Measured: 500 steps   Batch: 1   Meas. burn-in: 0
+
+── Per-stage latency (mean / p50 / p95 / p99 / std) [ms] ─────────────
+Stage                   mean         p50         p95         p99         std
+----------------------------------------------------------------------------
+read_points (excl.T_rt)        7.90        7.65        9.77       11.50        1.21
+pre_processing         15.05       14.85       20.55       22.92        3.30
+data_to_gpu             0.74        0.74        0.90        0.94        0.11
+Forward (GPU)           8.78        8.48        9.77       18.16        2.10
+PostProcess             0.49        0.49        0.53        0.83        0.06
+── Onboard frame ──       10.17        9.86       11.40       19.60        2.14
+── T_rt (onboard) ──       25.06       24.72       31.07       35.22        4.25
+
+── Throughput & Memory ─────────────────────────────────────────
+  Throughput         : 39.9 samples/s  (batch=1, mean T_rt=25.06 ms)
+  Peak GPU Memory    : 7302.7 MB  (NMS/recall on GPU; backbone mostly CPU when INT8)
+  Peak GPU Mem (steady): 7302.7 MB  (steps with forward <= 200.0 ms)
+  Mean peak per step : 5599.8 MB
+  CUDA kernel events : 314285
+  T_rt mean (onboard, excl. read_points): 25.06 ms
+
+── Outputs ──────────────────────────────────────────────────────
+  Chrome trace       : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_h100/M1_FP32/profile/torch_profile_trace.json
+  Summary            : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_h100/M1_FP32/profile/profile_summary.txt
+======================================================================

@@ -1,0 +1,40 @@
+2026-04-05 23:59:29,102   INFO  Profile suite — output dir: /home/nas/polin/cmu-berlin/MLS/profile_outputs/compare_memopt/channels_last
+2026-04-05 23:59:29,105   INFO  Loading KITTI dataset
+2026-04-05 23:59:29,225   INFO  Total samples for KITTI dataset: 2330
+2026-04-05 23:59:29,621   INFO  ==> Loading parameters from checkpoint ckpt/pointpillar_7728.pth to GPU
+2026-04-05 23:59:29,659   INFO  ==> Done (loaded 127/127)
+2026-04-05 23:59:29,895   INFO  memory_bound_opt: model.to(memory_format=torch.channels_last) + BEV/scatter paths
+2026-04-05 23:59:29,974   INFO  Running 80 warmup steps...
+2026-04-05 23:59:39,109   INFO  Profiling 40 steps...
+2026-04-05 23:59:50,492   INFO  Chrome trace saved → /home/nas/polin/cmu-berlin/MLS/profile_outputs/compare_memopt/channels_last/torch_profile_trace.json
+2026-04-05 23:59:52,723   INFO  ======================================================================
+2026-04-05 23:59:52,723   INFO    PointPillars Profile Suite — 2026-04-05 23:59:52
+2026-04-05 23:59:52,723   INFO  ======================================================================
+2026-04-05 23:59:52,723   INFO    Config  : cfgs/kitti_models/pointpillar.yaml
+2026-04-05 23:59:52,723   INFO    Ckpt    : ckpt/pointpillar_7728.pth
+2026-04-05 23:59:52,723   INFO    Compile : False
+2026-04-05 23:59:52,723   INFO    AMP (fp16): False
+2026-04-05 23:59:52,723   INFO    Memory-bound opt (channels_last): True
+2026-04-05 23:59:52,723   INFO    INT8    : False  (CPU dynamic Linear PTQ if true)
+2026-04-05 23:59:52,723   INFO    Traced  : none
+2026-04-05 23:59:52,723   INFO    Warmup  : 80 steps   Measured: 40 steps   Batch: 1
+2026-04-05 23:59:52,723   INFO  
+2026-04-05 23:59:52,723   INFO  ── Per-stage latency (mean / p50 / p95 / p99 / std) [ms] ─────────────
+2026-04-05 23:59:52,723   INFO  Stage                   mean         p50         p95         p99         std
+2026-04-05 23:59:52,723   INFO  ----------------------------------------------------------------------------
+2026-04-05 23:59:52,723   INFO  DataLoader (CPU)       13.23        0.68       78.80      126.91       29.36
+2026-04-05 23:59:52,724   INFO  H2D Transfer            4.15        3.86        6.86        7.04        1.78
+2026-04-05 23:59:52,724   INFO  Forward (GPU)          72.64       66.16      132.57      180.45       31.20
+2026-04-05 23:59:52,724   INFO  PostProcess             2.30        2.08        3.06        6.00        0.93
+2026-04-05 23:59:52,724   INFO  ── Full Frame ──       80.78       75.91      142.62      185.29       31.69
+2026-04-05 23:59:52,724   INFO  
+2026-04-05 23:59:52,724   INFO  ── Throughput & Memory ─────────────────────────────────────────
+2026-04-05 23:59:52,724   INFO    Throughput         : 12.4 samples/s  (batch=1, mean_frame=80.78 ms)
+2026-04-05 23:59:52,724   INFO    Peak GPU Memory    : 331.6 MB  (NMS/recall on GPU; backbone mostly CPU when INT8)
+2026-04-05 23:59:52,724   INFO    Mean peak per step : 331.5 MB
+2026-04-05 23:59:52,724   INFO    CUDA kernel events : 31534
+2026-04-05 23:59:52,724   INFO  
+2026-04-05 23:59:52,724   INFO  ── Outputs ──────────────────────────────────────────────────────
+2026-04-05 23:59:52,724   INFO    Chrome trace       : /home/nas/polin/cmu-berlin/MLS/profile_outputs/compare_memopt/channels_last/torch_profile_trace.json
+2026-04-05 23:59:52,724   INFO    Summary            : /home/nas/polin/cmu-berlin/MLS/profile_outputs/compare_memopt/channels_last/profile_summary.txt
+2026-04-05 23:59:52,724   INFO  ======================================================================
