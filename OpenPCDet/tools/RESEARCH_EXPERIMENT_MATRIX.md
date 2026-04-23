@@ -2,7 +2,7 @@
 
 ## M4 definition (All applied)
 
-**M4 All applied** means NHWC layout where applicable, GPU preprocessing offload (`preprocess_gpu`, optional `compile_voxelizer`), and `torch.compile` for FP32 rows; for **AMP** rows the same stack **without** `torch.compile` by default (compile+AMP is excluded from the default benchmark matrix).
+**M4 All applied** means NHWC layout where applicable, GPU preprocessing offload (`preprocess_gpu`, `compile_voxelizer`), memory layout knobs, and `torch.compile` on the model for **both** M4_FP32 and M4_AMP (compile + `autocast` FP16 for AMP); use a large `--warmup` (dynamo + compiled voxelizer).
 
 Source: `research_experiment_matrix.M4_ALL_APPLIED_DEFINITION` (alias: `M5_ALL_APPLIED_DEFINITION`).
 

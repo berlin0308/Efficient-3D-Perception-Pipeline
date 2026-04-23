@@ -17,9 +17,8 @@ from typing import Any, Literal
 # One-sentence definition for report text (M4 "All applied")
 M4_ALL_APPLIED_DEFINITION = (
     'M4 All applied means NHWC layout where applicable, GPU preprocessing offload '
-    '(preprocess_gpu, optional compile_voxelizer), and torch.compile for FP32 rows; '
-    'for AMP rows use the same stack without torch.compile by default (compile+AMP can run '
-    'in some PyTorch builds but needs large warmup and is excluded from the default benchmark matrix).'
+    '(preprocess_gpu, compile_voxelizer), memory_opt_scatter/conv2d, and torch.compile on the model '
+    'for both M4_FP32 and M4_AMP (compile + autocast(fp16)); use large warmup (dynamo + compiled voxelizer).'
 )
 
 # Backward compatibility for docs / old imports
@@ -115,7 +114,7 @@ EXPERIMENT_MATRIX_FP32_AMP: list[dict[str, Any]] = [
     ),
     _cell(
         'M4_AMP', 'M4', 'AMP', 'M4_AMP', 'runnable',
-        amp=True, nhwc=True, preprocess_gpu=True, compile_voxelizer=True,
+        compile_=True, amp=True, nhwc=True, preprocess_gpu=True, compile_voxelizer=True,
         memory_opt_scatter=True, memory_opt_conv2d=True,
     ),
 ]

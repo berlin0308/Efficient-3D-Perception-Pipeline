@@ -1,0 +1,48 @@
+2026-04-23 03:20:27,123   INFO  Profile suite — output dir: /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v4_a10/M2_AMP_mem_both/profile
+2026-04-23 03:20:27,124   INFO  Loading KITTI dataset
+2026-04-23 03:20:27,326   INFO  Total samples for KITTI dataset: 7481
+2026-04-23 03:20:27,764   INFO  ==> Loading parameters from checkpoint /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-23 03:20:27,785   INFO  ==> Done (loaded 127/127)
+2026-04-23 03:20:27,791   INFO  memory_opt_conv2d: model.to(memory_format=torch.channels_last)
+2026-04-23 03:20:27,793   INFO  Running 1000 warmup steps...
+2026-04-23 03:21:05,133   INFO  Profiling 1000 steps (KITTI RT CPU stages)...
+2026-04-23 03:24:03,981   INFO  Chrome trace saved → /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v4_a10/M2_AMP_mem_both/profile/torch_profile_trace.json
+2026-04-23 03:24:43,817   INFO  ======================================================================
+2026-04-23 03:24:43,817   INFO    PointPillars Profile Suite — 2026-04-23 03:24:43
+2026-04-23 03:24:43,818   INFO  ======================================================================
+2026-04-23 03:24:43,818   INFO    Config  : /opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+2026-04-23 03:24:43,818   INFO    Ckpt    : /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth
+2026-04-23 03:24:43,818   INFO    Compile : False
+2026-04-23 03:24:43,818   INFO    AMP (fp16): True
+2026-04-23 03:24:43,819   INFO    Memory opt scatter (HWC write): True
+2026-04-23 03:24:43,819   INFO    Memory opt conv2d (channels_last): True
+2026-04-23 03:24:43,819   INFO    Preprocess GPU (voxelize on GPU): False
+2026-04-23 03:24:43,819   INFO    Compile voxelizer: False
+2026-04-23 03:24:43,819   INFO    INT8    : False  (CPU dynamic Linear PTQ if true)
+2026-04-23 03:24:43,819   INFO    Traced  : none
+2026-04-23 03:24:43,820   INFO    Nsight NVTX: False
+2026-04-23 03:24:43,820   INFO    Warmup  : 1000 steps   Measured: 1000 steps   Batch: 1   Meas. burn-in: 0
+2026-04-23 03:24:43,820   INFO  
+2026-04-23 03:24:43,820   INFO  ── Per-stage latency (mean / p50 / p95 / p99 / std) [ms] ─────────────
+2026-04-23 03:24:43,820   INFO  Stage                   mean         p50         p95         p99         std
+2026-04-23 03:24:43,820   INFO  ----------------------------------------------------------------------------
+2026-04-23 03:24:43,820   INFO  read_points (excl.T_rt)        8.00        7.77        9.76       11.42        1.52
+2026-04-23 03:24:43,821   INFO  pre_processing         16.90       16.71       23.38       25.54        3.92
+2026-04-23 03:24:43,821   INFO  data_to_gpu             0.82        0.81        1.03        1.11        0.13
+2026-04-23 03:24:43,821   INFO  Forward (GPU)          11.37       11.35       11.86       12.78        0.44
+2026-04-23 03:24:43,821   INFO  PostProcess             0.57        0.56        0.67        0.95        0.09
+2026-04-23 03:24:43,821   INFO  ── Onboard frame ──       12.95       12.93       13.71       14.82        0.61
+2026-04-23 03:24:43,821   INFO  ── T_rt (onboard) ──       29.65       29.54       36.39       39.39        4.22
+2026-04-23 03:24:43,822   INFO  
+2026-04-23 03:24:43,822   INFO  ── Throughput & Memory ─────────────────────────────────────────
+2026-04-23 03:24:43,822   INFO    Throughput         : 33.7 samples/s  (batch=1, mean T_rt=29.65 ms)
+2026-04-23 03:24:43,822   INFO    Peak GPU Memory    : 183.1 MB  (NMS/recall on GPU; backbone mostly CPU when INT8)
+2026-04-23 03:24:43,822   INFO    Peak GPU Mem (steady): 183.1 MB  (no forward spike filter)
+2026-04-23 03:24:43,823   INFO    Mean peak per step : 182.8 MB
+2026-04-23 03:24:43,823   INFO    CUDA kernel events : 820670
+2026-04-23 03:24:43,823   INFO    T_rt mean (onboard, excl. read_points): 29.65 ms
+2026-04-23 03:24:43,823   INFO  
+2026-04-23 03:24:43,823   INFO  ── Outputs ──────────────────────────────────────────────────────
+2026-04-23 03:24:43,823   INFO    Chrome trace       : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v4_a10/M2_AMP_mem_both/profile/torch_profile_trace.json
+2026-04-23 03:24:43,824   INFO    Summary            : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v4_a10/M2_AMP_mem_both/profile/profile_summary.txt
+2026-04-23 03:24:43,824   INFO  ======================================================================

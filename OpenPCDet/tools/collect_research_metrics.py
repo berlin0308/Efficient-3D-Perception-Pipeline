@@ -970,7 +970,12 @@ def cmd_run(args: argparse.Namespace) -> None:
 
         note = ''
         cell_id = (cell or {}).get('cell_id', '')
-        if use_compile and use_amp:
+        if cell_id == 'M4_AMP' and use_compile and use_amp:
+            note = (
+                'M4_AMP: torch.compile(model) + autocast(fp16) + memory_opt_scatter/conv2d + GPU voxel preprocess + '
+                'compile_voxelizer; use generous --warmup (dynamo + compiled voxelizer).'
+            )
+        elif use_compile and use_amp:
             note = (
                 'M1_AMP: torch.compile + autocast(fp16); use generous --warmup for steady latency/energy '
                 '(dynamo may recompile; short runs can skew energy p99).'
@@ -980,18 +985,17 @@ def cmd_run(args: argparse.Namespace) -> None:
                 'M4_FP32: torch.compile(model) + memory_opt_scatter/conv2d + GPU voxel preprocess + '
                 'compile_voxelizer; use generous --warmup (dynamo + compiled voxelizer).'
             )
-        elif cell_id == 'M4_AMP':
-            note = (
-                'M4_AMP: autocast(fp16) + memory_opt_scatter/conv2d + GPU voxel preprocess + '
-                'compile_voxelizer; no torch.compile on model (per matrix).'
-            )
         elif prep_g and use_amp and not use_compile:
             note = (
                 'M3_AMP: GPU voxel preprocessing + autocast(fp16); no torch.compile on model or voxelizer '
                 '(default matrix).'
             )
-        elif use_compile or use_amp:
-            note = 'Single mode: compile or AMP only (not both).'
+        elif use_compile and not use_amp:
+            # M1_FP32, M4_FP32, etc. — not M1_AMP / M4_AMP (handled above)
+            note = 'Model torch.compile (FP32); no autocast/AMP in this cell.'
+        elif use_amp and not use_compile:
+            # M0_AMP, M2_AMP_*, M3_AMP, etc. — not M1_AMP / M4_AMP
+            note = 'Autocast(AMP) only; no model torch.compile (M1_AMP and M4_AMP combine both).'
 
         if not spec['gpu_runnable']:
             reason = spec['skip_reason'] or (cell and cell.get('status')) or 'not_runnable'
