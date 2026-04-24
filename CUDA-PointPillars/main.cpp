@@ -18,6 +18,9 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
+#include <vector>
+#include <dirent.h>
 
 #include "cuda_runtime.h"
 
@@ -37,9 +40,24 @@
     }                                                             \
 }
 
-std::string Data_File = "../data/";
-std::string Save_Dir = "../eval/kitti/object/pred_velo/";
+// std::string Data_File = "../data/";   // original: hardcoded data path
+// std::string Save_Dir = "../eval/kitti/object/pred_velo/";  // original: hardcoded save path
 std::string Model_File = "../model/pointpillar.onnx";
+
+std::vector<std::string> list_bin_files(const std::string& dir) {
+  std::vector<std::string> files;
+  DIR* dp = opendir(dir.c_str());
+  if (!dp) { std::cerr << "Cannot open data dir: " << dir << std::endl; return files; }
+  struct dirent* ep;
+  while ((ep = readdir(dp))) {
+    std::string name = ep->d_name;
+    if (name.size() > 4 && name.substr(name.size() - 4) == ".bin")
+      files.push_back(dir + "/" + name);
+  }
+  closedir(dp);
+  std::sort(files.begin(), files.end());
+  return files;
+}
 
 void Getinfo(void)
 {
@@ -123,8 +141,95 @@ void SaveBoxPred(std::vector<Bndbox> boxes, std::string file_name)
     return;
 };
 
+// ---- original main (hardcoded 10 frames, single subprocess) ----
+// int main(int argc, const char **argv)
+// {
+//   Getinfo();
+//   cudaEvent_t start, stop;
+//   float elapsedTime = 0.0f;
+//   cudaStream_t stream = NULL;
+//   checkCudaErrors(cudaEventCreate(&start));
+//   checkCudaErrors(cudaEventCreate(&stop));
+//   checkCudaErrors(cudaStreamCreate(&stream));
+//   Params params_;
+//   std::vector<Bndbox> nms_pred;
+//   nms_pred.reserve(100);
+//   PointPillar pointpillar(Model_File, stream);
+//   for (int i = 0; i < 10; i++) {
+//     std::string dataFile = Data_File;
+//     std::stringstream ss; ss << i;
+//     int n_zero = 6; std::string _str = ss.str();
+//     std::string index_str = std::string(n_zero - _str.length(), '0') + _str;
+//     dataFile += index_str; dataFile += ".bin";
+//     std::cout << "<<<<<<<<<<<" << std::endl;
+//     std::cout << "load file: " << dataFile << std::endl;
+//     unsigned int length = 0; void *data = NULL;
+//     std::shared_ptr<char> buffer((char *)data, std::default_delete<char[]>());
+//     loadData(dataFile.data(), &data, &length);
+//     buffer.reset((char *)data);
+//     float* points = (float*)buffer.get();
+//     size_t points_size = length/sizeof(float)/4;
+//     std::cout << "find points num: " << points_size << std::endl;
+//     float *points_data = nullptr;
+//     unsigned int points_data_size = points_size * 4 * sizeof(float);
+//     checkCudaErrors(cudaMallocManaged((void **)&points_data, points_data_size));
+//     checkCudaErrors(cudaMemcpy(points_data, points, points_data_size, cudaMemcpyDefault));
+//     checkCudaErrors(cudaDeviceSynchronize());
+//     cudaEventRecord(start, stream);
+//     pointpillar.doinfer(points_data, points_size, nms_pred);
+//     cudaEventRecord(stop, stream);
+//     cudaEventSynchronize(stop);
+//     cudaEventElapsedTime(&elapsedTime, start, stop);
+//     std::cout << "TIME: pointpillar: " << elapsedTime << " ms." << std::endl;
+//     checkCudaErrors(cudaFree(points_data));
+//     std::cout << "Bndbox objs: " << nms_pred.size() << std::endl;
+//     std::string save_file_name = Save_Dir + index_str + ".txt";
+//     SaveBoxPred(nms_pred, save_file_name);
+//     nms_pred.clear();
+//     std::cout << ">>>>>>>>>>>" << std::endl;
+//   }
+//   checkCudaErrors(cudaEventDestroy(start));
+//   checkCudaErrors(cudaEventDestroy(stop));
+//   checkCudaErrors(cudaStreamDestroy(stream));
+//   return 0;
+// }
+// ---- end original main ----
+
+// New main: persistent process with --data-dir, --warmup, --repeat, --save-preds
+// --warmup N and --repeat N are individual FRAME counts (same as profile_suite.py steps).
+// Files are cycled if needed (e.g. 10 bundled files × 50 cycles = 500 frames).
+// Usage:
+//   Latency:  ./demo --data-dir /mnt/kitti/training/velodyne --warmup 500 --repeat 500
+//   Accuracy: ./demo --data-dir /mnt/kitti/training/velodyne --warmup 0 --repeat 7481 --save-preds --save-dir /mnt/preds
 int main(int argc, const char **argv)
 {
+  std::string data_dir  = "../data";
+  std::string save_dir  = "../eval/kitti/object/pred_velo/";
+  int warmup_frames = 500;
+  int repeat_frames = 500;
+  bool save_preds = false;
+
+  for (int a = 1; a < argc; a++) {
+    std::string arg = argv[a];
+    if      (arg == "--data-dir"  && a+1 < argc) data_dir      = argv[++a];
+    else if (arg == "--save-dir"  && a+1 < argc) save_dir      = argv[++a];
+    else if (arg == "--warmup"    && a+1 < argc) warmup_frames = atoi(argv[++a]);
+    else if (arg == "--repeat"    && a+1 < argc) repeat_frames = atoi(argv[++a]);
+    else if (arg == "--save-preds") save_preds = true;
+  }
+
+  auto bin_files = list_bin_files(data_dir);
+  if (bin_files.empty()) {
+    std::cerr << "No .bin files found in: " << data_dir << std::endl;
+    return -1;
+  }
+  int n_files = (int)bin_files.size();
+  int total_frames = warmup_frames + repeat_frames;
+
+  std::cout << "[info] data_dir=" << data_dir << "  files=" << n_files
+            << "  warmup_frames=" << warmup_frames
+            << "  repeat_frames=" << repeat_frames << std::endl;
+
   Getinfo();
 
   cudaEvent_t start, stop;
@@ -135,41 +240,25 @@ int main(int argc, const char **argv)
   checkCudaErrors(cudaEventCreate(&stop));
   checkCudaErrors(cudaStreamCreate(&stream));
 
-  Params params_;
-
   std::vector<Bndbox> nms_pred;
   nms_pred.reserve(100);
 
+  // Load TRT engine once — matches teammate's persistent Python process
   PointPillar pointpillar(Model_File, stream);
 
-  for (int i = 0; i < 10; i++)
-  {
-    std::string dataFile = Data_File;
+  // Iterate frame-by-frame; cycle through files if repeat > n_files
+  for (int frame = 0; frame < total_frames; frame++) {
+    bool is_warmup = (frame < warmup_frames);
+    const std::string& file_path = bin_files[frame % n_files];
 
-    std::stringstream ss;
-
-    ss<< i;
-
-    int n_zero = 6;
-    std::string _str = ss.str();
-    std::string index_str = std::string(n_zero - _str.length(), '0') + _str;
-    dataFile += index_str;
-    dataFile +=".bin";
-
-    std::cout << "<<<<<<<<<<<" <<std::endl;
-    std::cout << "load file: "<< dataFile <<std::endl;
-
-    //load points cloud
     unsigned int length = 0;
     void *data = NULL;
     std::shared_ptr<char> buffer((char *)data, std::default_delete<char[]>());
-    loadData(dataFile.data(), &data, &length);
+    loadData(file_path.c_str(), &data, &length);
     buffer.reset((char *)data);
 
     float* points = (float*)buffer.get();
     size_t points_size = length/sizeof(float)/4;
-
-    std::cout << "find points num: "<< points_size <<std::endl;
 
     float *points_data = nullptr;
     unsigned int points_data_size = points_size * 4 * sizeof(float);
@@ -178,22 +267,23 @@ int main(int argc, const char **argv)
     checkCudaErrors(cudaDeviceSynchronize());
 
     cudaEventRecord(start, stream);
-
     pointpillar.doinfer(points_data, points_size, nms_pred);
     cudaEventRecord(stop, stream);
     cudaEventSynchronize(stop);
     cudaEventElapsedTime(&elapsedTime, start, stop);
-    std::cout<<"TIME: pointpillar: "<< elapsedTime <<" ms." <<std::endl;
+
+    if (!is_warmup) {
+      std::cout << "TIME: pointpillar: " << elapsedTime << " ms." << std::endl;
+    }
+
+    if (save_preds && !is_warmup) {
+      std::string stem = file_path.substr(file_path.rfind('/') + 1);
+      stem = stem.substr(0, stem.size() - 4);
+      SaveBoxPred(nms_pred, save_dir + stem + ".txt");
+    }
 
     checkCudaErrors(cudaFree(points_data));
-
-    std::cout<<"Bndbox objs: "<< nms_pred.size()<<std::endl;
-    std::string save_file_name = Save_Dir + index_str + ".txt";
-    SaveBoxPred(nms_pred, save_file_name);
-
     nms_pred.clear();
-
-    std::cout << ">>>>>>>>>>>" <<std::endl;
   }
 
   checkCudaErrors(cudaEventDestroy(start));

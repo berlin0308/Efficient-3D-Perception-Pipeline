@@ -61,7 +61,7 @@ TRT::TRT(std::string modelFile, cudaStream_t stream):stream_(stream)
 
     // define config
     auto networkConfig = builder->createBuilderConfig();
-#if defined (__arm64__) || defined (__aarch64__) 
+#if defined (__arm64__) || defined (__aarch64__) || defined (USE_FP16)
     networkConfig->setFlag(nvinfer1::BuilderFlag::kFP16);
     std::cout << "Enable fp16!" << std::endl;
 #endif
