@@ -1,0 +1,8 @@
+2026-04-23 01:07:18,489   INFO  GPU [0]: Tesla T4
+2026-04-23 01:07:18,490   INFO  Loading KITTI dataset
+2026-04-23 01:07:18,752   INFO  Total samples for KITTI dataset: 7481
+2026-04-23 01:07:19,483   INFO  ==> Loading parameters from checkpoint /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-23 01:07:19,511   INFO  ==> Done (loaded 127/127)
+2026-04-23 01:07:19,522   INFO  Wrapping model with torch.compile()
+2026-04-23 01:07:21,402   INFO  Running 1000 warmup steps (no measurement)...
+2026-04-23 01:09:27,900   INFO  Measuring energy over 1000 steps...

@@ -197,5 +197,8 @@ def createPCDetOutput():
                     the_file.write("\n")
 
 if __name__ == "__main__":
-    createPCDetOutput()
+    try:
+        createPCDetOutput()
+    except FileNotFoundError:
+        pass  # pcdet.pkl not present (e.g. TRT-only M5 runs)
     createNVOutput()

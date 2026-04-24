@@ -1,0 +1,51 @@
+2026-04-23 02:02:18,253   INFO  GPU [0]: NVIDIA H100 80GB HBM3
+2026-04-23 02:02:18,254   INFO  Loading KITTI dataset
+2026-04-23 02:02:18,490   INFO  Total samples for KITTI dataset: 7481
+2026-04-23 02:02:19,575   INFO  Voxelizer wrapped with torch.compile(dynamic=True)
+2026-04-23 02:02:21,250  WARNING  preprocess_gpu: forcing num_workers=0 (GPU voxelization runs in collate; incompatible with forked workers).
+2026-04-23 02:02:21,251   INFO  compile_voxelizer: torch.compile voxelizer active (still num_workers=0).
+2026-04-23 02:02:21,252   INFO  Energy monitor: GPU voxelization DataLoader (inference.py-aligned)
+2026-04-23 02:02:21,372   INFO  ==> Loading parameters from checkpoint /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-23 02:02:21,399   INFO  ==> Done (loaded 127/127)
+2026-04-23 02:02:21,413   INFO  memory_opt_conv2d: model.to(memory_format=torch.channels_last)
+2026-04-23 02:02:21,415   INFO  Wrapping model with torch.compile()
+2026-04-23 02:02:21,417   INFO  Running 1000 warmup steps (no measurement)...
+2026-04-23 02:04:41,271   INFO  Measuring energy over 1000 steps...
+2026-04-23 02:05:17,846   INFO  Energy spike exclusion: 2 step(s) over 200.0 ms (dropped from energy & samples/J)
+2026-04-23 02:05:17,850   INFO  =================================================================
+2026-04-23 02:05:17,850   INFO    PointPillars Energy Monitor — 2026-04-23 02:05:17
+2026-04-23 02:05:17,851   INFO  =================================================================
+2026-04-23 02:05:17,851   INFO    GPU            : NVIDIA H100 80GB HBM3
+2026-04-23 02:05:17,851   INFO    Config         : /opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+2026-04-23 02:05:17,852   INFO    Compile        : True  Traced: none
+2026-04-23 02:05:17,852   INFO    AMP (fp16)     : True
+2026-04-23 02:05:17,853   INFO    Memory opt scatter (HWC write): True
+2026-04-23 02:05:17,854   INFO    Memory opt conv2d (channels_last): True
+2026-04-23 02:05:17,854   INFO    Preprocess GPU (voxelize on GPU): True
+2026-04-23 02:05:17,855   INFO    Compile voxelizer: True
+2026-04-23 02:05:17,855   INFO    INT8 (CPU PTQ) : False
+2026-04-23 02:05:17,855   INFO    Warmup         : 1000   Steps: 1000   Batch: 1
+2026-04-23 02:05:17,856   INFO    Meas. burn-in  : 0  (power sampled; excluded from NVML J window)
+2026-04-23 02:05:17,856   INFO  
+2026-04-23 02:05:17,856   INFO  ── Latency (ms) ─────────────────────────────────────────
+2026-04-23 02:05:17,857   INFO    Mean : 4.97   p50 : 4.74   p95 : 5.59   p99 : 10.25
+2026-04-23 02:05:17,857   INFO  
+2026-04-23 02:05:17,857   INFO  ── Throughput ───────────────────────────────────────────
+2026-04-23 02:05:17,858   INFO    201.08 samples/s  (total_samples=998, wall=4.96 s)
+2026-04-23 02:05:17,858   INFO  
+2026-04-23 02:05:17,858   INFO  ── Power & Energy ───────────────────────────────────────
+2026-04-23 02:05:17,858   INFO    Mean power     : 507.9 W
+2026-04-23 02:05:17,859   INFO    Peak power     : 137.9 W
+2026-04-23 02:05:17,859   INFO    Total energy   : 2520.60 J  (steady forward wall=4.96 s, 651 power samples)  (spike windows excluded: 2 forward interval(s))
+2026-04-23 02:05:17,859   INFO  
+2026-04-23 02:05:17,860   INFO  ── Performance-per-Watt ─────────────────────────────────
+2026-04-23 02:05:17,860   INFO    0.3959 samples/s/W  (throughput / mean_power)
+2026-04-23 02:05:17,860   INFO    0.3959 samples/J   (steady_samples / steady_energy; spike intervals omitted when enabled)
+2026-04-23 02:05:17,860   INFO    Interpretation: higher = more efficient per unit energy
+2026-04-23 02:05:17,861   INFO  
+2026-04-23 02:05:17,861   INFO  ── Outputs ──────────────────────────────────────────────
+2026-04-23 02:05:17,861   INFO    Summary  : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v4_h100/M4_AMP/energy/energy_summary.txt
+2026-04-23 02:05:17,862   INFO    Raw CSV  : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v4_h100/M4_AMP/energy/energy_samples.csv
+2026-04-23 02:05:17,862   INFO  =================================================================
+2026-04-23 02:05:17,864   INFO  Raw power samples → /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v4_h100/M4_AMP/energy/energy_samples.csv
+2026-04-23 02:05:17,867   INFO  Per-step forward latency → /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v4_h100/M4_AMP/energy/energy_latency_per_step.csv
