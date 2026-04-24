@@ -583,9 +583,9 @@ def plot_local_samples_j(out):
                 f'+{pct:.0f}%', ha='center', va='bottom',
                 fontsize=11, fontweight='bold', color=BEST_COLOR)
 
-    ax.text(0.5, 0.02,
+    ax.text(0.5, 0.835,
             'GPU-only overstates efficiency by ~3×\non edge hardware (CPU pkg = 1.9× GPU energy at batch=1)',
-            transform=ax.transAxes, ha='center', va='bottom',
+            transform=ax.transAxes, ha='center', va='top',
             fontsize=8.5, color='#555', style='italic',
             bbox=dict(boxstyle='round,pad=0.35', fc='#fff3e0', ec='#fb8c00', alpha=0.95))
 

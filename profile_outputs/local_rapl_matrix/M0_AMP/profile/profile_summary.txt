@@ -1,0 +1,39 @@
+======================================================================
+  PointPillars Profile Suite — 2026-04-23 17:22:00
+======================================================================
+  Config  : cfgs/kitti_models/pointpillar.yaml
+  Ckpt    : /media/emma/data/ML_sys/Kitti/pointpillar_7728.pth
+  Compile : False
+  AMP (fp16): True
+  Memory opt scatter (HWC write): False
+  Memory opt conv2d (channels_last): False
+  Preprocess GPU (voxelize on GPU): False
+  Compile voxelizer: False
+  INT8    : False  (CPU dynamic Linear PTQ if true)
+  Traced  : none
+  Nsight NVTX: False
+  Warmup  : 10 steps   Measured: 50 steps   Batch: 1   Meas. burn-in: 0
+
+── Per-stage latency (mean / p50 / p95 / p99 / std) [ms] ─────────────
+Stage                   mean         p50         p95         p99         std
+----------------------------------------------------------------------------
+read_points (excl.T_rt)        3.45        3.40        4.55        5.02        0.51
+pre_processing          9.78        9.56       12.97       15.02        2.06
+data_to_gpu             0.61        0.59        0.87        1.02        0.14
+Forward (GPU)           9.88        9.81       10.76       10.92        0.44
+PostProcess             0.38        0.37        0.48        0.57        0.05
+── Onboard frame ──       11.03       10.99       11.97       13.05        0.64
+── T_rt (onboard) ──       20.66       20.27       24.51       27.03        2.40
+
+── Throughput & Memory ─────────────────────────────────────────
+  Throughput         : 48.4 samples/s  (batch=1, mean T_rt=20.66 ms)
+  Peak GPU Memory    : 170.5 MB  (NMS/recall on GPU; backbone mostly CPU when INT8)
+  Peak GPU Mem (steady): 170.5 MB  (no forward spike filter)
+  Mean peak per step : 170.4 MB
+  CUDA kernel events : 40100
+  T_rt mean (onboard, excl. read_points): 20.66 ms
+
+── Outputs ──────────────────────────────────────────────────────
+  Chrome trace       : ../../profile_outputs/local_rapl_matrix/M0_AMP/profile/torch_profile_trace.json
+  Summary            : ../../profile_outputs/local_rapl_matrix/M0_AMP/profile/profile_summary.txt
+======================================================================
