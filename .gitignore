@@ -55,3 +55,11 @@ eggs/
 # Personal notes (keep local only)
 reports/*.md
 profile_outputs/**/*.md
+trt_staging/
+
+# M5 CUDA-PP prediction outputs (large raw files)
+modal_outputs/cuda_pp/
+ncu_intensity.csv
+
+# Personal documents
+notion_0416.pdf
