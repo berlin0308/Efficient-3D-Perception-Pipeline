@@ -1,5 +1,5 @@
 """
-energy_monitor.py — GPU power / energy / performance-per-watt profiling.
+energy_monitor.py — GPU + CPU power / energy / performance-per-watt profiling.
 
 Uses pynvml to sample GPU power draw at a configurable interval while running
 inference, then computes:
@@ -8,6 +8,10 @@ inference, then computes:
   - Mean / peak power draw (Watts)
   - Throughput (samples/s)
   - Performance-per-watt (samples/J) — the key metric for edge deployment
+
+CPU energy is measured via Intel RAPL sysfs (/sys/class/powercap/intel-rapl/) when
+available (requires read permission on energy_uj files). Falls back to psutil-based
+estimation if RAPL is not accessible.
 
 Run from OpenPCDet/tools/:
     python energy_monitor.py \
@@ -22,10 +26,11 @@ Run from OpenPCDet/tools/:
 Dependencies:
     pip install pynvml
     # pynvml ships with nvidia-ml-py; check: python -c "import pynvml; pynvml.nvmlInit()"
+    # For RAPL: sudo chmod a+r /sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj
 
 Outputs (in --output_dir):
-    energy_summary.txt           — human-readable table
-    energy_samples.csv           — raw (timestamp_s, power_W) rows for plotting
+    energy_summary.txt           — human-readable table (GPU + CPU energy)
+    energy_samples.csv           — raw (timestamp_s, gpu_power_W, cpu_power_W) rows
     energy_latency_per_step.csv  — per-step forward latency (ms) during measurement
 """
 
@@ -206,6 +211,196 @@ class PowerSampler:
         return ts, pw
 
 
+# ── CPU energy via RAPL or psutil fallback ────────────────────────────────
+
+class CpuEnergySampler:
+    """
+    Measures CPU energy using Intel RAPL sysfs when available, falling back
+    to psutil cpu_percent × estimated TDP.
+
+    RAPL method: reads /sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj
+    before and after inference. Requires read permission (sudo chmod a+r ...).
+
+    psutil fallback: samples cpu_percent in a background thread and multiplies
+    by CPU TDP. Less accurate but works without root.
+
+    Usage:
+        sampler = CpuEnergySampler()
+        sampler.start()
+        # ... run inference ...
+        sampler.stop()
+        result = sampler.result()   # dict with energy_J, method, power_W
+    """
+
+    # RAPL domains: package-0, core, uncore, psys
+    _RAPL_DOMAINS = {
+        'package': '/sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj',
+        'core':    '/sys/class/powercap/intel-rapl/intel-rapl:0/intel-rapl:0:0/energy_uj',
+        'uncore':  '/sys/class/powercap/intel-rapl/intel-rapl:0/intel-rapl:0:1/energy_uj',
+        'psys':    '/sys/class/powercap/intel-rapl/intel-rapl:1/energy_uj',
+    }
+    _RAPL_MAX_PATH = '/sys/class/powercap/intel-rapl/intel-rapl:0/max_energy_range_uj'
+
+    # Battery: total system draw including DRAM, disk, display, fans
+    _BAT_POWER_PATH  = '/sys/class/power_supply/BAT0/power_now'   # µW
+    _BAT_ENERGY_PATH = '/sys/class/power_supply/BAT0/energy_now'  # µWh
+
+    def __init__(self, cpu_tdp_w=45.0, sample_interval_s=0.05):
+        self._tdp = cpu_tdp_w
+        self._interval = sample_interval_s
+        self._available_domains = self._check_rapl_domains()
+        self._rapl_available = len(self._available_domains) > 0
+        self._bat_available = self._check_battery()
+        self._t0 = None
+        self._t1 = None
+        # RAPL state
+        self._rapl_start = {}
+        self._rapl_max_uj = None
+        # Battery state
+        self._bat_energy_start_uwh = None
+        self._bat_power_samples = []
+        # psutil state
+        self._cpu_pct_samples = []
+        self._stop_event = threading.Event()
+        self._thread = None
+
+    def _check_rapl_domains(self):
+        available = {}
+        for name, path in self._RAPL_DOMAINS.items():
+            try:
+                with open(path, 'r') as f:
+                    f.read()
+                available[name] = path
+            except Exception:
+                pass
+        return available
+
+    def _check_battery(self):
+        try:
+            with open(self._BAT_POWER_PATH, 'r') as f:
+                f.read()
+            return True
+        except Exception:
+            return False
+
+    def _read_domain_uj(self, path):
+        with open(path, 'r') as f:
+            return int(f.read().strip())
+
+    def _read_rapl_max_uj(self):
+        try:
+            with open(self._RAPL_MAX_PATH, 'r') as f:
+                return int(f.read().strip())
+        except Exception:
+            return 2**32
+
+    def _read_bat_power_w(self):
+        with open(self._BAT_POWER_PATH, 'r') as f:
+            return int(f.read().strip()) / 1e6  # µW → W
+
+    def _read_bat_energy_uwh(self):
+        with open(self._BAT_ENERGY_PATH, 'r') as f:
+            return int(f.read().strip())  # µWh
+
+    def _bat_loop(self):
+        while not self._stop_event.is_set():
+            try:
+                self._bat_power_samples.append(
+                    (time.perf_counter(), self._read_bat_power_w()))
+            except Exception:
+                pass
+            time.sleep(self._interval)
+
+    def _psutil_loop(self):
+        import psutil
+        psutil.cpu_percent()  # discard first call
+        while not self._stop_event.is_set():
+            self._cpu_pct_samples.append(psutil.cpu_percent(interval=None))
+            time.sleep(self._interval)
+
+    def start(self):
+        self._t0 = time.perf_counter()
+        if self._rapl_available:
+            self._rapl_max_uj = self._read_rapl_max_uj()
+            self._rapl_start = {name: self._read_domain_uj(path)
+                                for name, path in self._available_domains.items()}
+        else:
+            self._cpu_pct_samples = []
+            self._stop_event.clear()
+            self._thread = threading.Thread(target=self._psutil_loop, daemon=True)
+            self._thread.start()
+        # Battery sampling runs alongside RAPL (always, if available)
+        if self._bat_available:
+            self._bat_power_samples = []
+            self._bat_energy_start_uwh = self._read_bat_energy_uwh()
+            self._stop_event.clear()
+            self._bat_thread = threading.Thread(target=self._bat_loop, daemon=True)
+            self._bat_thread.start()
+
+    def stop(self):
+        self._t1 = time.perf_counter()
+        if self._rapl_available:
+            self._rapl_delta = {}
+            for name, path in self._available_domains.items():
+                end_uj = self._read_domain_uj(path)
+                delta = end_uj - self._rapl_start[name]
+                if delta < 0:
+                    delta += self._rapl_max_uj
+                self._rapl_delta[name] = delta
+        else:
+            self._stop_event.set()
+            if self._thread:
+                self._thread.join()
+        if self._bat_available:
+            self._bat_energy_end_uwh = self._read_bat_energy_uwh()
+            self._stop_event.set()
+            if hasattr(self, '_bat_thread'):
+                self._bat_thread.join()
+
+    def result(self):
+        """Returns dict: energy_J, power_W, method, duration_s, domains, battery."""
+        duration_s = (self._t1 - self._t0) if self._t0 and self._t1 else 0.0
+
+        # Battery result
+        battery = None
+        if self._bat_available:
+            # power_now trapz is primary — works whether charging or discharging
+            # energy_now delta is a cross-check (only valid when discharging)
+            delta_uwh = self._bat_energy_start_uwh - self._bat_energy_end_uwh
+            bat_energy_now_J = max(0.0, delta_uwh * 3.6e-3)  # µWh → J; clamp to 0 when charging
+            if self._bat_power_samples:
+                pw = np.array([p for _, p in self._bat_power_samples])
+                ts = np.array([t - self._t0 for t, _ in self._bat_power_samples])
+                trapz = getattr(np, 'trapezoid', None) or np.trapz
+                bat_energy_trapz_J = float(trapz(pw, ts)) if len(ts) > 1 else 0.0
+                bat_mean_power_W = float(np.mean(pw))
+            else:
+                bat_energy_trapz_J = 0.0
+                bat_mean_power_W = 0.0
+            battery = dict(
+                energy_J=bat_energy_trapz_J,          # primary: power_now trapz (always valid)
+                energy_now_J=bat_energy_now_J,         # cross-check: energy_now delta (discharging only)
+                mean_power_W=bat_mean_power_W,
+                duration_s=duration_s,
+            )
+
+        if self._rapl_available:
+            domains = {name: delta_uj / 1e6
+                       for name, delta_uj in self._rapl_delta.items()}
+            energy_J = domains.get('package', sum(domains.values()))
+            power_W = energy_J / duration_s if duration_s > 0 else 0.0
+            return dict(energy_J=energy_J, power_W=power_W,
+                        method='RAPL', duration_s=duration_s,
+                        domains=domains, battery=battery)
+        else:
+            mean_pct = float(np.mean(self._cpu_pct_samples)) if self._cpu_pct_samples else 0.0
+            power_W = (mean_pct / 100.0) * self._tdp
+            energy_J = power_W * duration_s
+            return dict(energy_J=energy_J, power_W=power_W,
+                        method='psutil (%.0f%% × %.0fW TDP)' % (mean_pct, self._tdp),
+                        duration_s=duration_s, domains={}, battery=battery)
+
+
 # ── Energy integration ─────────────────────────────────────────────────────
 
 def integrate_energy(timestamps_s, powers_W):
@@ -322,6 +517,9 @@ def run_energy_profile(model, dataloader, args, logger, nvml_handle, interval_ms
     latencies_ms = []
     forward_segments = []  # (t_rel0, t_rel1, lat_ms) relative to sampler t0
 
+    cpu_sampler = CpuEnergySampler()
+    cpu_sampler.start()
+
     with torch.inference_mode():
         for _ in range(steps):
             batch_dict, dataloader_iter = _next_batch_cyclic(dataloader_iter, dataloader)
@@ -336,6 +534,8 @@ def run_energy_profile(model, dataloader, args, logger, nvml_handle, interval_ms
             forward_segments.append((t0 - t_origin, t1 - t_origin, lat_ms))
 
     t_inference_end = time.perf_counter()
+    cpu_sampler.stop()
+    cpu_result = cpu_sampler.result()
     sampler.stop()
 
     timestamps_s, powers_W = sampler.get_samples()
@@ -374,14 +574,15 @@ def run_energy_profile(model, dataloader, args, logger, nvml_handle, interval_ms
                 thr,
             )
 
-    return latencies_ms, ts_clip, pw_clip, steps, latencies_for_stats, compile_exclude_intervals
+    return latencies_ms, ts_clip, pw_clip, steps, latencies_for_stats, compile_exclude_intervals, cpu_result
 
 
 # ── Summary writer ─────────────────────────────────────────────────────────
 
 def write_summary(latencies_ms, timestamps_s, powers_W, steps, batch_size,
                   result_dir, logger, args, gpu_name,
-                  latencies_for_stats=None, compile_exclude_intervals=None):
+                  latencies_for_stats=None, compile_exclude_intervals=None,
+                  cpu_result=None):
     """
     latencies_for_stats: if set (e.g. steady-state forwards under torch.compile), used for
     latency percentiles, throughput wall time, and samples/J numerator.
@@ -476,6 +677,40 @@ def write_summary(latencies_ms, timestamps_s, powers_W, steps, batch_size,
     )
     lines.append('  Interpretation: higher = more efficient per unit energy')
     lines.append('')
+    if cpu_result is not None:
+        lines.append('── CPU Energy ───────────────────────────────────────────')
+        lines.append('  Method         : %s' % cpu_result['method'])
+        lines.append('  Duration       : %.3f s' % cpu_result['duration_s'])
+        lines.append('  CPU mean power : %.2f W' % cpu_result['power_W'])
+        lines.append('  CPU energy     : %.4f J' % cpu_result['energy_J'])
+        domains = cpu_result.get('domains', {})
+        if domains:
+            lines.append('  ── RAPL domain breakdown ──────────────────────────')
+            for name, e_J in domains.items():
+                pct = e_J / cpu_result['energy_J'] * 100 if cpu_result['energy_J'] > 0 else 0
+                lines.append('    %-10s : %7.3f J  (%4.1f%% of package)' % (name, e_J, pct))
+            core_J   = domains.get('core', 0)
+            uncore_J = domains.get('uncore', 0)
+            pkg_J    = domains.get('package', cpu_result['energy_J'])
+            other_J  = pkg_J - core_J - uncore_J
+            if other_J > 0:
+                lines.append('    %-10s : %7.3f J  (%4.1f%% of package)  [pkg − core − uncore]'
+                             % ('other', other_J, other_J / pkg_J * 100))
+        total_J = energy_J + cpu_result['energy_J']
+        total_samp_per_J = total_samples / total_J if total_J > 0 else 0.0
+        lines.append('  Total (GPU+CPU): %.4f J   samples/J (corrected): %.4f' % (
+            total_J, total_samp_per_J))
+        battery = cpu_result.get('battery')
+        if battery is not None:
+            lines.append('')
+            lines.append('── Battery (Total System) ───────────────────────────────')
+            lines.append('  Includes: CPU + GPU + DRAM + disk + display + fans + platform')
+            lines.append('  Energy (power_now trapz)  : %.4f J  ← primary (valid AC or battery)' % battery['energy_J'])
+            lines.append('  Energy (energy_now delta) : %.4f J  ← cross-check (valid only when discharging)' % battery['energy_now_J'])
+            lines.append('  Mean system power         : %.2f W' % battery['mean_power_W'])
+            bat_samp_per_J = total_samples / battery['energy_J'] if battery['energy_J'] > 0 else 0.0
+            lines.append('  Samples/J (full system)   : %.4f' % bat_samp_per_J)
+        lines.append('')
     lines.append('── Outputs ──────────────────────────────────────────────')
     lines.append('  Summary  : %s' % str(result_dir / 'energy_summary.txt'))
     lines.append('  Raw CSV  : %s' % str(result_dir / 'energy_samples.csv'))
@@ -488,11 +723,17 @@ def write_summary(latencies_ms, timestamps_s, powers_W, steps, batch_size,
 
     # Save raw power samples for plotting
     csv_path = result_dir / 'energy_samples.csv'
+    cpu_domains = cpu_result.get('domains', {}) if cpu_result is not None else {}
+    domain_names = list(cpu_domains.keys())
+    cpu_power_W = cpu_result['power_W'] if cpu_result is not None else None
     with open(csv_path, 'w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(['timestamp_s', 'power_W'])
+        writer.writerow(['timestamp_s', 'gpu_power_W', 'cpu_power_W'] + domain_names)
         for t, p in zip(timestamps_s, powers_W):
-            writer.writerow([f'{t:.4f}', f'{p:.2f}'])
+            domain_vals = [f'{cpu_domains[n]:.4f}' for n in domain_names]
+            writer.writerow([f'{t:.4f}', f'{p:.2f}',
+                             f'{cpu_power_W:.2f}' if cpu_power_W is not None else '']
+                            + domain_vals)
     logger.info('Raw power samples → %s', csv_path)
 
     lat_csv = result_dir / 'energy_latency_per_step.csv'
@@ -574,7 +815,7 @@ def main():
 
     model = load_model_for_inference(cfg, args, logger, test_set, to_cpu=False)
 
-    latencies_ms, timestamps_s, powers_W, steps_run, lat_stats, compile_excl = run_energy_profile(
+    latencies_ms, timestamps_s, powers_W, steps_run, lat_stats, compile_excl, cpu_result = run_energy_profile(
         model, test_loader, args, logger, nvml_handle, args.sample_interval_ms
     )
 
@@ -583,6 +824,7 @@ def main():
         result_dir, logger, args, gpu_name,
         latencies_for_stats=lat_stats,
         compile_exclude_intervals=compile_excl,
+        cpu_result=cpu_result,
     )
 
     pynvml.nvmlShutdown()

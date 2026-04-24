@@ -121,6 +121,9 @@ def load_model_for_inference(cfg, args, logger, dataset, to_cpu=False):
     elif getattr(args, 'compile', False):
         if hasattr(torch, 'compile'):
             logger.info('Wrapping model with torch.compile()')
+            # suppress_errors skips frames that trigger guard assertion bugs
+            # (spconv x_offset numpy tensor ADInplaceOrView key mismatch on PyTorch 2.x)
+            torch._dynamo.config.suppress_errors = True
             model = torch.compile(model, mode='default')
         else:
             logger.warning('--compile set but torch.compile not available; skipping')

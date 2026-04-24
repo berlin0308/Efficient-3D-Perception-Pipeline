@@ -1,0 +1,55 @@
+=================================================================
+  PointPillars Energy Monitor — 2026-04-23 17:07:59
+=================================================================
+  GPU            : NVIDIA GeForce RTX 3080 Ti Laptop GPU
+  Config         : cfgs/kitti_models/pointpillar.yaml
+  Compile        : True  Traced: none
+  AMP (fp16)     : True
+  Memory opt scatter (HWC write): False
+  Memory opt conv2d (channels_last): False
+  Preprocess GPU (voxelize on GPU): False
+  Compile voxelizer: False
+  INT8 (CPU PTQ) : False
+  Warmup         : 10   Steps: 50   Batch: 1
+  Meas. burn-in  : 0  (power sampled; excluded from NVML J window)
+
+── Latency (ms) ─────────────────────────────────────────
+  Mean : 8.95   p50 : 8.64   p95 : 12.19   p99 : 13.07
+
+── Throughput ───────────────────────────────────────────
+  111.67 samples/s  (total_samples=49, wall=0.44 s)
+
+── Power & Energy ───────────────────────────────────────
+  Mean power     : 33.0 W
+  Peak power     : 31.7 W
+  Total energy   : 14.48 J  (steady forward wall=0.44 s, 22 power samples)  (spike windows excluded: 1 forward interval(s))
+
+── Performance-per-Watt ─────────────────────────────────
+  3.3837 samples/s/W  (throughput / mean_power)
+  3.3837 samples/J   (steady_samples / steady_energy; spike intervals omitted when enabled)
+  Interpretation: higher = more efficient per unit energy
+
+── CPU Energy ───────────────────────────────────────────
+  Method         : RAPL
+  Duration       : 1.191 s
+  CPU mean power : 47.89 W
+  CPU energy     : 57.0204 J
+  ── RAPL domain breakdown ──────────────────────────
+    package    :  57.020 J  (100.0% of package)
+    core       :  48.241 J  (84.6% of package)
+    uncore     :   0.101 J  ( 0.2% of package)
+    psys       : 141.476 J  (248.1% of package)
+    other      :   8.678 J  (15.2% of package)  [pkg − core − uncore]
+  Total (GPU+CPU): 71.5016 J   samples/J (corrected): 0.6853
+
+── Battery (Total System) ───────────────────────────────
+  Includes: CPU + GPU + DRAM + disk + display + fans + platform
+  Energy (power_now trapz)  : 38.8896 J  ← primary (valid AC or battery)
+  Energy (energy_now delta) : 0.0000 J  ← cross-check (valid only when discharging)
+  Mean system power         : 32.91 W
+  Samples/J (full system)   : 1.2600
+
+── Outputs ──────────────────────────────────────────────
+  Summary  : ../../profile_outputs/local_rapl_matrix/M1_AMP/energy_summary.txt
+  Raw CSV  : ../../profile_outputs/local_rapl_matrix/M1_AMP/energy_samples.csv
+=================================================================

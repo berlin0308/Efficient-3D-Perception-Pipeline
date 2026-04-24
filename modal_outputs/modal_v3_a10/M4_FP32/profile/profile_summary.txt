@@ -1,5 +1,5 @@
 ======================================================================
-  PointPillars Profile Suite — 2026-04-14 07:02:11
+  PointPillars Profile Suite — 2026-04-17 19:06:12
 ======================================================================
   Config  : /opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
   Ckpt    : /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth
@@ -12,28 +12,28 @@
   INT8    : False  (CPU dynamic Linear PTQ if true)
   Traced  : none
   Nsight NVTX: False
-  Warmup  : 500 steps   Measured: 500 steps   Batch: 1   Meas. burn-in: 0
+  Warmup  : 100 steps   Measured: 50 steps   Batch: 1   Meas. burn-in: 0
 
 ── Per-stage latency (mean / p50 / p95 / p99 / std) [ms] ─────────────
 Stage                   mean         p50         p95         p99         std
 ----------------------------------------------------------------------------
-read_points (excl.T_rt)        8.38        8.19       10.55       12.03        1.28
-cpu_prepare             0.66        0.66        0.75        0.80        0.07
-data_to_gpu             0.26        0.26        0.30        0.33        0.03
-pre_processing          1.99        1.94        2.22        2.34        0.13
-h2d (load rest)         0.19        0.18        0.20        0.24        0.03
-Forward (GPU)          11.97       11.90       12.55       13.12        0.32
-PostProcess             0.60        0.59        0.64        0.98        0.05
-── Onboard frame ──       12.92       12.84       13.60       14.13        0.35
-── T_rt (onboard) ──       15.67       15.55       16.47       17.09        0.45
+read_points (excl.T_rt)        7.75        7.43       11.08       11.89        1.35
+cpu_prepare             0.56        0.55        0.69        0.72        0.06
+data_to_gpu             0.16        0.15        0.24        0.41        0.06
+pre_processing          1.57        1.53        1.86        2.02        0.13
+h2d (load rest)         0.16        0.16        0.18        0.20        0.01
+Forward (GPU)          11.20       11.14       11.73       12.01        0.29
+PostProcess             0.49        0.47        0.59        0.79        0.07
+── Onboard frame ──       11.98       11.92       12.55       13.05        0.34
+── T_rt (onboard) ──       14.16       14.01       15.22       15.70        0.50
 
 ── Throughput & Memory ─────────────────────────────────────────
-  Throughput         : 63.8 samples/s  (batch=1, mean T_rt=15.67 ms)
-  Peak GPU Memory    : 7116.5 MB  (NMS/recall on GPU; backbone mostly CPU when INT8)
-  Peak GPU Mem (steady): 7116.5 MB  (steps with forward <= 200.0 ms)
-  Mean peak per step : 5409.0 MB
-  CUDA kernel events : 331184
-  T_rt mean (onboard, excl. read_points): 15.67 ms
+  Throughput         : 70.6 samples/s  (batch=1, mean T_rt=14.16 ms)
+  Peak GPU Memory    : 1278.2 MB  (NMS/recall on GPU; backbone mostly CPU when INT8)
+  Peak GPU Mem (steady): 1278.2 MB  (steps with forward <= 200.0 ms)
+  Mean peak per step : 1115.4 MB
+  CUDA kernel events : 33127
+  T_rt mean (onboard, excl. read_points): 14.16 ms
 
 ── Outputs ──────────────────────────────────────────────────────
   Chrome trace       : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v3_a10/M4_FP32/profile/torch_profile_trace.json
