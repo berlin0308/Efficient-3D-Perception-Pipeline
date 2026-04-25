@@ -34,65 +34,102 @@ import matplotlib.patches as mpatches
 import numpy as np
 from pathlib import Path
 
-# ── Style ────────────────────────────────────────────────────────────────────
+# ── Style (aligned with report/plot_latency.py) ─────────────────────────────
 MLSYS_PLOT_RC = {
-    "axes.grid":        True,
-    "axes.axisbelow":   True,
-    "axes.edgecolor":   "#b0b0b0",
-    "axes.linewidth":   0.9,
-    "grid.color":       "#c8c8c8",
-    "grid.linestyle":   "-",
-    "grid.linewidth":   0.55,
-    "grid.alpha":       0.45,
+    "axes.grid": False,
+    "axes.axisbelow": True,
+    "axes.edgecolor": "black",
+    "axes.linewidth": 0.9,
+    "grid.color": "#c8c8c8",
+    "grid.linestyle": "-",
+    "grid.linewidth": 0.55,
+    "grid.alpha": 0.28,
+    "axes.labelsize": 22,
+    "xtick.labelsize": 22,
+    "ytick.labelsize": 22,
     "figure.facecolor": "white",
-    "axes.facecolor":   "#f0f0f0",
+    "axes.facecolor": "#f0f0f0",
 }
 
 DUTY_MS = 100.0
 
-# ── Colors — warm = CPU, cool = GPU ──────────────────────────────────────────
-# CPU (warm, hatched with \\)
-C_PLATFORM  = "#9e9e9e"   # gray
-C_READ      = "#d4a96a"   # light amber   — read_points
-C_PREPROC   = "#c4923a"   # amber         — voxelization
-C_H2D       = "#a0522d"   # brown         — H2D transfer
-# GPU forward substages (cool, no hatch)
-C_VFE       = "#005a92"   # deep blue
-C_SCATTER   = "#e68900"   # orange        — distinct from CPU warm
-C_BEV       = "#3d9a7d"   # teal
-C_HEAD      = "#a8558f"   # purple
-C_NMS       = "#c75c48"   # coral
-# Idle (pale)
-C_GPU_IDLE  = "#b2dfdb"   # pale teal
-C_CPU_IDLE  = "#ffe0b2"   # pale amber
+# ── Stage colors/hatches (aligned with plot_latency.py) ─────────────────────
+COLOR_BY_STAGE = {
+    "Preprocess": "#5c8fd4",
+    "H2D": "#c4923a",
+    "Forward": "#3d9a7d",
+    "Postprocess": "#c75c48",
+}
+FORWARD_NVTX_HATCH = {
+    "gpu_vfe": "\\\\\\\\",
+    "gpu_scatter": "**",
+    "gpu_bev": "|||",
+    "gpu_head": "+++",
+}
+FORWARD_NVTX_HATCH_LINEWIDTH = 2.5
 
-SEG_ORDER = [
-    "platform_overhead",   # system (not CPU/GPU)
-    "read_points",         # CPU active
-    "pre_processing",      # CPU active
-    "data_to_gpu",         # CPU active
-    "cpu_idle",            # CPU idle  ← grouped with CPU active
-    "gpu_vfe",             # GPU active
-    "gpu_scatter",         # GPU active
-    "gpu_bev",             # GPU active
-    "gpu_head",            # GPU active
-    "gpu_nms",             # GPU active
-    "gpu_idle",            # GPU idle
+C_PLATFORM = "#9e9e9e"                 # not in latency chart; keep neutral
+C_READ = COLOR_BY_STAGE["Preprocess"]  # read_points grouped under preprocess family
+C_PREPROC = COLOR_BY_STAGE["Preprocess"]
+C_H2D = COLOR_BY_STAGE["H2D"]
+C_VFE = COLOR_BY_STAGE["Forward"]
+C_SCATTER = COLOR_BY_STAGE["Forward"]
+C_BEV = COLOR_BY_STAGE["Forward"]
+C_HEAD = COLOR_BY_STAGE["Forward"]
+C_NMS = COLOR_BY_STAGE["Postprocess"]
+# Idle (pale)
+C_GPU_IDLE  = "#A89BBF"   # requested GPU idle color
+C_CPU_IDLE  = "#F6C054"   # requested CPU idle color
+
+LEGEND_FONTSIZE = 22
+LEGEND_TITLE_FONTSIZE = 22
+LEGEND_BORDER_COLOR = "black"
+LEGEND_BORDER_WIDTH = 1.0
+CPU_ACTIVE_HATCH = "///"
+GPU_ACTIVE_HATCH = "|||"
+ACTIVE_HATCH_LINEWIDTH = 2.2
+ACTIVE_HATCH_COLOR = "#666666"
+ACTIVE_BOX_FONTSIZE = 11
+
+SEG_ORDER_M01 = [
+    "platform_overhead",
+    "cpu_idle",
+    "gpu_idle",
+    "pre_processing",
+    "data_to_gpu",
+    "gpu_forward",
+    "gpu_nms",
+]
+
+SEG_ORDER_M34 = [
+    "platform_overhead",
+    "cpu_idle",
+    "gpu_idle",
+    "data_to_gpu",
+    "pre_processing",
+    "gpu_forward",
+    "gpu_nms",
+]
+
+SEG_ALL = [
+    "platform_overhead",
+    "pre_processing",
+    "data_to_gpu",
+    "cpu_idle",
+    "gpu_forward",
+    "gpu_nms",
+    "gpu_idle",
 ]
 
 SEG_META = {
     # (color, hatch, label, cpu_or_gpu)
-    "platform_overhead": (C_PLATFORM, "xx",   "Platform overhead\n(DRAM/SSD/display/fan)", "cpu"),
-    "read_points":       (C_READ,     "\\\\", "read_points",                               "cpu"),
-    "pre_processing":    (C_PREPROC,  "\\\\", "pre_processing\n(voxelization)",            "cpu"),
-    "data_to_gpu":       (C_H2D,      "\\\\", "CPU→GPU: H2D transfer",                     "cpu"),
-    "gpu_vfe":           (C_VFE,      "",     "VFE",                                       "gpu"),
-    "gpu_scatter":       (C_SCATTER,  "",     "PointPillarScatter",                        "gpu"),
-    "gpu_bev":           (C_BEV,      "",     "BEV backbone",                              "gpu"),
-    "gpu_head":          (C_HEAD,     "",     "anchor head",                               "gpu"),
-    "gpu_nms":           (C_NMS,      "",     "NMS (postprocess)",                         "gpu"),
-    "gpu_idle":          (C_GPU_IDLE, "..",   "GPU idle  (18.2 W measured)",               "gpu"),
-    "cpu_idle":          (C_CPU_IDLE, "--",   "CPU idle  (11.6 W measured)",               "cpu"),
+    "platform_overhead": (C_PLATFORM, "", "Platform Overhead\n(DRAM/SSD/Fan)", "cpu"),
+    "pre_processing":    (C_PREPROC, "", "Preprocess", "cpu"),
+    "data_to_gpu":       (C_H2D, "", "H2D", "cpu"),
+    "gpu_forward":       (COLOR_BY_STAGE["Forward"], "", "Forward", "gpu"),
+    "gpu_nms":           (C_NMS, "", "Postprocess", "gpu"),
+    "gpu_idle":          (C_GPU_IDLE, "", "GPU Idle  (18.2 W)", "gpu"),
+    "cpu_idle":          (C_CPU_IDLE, "", "CPU Idle  (11.6 W)", "cpu"),
 }
 
 # ── Measured constants ────────────────────────────────────────────────────────
@@ -101,30 +138,9 @@ CPU_IDLE_PKG_W    = 11.6
 PLATFORM_ACTIVE_W = 74.5   # psys − pkg − GPU during active window
 PLATFORM_IDLE_W   = 30.0   # estimated at rest
 
-# ── NVTX forward substage fractions ──────────────────────────────────────────
-# Derived from A10G modal_v3 nsys profiles (used as proxy for relative fractions).
-# M0/M1 (CPU voxel, FP32/AMP forward): VFE/Scatter/BEV/Head fractions of forward time
-# M3/M4 (GPU voxel): similar forward fractions
-# Source: plot_latency.py FORWARD_NVTX_COLORS data
-NVTX_FRACS = {
-    "default": {"gpu_vfe": 0.18, "gpu_scatter": 0.08, "gpu_bev": 0.55, "gpu_head": 0.19},
-}
-
-def split_forward(forward_mj, variant="default"):
-    f = NVTX_FRACS[variant]
-    return {k: forward_mj * v for k, v in f.items()}
-
-
 # ── Edge variants — measured locally 2026-04-23 ───────────────────────────────
 # latency breakdown from profile_suite; active powers from energy_monitor
 LOCAL_VARIANTS = [
-    dict(
-        label="M0_FP32",
-        gpu_W=40.2, cpu_W=63.18,
-        read_ms=3.44, preproc_ms=8.85, h2d_ms=0.63,
-        forward_ms=13.10, nms_ms=0.38,
-        gpu_voxel=False,
-    ),
     dict(
         label="M0_AMP",
         gpu_W=40.3, cpu_W=65.74,
@@ -170,14 +186,13 @@ def edge_segments(v):
     fwd_mj = v['gpu_W'] * v['forward_ms']
     segs = {
         "platform_overhead": PLATFORM_ACTIVE_W * lat + PLATFORM_IDLE_W * idle,
-        "read_points":       v['cpu_W'] * v['read_ms'],
-        "pre_processing":    v['cpu_W'] * v['preproc_ms'],
+        "pre_processing":    v['cpu_W'] * (v['read_ms'] + v['preproc_ms']),
         "data_to_gpu":       v['cpu_W'] * v['h2d_ms'],
+        "gpu_forward":       fwd_mj,
         "gpu_nms":           v['gpu_W'] * v['nms_ms'],
         "gpu_idle":          GPU_IDLE_W * idle,
         "cpu_idle":          CPU_IDLE_PKG_W * idle,
     }
-    segs.update(split_forward(fwd_mj))
     return segs
 
 
@@ -187,21 +202,26 @@ def cloud_segments(c):
     fwd_mj = c['gpu_W'] * c['forward_ms']
     segs = {
         "platform_overhead": 0.0,
-        "read_points":       c['cpu_active_W'] * c['read_ms'],
-        "pre_processing":    c['cpu_active_W'] * c['preproc_ms'],
+        "pre_processing":    c['cpu_active_W'] * (c['read_ms'] + c['preproc_ms']),
         "data_to_gpu":       c['cpu_active_W'] * c['h2d_ms'],
+        "gpu_forward":       fwd_mj,
         "gpu_nms":           c['gpu_W'] * c['nms_ms'],
         "gpu_idle":          GPU_IDLE_W * idle,
         "cpu_idle":          c['cpu_idle_W'] * idle,
     }
-    segs.update(split_forward(fwd_mj))
     return segs
+
+
+def seg_order_for_label(label: str) -> list[str]:
+    if label.startswith("M3_") or label.startswith("M4_"):
+        return SEG_ORDER_M34
+    return SEG_ORDER_M01
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output_dir',
-                        default='../../profile_outputs/amp_benchmark/report_figures')
+                        default='/home/nas/polin/cmu-berlin/MLS/report')
     args = parser.parse_args()
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -209,10 +229,10 @@ def main():
     # ── Assemble rows ────────────────────────────────────────────────────────
     rows = []
     for v in LOCAL_VARIANTS:
-        rows.append(dict(label=v['label'], segs=edge_segments(v),
+        rows.append(dict(label=v['label'].replace('_AMP', ''), segs=edge_segments(v),
                          cloud=False))
     for r in rows:
-        r['total'] = sum(r['segs'].get(s, 0) for s in SEG_ORDER)
+        r['total'] = sum(r['segs'].get(s, 0) for s in SEG_ALL)
 
     n     = len(rows)
     bar_h = 0.65
@@ -224,14 +244,16 @@ def main():
 
     with plt.rc_context(MLSYS_PLOT_RC):
         fig, (ax, ax_leg) = plt.subplots(
-            1, 2, figsize=(16.0, fig_h),
+            1, 2, figsize=(20.0, fig_h),
             gridspec_kw=dict(width_ratios=[5, 1]))
         ax_leg.axis('off')
 
         # ── Draw bars ────────────────────────────────────────────────────────
         for ri, row in enumerate(rows):
             left = 0.0
-            for seg in SEG_ORDER:
+            row_order = seg_order_for_label(row['label'])
+            seg_pos: dict[str, tuple[float, float]] = {}
+            for seg in row_order:
                 real = row['segs'].get(seg, 0)
                 disp = real * scale
                 if real <= 0:
@@ -246,101 +268,75 @@ def main():
                 else:
                     hatch = hatch_base
 
-                ax.barh(y[ri], disp, height=bar_h, left=left,
-                        color=color, edgecolor='white',
-                        linewidth=0.5, hatch=hatch, alpha=0.92)
-
-                if real > 280:
-                    ax.text(left + disp / 2, y[ri],
-                            f'{real/1000:.2f}J',
-                            ha='center', va='center',
-                            fontsize=7, color='white', fontweight='bold',
-                            clip_on=True)
+                bars = ax.barh(
+                    y[ri], disp, height=bar_h, left=left,
+                    color=color, edgecolor='white',
+                    linewidth=0.5, hatch=hatch, alpha=0.92
+                )
+                if hatch:
+                    for p in bars.patches:
+                        p.set_hatch_linewidth(FORWARD_NVTX_HATCH_LINEWIDTH)
+                seg_pos[seg] = (left, left + disp)
                 left += disp
 
-            # End label
-            base  = rows[0]['total']
-            total = row['total']
-            stot  = total * scale
-            if ri == 0:
-                lbl  = f"{total/1000:.2f} J  (baseline)"
-                lcol = '#333'
-            else:
-                pct  = (base - total) / base * 100
-                sign = '−' if pct >= 0 else '+'
-                lbl  = f"{total/1000:.2f} J  {sign}{abs(pct):.0f}%"
-                lcol = '#1b5e20' if pct > 0 else '#b71c1c'
-            ax.text(stot + 55, y[ri], lbl,
-                    ha='left', va='center', fontsize=9,
-                    fontweight='bold', color=lcol)
+            # Overlay active-role hatches directly on bars (not legend).
+            # Rules:
+            # - M0/M1: preprocess=CPU active; after preprocess (H2D+forward+postprocess)=GPU active
+            # - M3/M4: from preprocess onward = GPU active; H2D marked as CPU active
+            label = row['label']
+            cpu_span: tuple[float, float] | None = None
+            gpu_span: tuple[float, float] | None = None
+            if label.startswith("M0") or label.startswith("M1"):
+                cpu_span = seg_pos.get("pre_processing")
+                h2d = seg_pos.get("data_to_gpu")
+                post = seg_pos.get("gpu_nms")
+                if h2d and post:
+                    gpu_span = (h2d[0], post[1])
+            elif label.startswith("M3") or label.startswith("M4"):
+                h2d = seg_pos.get("data_to_gpu")
+                if h2d:
+                    cpu_span = h2d
+                pre = seg_pos.get("pre_processing")
+                post = seg_pos.get("gpu_nms")
+                if pre and post:
+                    gpu_span = (pre[0], post[1])
 
+            def _overlay(span: tuple[float, float] | None, hatch: str) -> None:
+                if not span:
+                    return
+                s, e = span
+                w = e - s
+                if w <= 0:
+                    return
+                overlay = ax.barh(
+                    y[ri],
+                    w,
+                    left=s,
+                    height=bar_h,
+                    facecolor="none",
+                    edgecolor=ACTIVE_HATCH_COLOR,
+                    linewidth=0.0,
+                    hatch=hatch,
+                    zorder=5,
+                )
+                for p in overlay.patches:
+                    p.set_hatch_linewidth(ACTIVE_HATCH_LINEWIDTH)
 
-        # ── Annotations ──────────────────────────────────────────────────────
-        # NMS on M0_FP32
-        m0   = rows[0]
-        nms_center = sum(m0['segs'].get(s, 0) for s in
-                         ["platform_overhead","read_points","pre_processing",
-                          "data_to_gpu","gpu_vfe","gpu_scatter","gpu_bev",
-                          "gpu_head"]) * scale + \
-                     m0['segs']['gpu_nms'] * scale / 2
-        ax.annotate('NMS ≈70%\nof GPU time',
-                    xy=(nms_center, y[0]),
-                    xytext=(nms_center - XLIM * 0.05, y[0] - 0.35),
-                    fontsize=7.5, color='#b71c1c', fontweight='bold',
-                    ha='center',
-                    arrowprops=dict(arrowstyle='->', color='#b71c1c',
-                                    lw=1.0, connectionstyle='arc3,rad=0.2'))
-
-        # compile ↓ arrow M0_AMP → M1_AMP
-        # ax.annotate('',
-        #             xy=(rows[2]['total'] * scale, y[2]),
-        #             xytext=(rows[1]['total'] * scale, y[1]),
-        #             arrowprops=dict(arrowstyle='->', color='#1565C0',
-        #                             lw=1.5, connectionstyle='arc3,rad=0.0'))
-
-        # Calculate a vertical offset based on your font size/axis scale
-        y_offset = 0.4 
-
-        ax.annotate('',
-            xy=(rows[2]['total'] * scale, y[2]),
-            xytext=((rows[1]['total'] + rows[2]['total']) / 2 * scale + XLIM * 0.03, ((y[1] + y[2]) / 2) - y_offset),
-            arrowprops=dict(arrowstyle='->', color='#1565C0', lw=1.5)
-        )
-
-        ax.text((rows[1]['total'] + rows[2]['total']) / 2 * scale + XLIM * 0.03,
-                (y[1] + y[2]) / 2,
-                'compile ↓', ha='left', va='center',
-                fontsize=8, color='#1565C0', fontweight='bold')
-
-        # "the best" on M4_AMP
-        ax.text(rows[-1]['total'] * scale + 55, y[-1] - 1.2,
-                '← the best', ha='left', va='center',
-                fontsize=8.5, color='#2E7D32',
-                fontweight='bold', style='italic')
-
-        # ── CPU / GPU band labels on y-axis side ─────────────────────────────
-        ax.text(-XLIM * 0.01, -0.5, 'CPU', ha='right', va='center',
-                fontsize=8, color='#a0522d', fontweight='bold',
-                transform=ax.transData)
+            _overlay(cpu_span, CPU_ACTIVE_HATCH)
+            _overlay(gpu_span, GPU_ACTIVE_HATCH)
 
         # ── Axes ─────────────────────────────────────────────────────────────
-        ax.set_yticks
-        ax.set_yticklabels([r['label'] for r in rows], fontsize=10)
+        ax.set_yticks(y)
+        ax.set_yticklabels([r['label'] for r in rows], fontsize=22)
         ax.invert_yaxis()
         ax.xaxis.set_major_locator(
             matplotlib.ticker.MultipleLocator(1000 * scale))
         ax.xaxis.set_major_formatter(
             matplotlib.ticker.FuncFormatter(
                 lambda x, _: f'{x/scale/1000:.0f}'))
-        ax.set_xlabel('Energy per 10 Hz duty cycle  (J / 100 ms frame)',
-                      fontsize=11)
-        ax.set_xlim(0, XLIM * 1.32)
-        ax.set_title(
-            'Holistic 10 Hz LiDAR inference energy budget  '
-            '(active inference + idle per duty cycle)\n'
-            'RAPL pkg (CPU)  ·  NVML (GPU)  ·  all values measured  '
-            '|  hatch pattern shows phase type (platform / CPU active / CPU idle / GPU active / GPU idle)',
-            fontsize=10.5, fontweight='bold', pad=8, loc='left')
+        ax.set_xlabel('Energy per 10Hz Cycle [J]', fontsize=22)
+        ax.set_xlim(0, 8.3 * 1000.0 * scale)
+        # Keep plot style consistent with report/plot_latency.py: no figure title.
 
         # ── Segment legend (top) ──────────────────────────────────────────────
         def seg_patch(key):
@@ -349,56 +345,36 @@ def main():
             return mpatches.Patch(facecolor=color, hatch=hatch,
                                   edgecolor=ec, linewidth=0.5, label=label)
 
+        # Align main stage order with report/plot_latency.py:
+        # Preprocess -> H2D -> Forward -> Postprocess
         seg_patches = (
-            [mpatches.Patch(visible=False, label='── Platform ──')] +
-            [seg_patch('platform_overhead')] +
-            [mpatches.Patch(visible=False, label='── CPU active ──')] +
-            [seg_patch(s) for s in ["read_points", "pre_processing", "data_to_gpu"]] +
-            [mpatches.Patch(visible=False, label='── CPU idle ──')] +
-            [seg_patch('cpu_idle')] +
-            [mpatches.Patch(visible=False, label='── GPU active ──')] +
-            [seg_patch(s) for s in ["gpu_vfe", "gpu_scatter", "gpu_bev", "gpu_head", "gpu_nms"]] +
-            [mpatches.Patch(visible=False, label='── GPU idle ──')] +
-            [seg_patch('gpu_idle')]
+            [mpatches.Patch(visible=False, label='── Idle / Platform ──')] +
+            [seg_patch('platform_overhead'), seg_patch('cpu_idle'), seg_patch('gpu_idle')] +
+            [mpatches.Patch(visible=False, label='── Active ──')] +
+            [
+                mpatches.Patch(facecolor='white', edgecolor=ACTIVE_HATCH_COLOR, hatch=CPU_ACTIVE_HATCH, linewidth=0.8, label='CPU Active'),
+                mpatches.Patch(facecolor='white', edgecolor=ACTIVE_HATCH_COLOR, hatch=GPU_ACTIVE_HATCH, linewidth=0.8, label='GPU Active'),
+            ] +
+            [mpatches.Patch(visible=False, label='── Stage ──')] +
+            [seg_patch(s) for s in ["pre_processing", "data_to_gpu", "gpu_forward", "gpu_nms"]]
         )
-        ax_leg.legend(handles=seg_patches,
-                             title='Pipeline segment', title_fontsize=9,
-                             fontsize=7.5, loc='upper left',
-                      framealpha=0.0, edgecolor='none', borderaxespad=0)
+        leg = ax_leg.legend(
+            handles=seg_patches,
+            title='',
+            title_fontsize=LEGEND_TITLE_FONTSIZE,
+            fontsize=LEGEND_FONTSIZE,
+            loc='upper left',
+            framealpha=1.0,
+            edgecolor=LEGEND_BORDER_COLOR,
+            borderaxespad=0,
+        )
+        leg._legend_box.align = "left"  # noqa: SLF001
+        leg.get_title().set_ha("left")
+        fr = leg.get_frame()
+        fr.set_edgecolor(LEGEND_BORDER_COLOR)
+        fr.set_linewidth(LEGEND_BORDER_WIDTH)
 
-        # ROI box
-        base_total  = rows[0]['total']
-        gpu_frac    = (sum(rows[0]['segs'].get(s, 0)
-                           for s in ["gpu_vfe","gpu_scatter","gpu_bev",
-                                     "gpu_head","gpu_nms"])
-                       / base_total * 100)
-        best_saving = (base_total - min(r['total'] for r in rows)
-                       ) / base_total * 100
-        roi = (f"GPU compute = {gpu_frac:.0f}%\n"
-               f"of total system energy\n"
-               f"(M0_FP32 baseline)\n\n"
-               f"Best SW saving:\n"
-               f"~{best_saving:.0f}% of total\n\n"
-               f"→ Idle + platform\n"
-               f"dominate; SW opt.\n"
-               f"alone limited ROI.")
-        ax_leg.text(0.02, 0.5, roi,
-                    transform=ax_leg.transAxes,
-                    ha='left', va='top', fontsize=7.5,
-                    color='#1b5e20', fontweight='bold',
-                    bbox=dict(boxstyle='round,pad=0.45', fc='#f1f8e9',
-                              ec='#2e7d32', alpha=0.92))
-
-        # ── Footer ───────────────────────────────────────────────────────────
-        fig.text(
-            0.5, 0.005,
-            'Measured locally (RTX 3080 Ti, 2026-04-23). '
-            'GPU idle = 18.2 W, CPU idle = 11.6 W (10 s idle samples). '
-            'Platform overhead = psys − pkg − GPU ≈ 74.5 W active / 30 W idle (est.). '
-            'GPU forward substage fractions from NVTX profile (A10G proxy).',
-            ha='center', fontsize=7.5, color='#666', style='italic')
-
-        plt.tight_layout(rect=[0, 0.04, 1, 1])
+        plt.tight_layout(rect=[0, 0, 1, 1])
         path = out / 'energy_duty_cycle.png'
         fig.savefig(path, dpi=150, bbox_inches='tight')
         plt.close(fig)

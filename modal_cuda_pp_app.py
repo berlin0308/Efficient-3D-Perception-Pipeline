@@ -15,7 +15,8 @@ modal_cuda_pp_app.py — Run CUDA-PointPillars (TensorRT FP32 & FP16) on Modal.
 4) Run both FP32 and FP16 in sequence:
      modal run modal_cuda_pp_app.py --action run_all
 
-Results are saved to Modal volume and auto-downloaded to ./modal_outputs/cuda_pp/
+Results are saved to Modal volume. By default they are auto-downloaded to ./modal_outputs/cuda_pp/
+(whole results volume). Pass --skip-download to skip the local `modal volume get` step.
 
 ## Switching to teammate's workspace
 When you have access to the teammate's Modal workspace, just change RESULTS_VOLUME_NAME
@@ -380,6 +381,18 @@ _GPU_LABELS = {
 _ALL_GPUS = list(_GPU_LABELS.keys())
 
 
+def _download_results_if_needed(*, skip_download: bool, download_to: str) -> None:
+    if skip_download:
+        print(
+            f"\n[local] skip_download: not pulling results volume. "
+            f"Fetch a subtree later, e.g. `modal volume get {RESULTS_VOLUME_NAME} /cuda_pp <dir> --force`",
+            flush=True,
+        )
+        return
+    print(f"\nDownloading results to {download_to}...")
+    _download_results(Path(download_to))
+
+
 @app.local_entrypoint()
 def main(
     action: str = "run",
@@ -388,11 +401,13 @@ def main(
     steps: int = 10,
     gpu: str = "A10G",
     download_to: str = "./modal_outputs/cuda_pp",
+    skip_download: bool = False,
 ):
     """
     action:    build | run | run_all
     precision: fp32 | fp16           (used when action=run/run_all)
     gpu:       T4 | A10G | H100 | all
+    skip_download: if true, do not run modal volume get (avoids pulling the whole results volume)
     """
     gpu_list = _ALL_GPUS if gpu.lower() == "all" else [gpu.upper()]
 
@@ -408,8 +423,7 @@ def main(
             print(f"=== Running M5_{precision.upper()} on {g} ===")
             result = fn.remote(precision=precision, warmup=warmup, steps=steps, rebuild=True)
             print(f"Result: {result}")
-        print(f"\nDownloading results to {download_to}...")
-        _download_results(Path(download_to))
+        _download_results_if_needed(skip_download=skip_download, download_to=download_to)
 
     elif action == "run_all":
         _gpu_fn = {"A10G": run_cuda_pp, "T4": run_cuda_pp_t4, "H100": run_cuda_pp_h100}
@@ -420,22 +434,21 @@ def main(
                 print(f"\n--- {p.upper()} ---")
                 result = fn.remote(precision=p, warmup=warmup, steps=steps, rebuild=True)
                 print(f"Result: {result}")
-        print(f"\nDownloading results to {download_to}...")
-        _download_results(Path(download_to))
+        _download_results_if_needed(skip_download=skip_download, download_to=download_to)
 
     elif action == "accuracy":
         print(f"=== Accuracy eval M5_{precision.upper()} on KITTI val set ===")
         result = run_accuracy.remote(precision=precision, rebuild=True)
         print(f"Result: {result}")
-        print(f"\nDownloading results to {download_to}...")
-        _download_results(Path(download_to))
+        _download_results_if_needed(skip_download=skip_download, download_to=download_to)
 
     elif action == "eval":
         print(f"=== KITTI eval M5_{precision.upper()} ===")
         result = run_kitti_eval.remote(precision=precision)
         print(f"Result: {result}")
-        print(f"\nDownloading results to {download_to}...")
-        _download_results(Path(download_to))
+        _download_results_if_needed(skip_download=skip_download, download_to=download_to)
 
     else:
-        print(f"Unknown action: {action}. Use: build | run | run_all | accuracy")
+        print(
+            f"Unknown action: {action}. Use: build | run | run_all | accuracy | eval",
+        )
