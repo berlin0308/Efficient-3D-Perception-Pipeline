@@ -96,9 +96,31 @@ except ImportError:
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _V2_FULL = _REPO_ROOT / "modal_mls_results" / "modal_v2_allcells_full" / "runs.csv"
 _V2 = _REPO_ROOT / "modal_mls_results" / "modal_v2" / "runs.csv"
-DEFAULT_RUNS_CSV = _V2_FULL if _V2_FULL.is_file() else _V2
-DEFAULT_FORWARD_NVTX_ROOT = _REPO_ROOT / "modal_outputs" / "modal_v2_a10"
+_V4_A10 = _REPO_ROOT / "modal_outputs" / "modal_v4_a10"
+_V3_A10 = _REPO_ROOT / "modal_outputs" / "modal_v3_a10"
+DEFAULT_RUNS_CSV = _V4_A10 if (_V4_A10 / "runs.csv").is_file() else (_V2_FULL if _V2_FULL.is_file() else _V2)
+DEFAULT_FORWARD_NVTX_ROOT = _V3_A10
+DEFAULT_M5_SOURCE_CSV = _V3_A10 / "runs.csv"
 DEFAULT_GPU = "A10"
+
+# Match report/plot_latency.py visual defaults
+LEGEND_FONTSIZE = 22
+LEGEND_TITLE_FONTSIZE = 22
+LEGEND_FONTSIZE_FWD = 22
+LEGEND_BORDER_COLOR = "black"
+LEGEND_BORDER_WIDTH = 1.0
+LEGEND_BOX_LEFT_X = 0.81
+
+
+def _style_legend_border_black(leg) -> None:
+    fr = leg.get_frame()
+    fr.set_edgecolor(LEGEND_BORDER_COLOR)
+    fr.set_linewidth(LEGEND_BORDER_WIDTH)
+
+
+def _style_legend_left_aligned(leg) -> None:
+    leg._legend_box.align = "left"  # noqa: SLF001
+    leg.get_title().set_ha("left")
 
 _TOOLS = _REPO_ROOT / "OpenPCDet" / "tools"
 if _TOOLS.is_dir() and str(_TOOLS) not in sys.path:
@@ -169,7 +191,7 @@ def parse_args():
         "--csv",
         type=Path,
         default=DEFAULT_RUNS_CSV,
-        help="runs.csv path or directory containing it (runs mode; default: modal_v2 bundle if present)",
+        help="runs.csv path or directory containing it (runs mode; default: modal_outputs/modal_v4_a10 if present)",
     )
     parser.add_argument(
         "--runs-root",
@@ -206,7 +228,13 @@ def parse_args():
         type=Path,
         default=DEFAULT_FORWARD_NVTX_ROOT,
         help="runs mode: root directory containing <cell>/artifacts/forward_nvtx_ms.json "
-        "(default: modal_outputs/modal_v2_a10)",
+        "(default: modal_outputs/modal_v3_a10)",
+    )
+    parser.add_argument(
+        "--m5-source-csv",
+        type=Path,
+        default=DEFAULT_M5_SOURCE_CSV,
+        help="runs mode: use M5 rows from this runs.csv (default: modal_outputs/modal_v3_a10/runs.csv)",
     )
     parser.add_argument(
         "--out",
@@ -572,16 +600,10 @@ def plot_runs_energy_stacked(
             )
             tight_rect = [0.0, 0.0, 0.92, 1.0]
 
-        ax.set_xlabel("Energy [mJ] per sample (allocated by profile stage latency share)")
+        ax.set_xlabel("Energy [mJ] per sample")
         ax.set_ylabel("experiment_cell_id")
-        title_extra = (
-            " · NVTX forward split"
-            if (nest_forward_from_artifacts and drew_forward_nvtx)
-            else ""
-        )
         ax.set_title(
-            "Per-stage energy (runs.csv: energy_total_J / measured_steps; %s; no dataloader)%s"
-            % (gpu_resolved, title_extra)
+            "Per-stage energy (runs.csv: energy_total_J / measured_steps; %s; no dataloader)" % gpu_resolved
         )
         ax.set_xlim(0, xmax * 1.02 if xmax > 0 else 1.0)
         ax.invert_yaxis()
@@ -725,6 +747,22 @@ def main_runs(args: argparse.Namespace) -> None:
     )
 
     df, gpu_resolved = load_filtered_latest(csv_path, args.gpu)
+
+    m5_source = Path(args.m5_source_csv).expanduser()
+    if not m5_source.is_absolute():
+        m5_source = (_REPO_ROOT / m5_source).resolve()
+    else:
+        m5_source = m5_source.resolve()
+    if m5_source.is_file():
+        try:
+            m5_df, _ = load_filtered_latest(m5_source, args.gpu)
+            m5_df = m5_df[m5_df["experiment_cell_id"].astype(str).str.startswith("M5_")].copy()
+            if not m5_df.empty:
+                base = df[~df["experiment_cell_id"].astype(str).str.startswith("M5_")].copy()
+                df = pd.concat([base, m5_df], ignore_index=True)
+        except Exception as ex:
+            print("plot_energy: failed to load M5 source %s: %s" % (m5_source, ex), file=sys.stderr)
+
     if "energy_total_J" not in df.columns or "measured_steps" not in df.columns:
         raise ValueError("runs.csv must include energy_total_J and measured_steps columns")
     df = sort_by_m_group(df)
