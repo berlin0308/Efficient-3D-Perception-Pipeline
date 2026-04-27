@@ -24,6 +24,7 @@
 #include "NvOnnxConfig.h"
 #include "NvOnnxParser.h"
 #include "NvInferRuntime.h"
+#include "nvtx3/nvToolsExt.h"
 
 TRT::~TRT(void)
 {
@@ -65,21 +66,18 @@ TRT::TRT(std::string modelFile, cudaStream_t stream):stream_(stream)
     networkConfig->setFlag(nvinfer1::BuilderFlag::kFP16);
     std::cout << "Enable fp16!" << std::endl;
 #endif
-    // set max batch size
-    builder->setMaxBatchSize(1);
-    // set max workspace
-    networkConfig->setMaxWorkspaceSize(size_t(1) << 30);
+    // set max workspace (TRT 10: use setMemoryPoolLimit)
+    networkConfig->setMemoryPoolLimit(nvinfer1::MemoryPoolType::kWORKSPACE, size_t(1) << 30);
 
-    engine_ = (builder->buildEngineWithConfig(*network, *networkConfig));
+    // TRT 10: buildSerializedNetwork returns IHostMemory directly (no engine needed)
+    auto trtModelStream = builder->buildSerializedNetwork(*network, *networkConfig);
 
-    if (engine_ == nullptr)
+    if (trtModelStream == nullptr)
     {
-      std::cerr << ": engine init null!" << std::endl;
+      std::cerr << ": engine build failed!" << std::endl;
       exit(-1);
     }
 
-    // serialize the engine, then close everything down
-    auto trtModelStream = (engine_->serialize());
     std::fstream trtOut(modelCache, std::ifstream::out);
     if (!trtOut.is_open())
     {
@@ -89,12 +87,11 @@ TRT::TRT(std::string modelFile, cudaStream_t stream):stream_(stream)
 
     trtOut.write((char*)trtModelStream->data(), trtModelStream->size());
     trtOut.close();
-    trtModelStream->destroy();
 
-    networkConfig->destroy();
-    parser->destroy();
-    network->destroy();
-    builder->destroy();
+    // Deserialize to get engine_
+    auto runtime = nvinfer1::createInferRuntime(gLogger_);
+    engine_ = runtime->deserializeCudaEngine(trtModelStream->data(), trtModelStream->size());
+    delete trtModelStream;
 
   } else {
 	  std::cout << "load TRT cache."<<std::endl;
@@ -121,7 +118,7 @@ TRT::TRT(std::string modelFile, cudaStream_t stream):stream_(stream)
         exit(-1);
     }
     //plugin_ = nvonnxparser::createPluginFactory(gLogger_);
-    engine_ = (runtime->deserializeCudaEngine(data, length, 0));
+    engine_ = (runtime->deserializeCudaEngine(data, length));
     if (engine_ == nullptr) {
         std::cerr << ": engine null!" << std::endl;
         exit(-1);
@@ -138,7 +135,7 @@ int TRT::doinfer(void**buffers)
 {
   int status;
 
-  status = context_->enqueueV2(buffers, stream_, &start_);
+  status = context_->executeV2(buffers);
 
   if (!status)
   {
@@ -225,9 +222,10 @@ int PointPillar::doinfer(void*points_data, unsigned int points_size, std::vector
   checkCudaErrors(cudaEventRecord(start_, stream_));
 #endif
 
+  nvtxRangePushA("gpu_voxelize");
   pre_->generateVoxels((float*)points_data, points_size,
         params_input_,
-        voxel_features_, 
+        voxel_features_,
         voxel_num_,
         voxel_idxs_);
 
@@ -250,6 +248,7 @@ int PointPillar::doinfer(void*points_data, unsigned int points_size, std::vector
       voxel_idxs_,
       params_input_,
       features_input_);
+  nvtxRangePop();  // gpu_voxelize
 
 #if PERFORMANCE_LOG
   checkCudaErrors(cudaEventRecord(stop_, stream_));
@@ -262,9 +261,11 @@ int PointPillar::doinfer(void*points_data, unsigned int points_size, std::vector
   checkCudaErrors(cudaEventRecord(start_, stream_));
 #endif
 
+  nvtxRangePushA("trt_forward");
   void *buffers[] = {features_input_, voxel_idxs_, params_input_, cls_output_, box_output_, dir_cls_output_};
   trt_->doinfer(buffers);
   checkCudaErrors(cudaMemsetAsync(params_input_, 0, sizeof(unsigned int), stream_));
+  nvtxRangePop();  // trt_forward
 
 #if PERFORMANCE_LOG
   checkCudaErrors(cudaEventRecord(stop_, stream_));
@@ -277,9 +278,11 @@ int PointPillar::doinfer(void*points_data, unsigned int points_size, std::vector
   checkCudaErrors(cudaEventRecord(start_, stream_));
 #endif
 
+  nvtxRangePushA("postprocess");
   post_->doPostprocessCuda(cls_output_, box_output_, dir_cls_output_,
                           bndbox_output_);
   checkCudaErrors(cudaDeviceSynchronize());
+  nvtxRangePop();  // postprocess
   float obj_count = bndbox_output_[0];
 
   int num_obj = static_cast<int>(obj_count);

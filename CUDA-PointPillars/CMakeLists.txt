@@ -61,10 +61,12 @@ endif()
 
 set(TENSORRT_INCLUDE_DIRS /usr/include/x86_64-linux-gnu/)
 set(TENSORRT_LIBRARY_DIRS /usr/lib/x86_64-linux-gnu/)
+set(NVTX_INCLUDE_DIRS /opt/nvidia/nsight-systems/2026.1.2/target-linux-x64/nvtx/include)
 
 include_directories(
     ${CUDA_INCLUDE_DIRS}
     ${TENSORRT_INCLUDE_DIRS}
+    ${NVTX_INCLUDE_DIRS}
     include
 )
 

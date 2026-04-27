@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <vector>
 #include <dirent.h>
+#include <chrono>
 
 #include "cuda_runtime.h"
 
@@ -253,9 +254,12 @@ int main(int argc, const char **argv)
 
     unsigned int length = 0;
     void *data = NULL;
+    auto t_read0 = std::chrono::high_resolution_clock::now();
     std::shared_ptr<char> buffer((char *)data, std::default_delete<char[]>());
     loadData(file_path.c_str(), &data, &length);
     buffer.reset((char *)data);
+    auto t_read1 = std::chrono::high_resolution_clock::now();
+    float read_ms = std::chrono::duration<float, std::milli>(t_read1 - t_read0).count();
 
     float* points = (float*)buffer.get();
     size_t points_size = length/sizeof(float)/4;
@@ -273,6 +277,7 @@ int main(int argc, const char **argv)
     cudaEventElapsedTime(&elapsedTime, start, stop);
 
     if (!is_warmup) {
+      std::cout << "TIME: read_points: " << read_ms << " ms." << std::endl;
       std::cout << "TIME: pointpillar: " << elapsedTime << " ms." << std::endl;
     }
 

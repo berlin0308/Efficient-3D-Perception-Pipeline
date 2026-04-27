@@ -102,12 +102,17 @@ PLATFORM_ACTIVE_W = 74.5   # psys − pkg − GPU during active window
 PLATFORM_IDLE_W   = 30.0   # estimated at rest
 
 # ── NVTX forward substage fractions ──────────────────────────────────────────
-# Derived from A10G modal_v3 nsys profiles (used as proxy for relative fractions).
-# M0/M1 (CPU voxel, FP32/AMP forward): VFE/Scatter/BEV/Head fractions of forward time
-# M3/M4 (GPU voxel): similar forward fractions
-# Source: plot_latency.py FORWARD_NVTX_COLORS data
+# "default": A10G modal_v3 nsys proxy — used for M0–M4 PyTorch variants.
+# "trt":     measured locally on RTX 3080 Ti via nsys nvtx_gpu_proj_sum (FP16, 50 frames).
+#   gpu_voxelize range (VFE+scatter): 128,133 ns avg
+#   trt_forward range: 5,709,300 ns avg
+#     PPScatter inside TRT: 176,393 ns  → gpu_scatter
+#     MatMul_161 + myelinGraphExecute:  684,396 ns → gpu_head
+#     remainder BEV convs:            4,848,511 ns → gpu_bev
+#   Voxelize folded into gpu_vfe bucket (combined stage total = trt_fwd + voxelize)
 NVTX_FRACS = {
-    "default": {"gpu_vfe": 0.18, "gpu_scatter": 0.08, "gpu_bev": 0.55, "gpu_head": 0.19},
+    "default": {"gpu_vfe": 0.18,   "gpu_scatter": 0.08,   "gpu_bev": 0.55,   "gpu_head": 0.19},
+    "trt":     {"gpu_vfe": 0.0220, "gpu_scatter": 0.0302, "gpu_bev": 0.8306, "gpu_head": 0.1172},
 }
 
 def split_forward(forward_mj, variant="default"):
@@ -156,31 +161,35 @@ LOCAL_VARIANTS = [
 ]
 
 # ── M5: CUDA-PointPillars TRT — measured locally 2026-04-27 ──────────────────
-# cuda_pp_metrics.py: gpu_W from NVML; CPU not measured (C++ process, no RAPL).
-# read_ms: estimated from M4_AMP (~3.9 ms); preproc on GPU (0.10 ms); h2d=0.
+# All measured locally on RTX 3080 Ti, 2026-04-27, 500 warmup / 500 steps.
+# gpu_W, cpu_W: NVML + RAPL package (energy_rapl_measured=True).
+# read_ms, voxelize_ms, forward_ms, nms_ms: cuda_pp_metrics 500-frame means.
 TRT_VARIANTS = [
-    dict(label="M5_FP32\n(TRT)", gpu_W=55.72, read_ms=3.9,
-         preproc_ms=0.10, forward_ms=5.61, nms_ms=0.49),
-    dict(label="M5_FP16\n(TRT)", gpu_W=52.70, read_ms=3.9,
-         preproc_ms=0.10, forward_ms=5.25, nms_ms=0.57),
+    dict(label="M5_FP32\n(TRT)", gpu_W=75.74, cpu_W=35.89, read_ms=0.18,
+         voxelize_ms=0.10, forward_ms=6.05, nms_ms=0.65),
+    dict(label="M5_FP16\n(TRT)", gpu_W=75.45, cpu_W=38.87, read_ms=0.18,
+         voxelize_ms=0.10, forward_ms=5.75, nms_ms=0.65),
 ]
 
 
 def trt_segments(v):
-    lat  = v['read_ms'] + v['preproc_ms'] + v['forward_ms'] + v['nms_ms']
+    # active = read + voxelize (GPU) + trt_forward + nms
+    lat  = v['read_ms'] + v['voxelize_ms'] + v['forward_ms'] + v['nms_ms']
     idle = DUTY_MS - lat
-    fwd_mj = v['gpu_W'] * v['forward_ms']
+    fwd_mj      = v['gpu_W'] * v['forward_ms']
+    voxelize_mj = v['gpu_W'] * v['voxelize_ms']
     segs = {
         "platform_overhead": PLATFORM_ACTIVE_W * lat + PLATFORM_IDLE_W * idle,
-        "read_points":       0.0,   # CPU not measured for M5
-        "pre_processing":    0.0,   # GPU voxelization — counted in gpu_vfe proxy
+        "read_points":       v['cpu_W'] * v['read_ms'],
+        "pre_processing":    0.0,   # voxelization on GPU — counted in gpu_vfe
         "data_to_gpu":       0.0,
         "gpu_nms":           v['gpu_W'] * v['nms_ms'],
         "gpu_idle":          GPU_IDLE_W * idle,
         "cpu_idle":          CPU_IDLE_PKG_W * idle,
     }
-    segs.update({k: fwd_mj * f for k, f in
-                 NVTX_FRACS['default'].items()})
+    # forward substages from real TRT nsys fracs; voxelize folded into gpu_vfe
+    total_mj = fwd_mj + voxelize_mj
+    segs.update({k: total_mj * f for k, f in NVTX_FRACS['trt'].items()})
     return segs
 
 
@@ -431,10 +440,11 @@ def main():
         # ── Footer ───────────────────────────────────────────────────────────
         fig.text(
             0.5, 0.005,
-            'Measured locally (RTX 3080 Ti, 2026-04-23). '
-            'GPU idle = 18.2 W, CPU idle = 11.6 W (10 s idle samples). '
-            'Platform overhead = psys − pkg − GPU ≈ 74.5 W active / 30 W idle (est.). '
-            'GPU forward substage fractions from NVTX profile (A10G proxy).',
+            'M0–M4: RTX 3080 Ti, 2026-04-23; RAPL pkg (CPU) + NVML (GPU); '
+            'forward substage fracs from A10G nsys proxy. '
+            'M5: CUDA-PointPillars TRT, 2026-04-27; GPU power NVML; forward/voxelize/NMS from local nsys; '
+            'CPU power from RAPL pkg; read_points from C++ binary timing. '
+            'GPU idle = 18.2 W, CPU idle = 11.6 W. Platform ≈ 74.5 W active / 30 W idle (est.).',
             ha='center', fontsize=7.5, color='#666', style='italic')
 
         plt.tight_layout(rect=[0, 0.04, 1, 1])

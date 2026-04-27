@@ -38,6 +38,38 @@ try:
 except ImportError:
     _HAS_NVML = False
 
+# ---------------------------------------------------------------------------
+# RAPL helpers
+# ---------------------------------------------------------------------------
+
+_RAPL_PKG_PATH = '/sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj'
+_RAPL_MAX_PATH = '/sys/class/powercap/intel-rapl/intel-rapl:0/max_energy_range_uj'
+
+
+def _rapl_available() -> bool:
+    return os.path.isfile(_RAPL_PKG_PATH) and os.access(_RAPL_PKG_PATH, os.R_OK)
+
+
+def _rapl_read_uj() -> int:
+    with open(_RAPL_PKG_PATH) as f:
+        return int(f.read().strip())
+
+
+def _rapl_max_uj() -> int:
+    try:
+        with open(_RAPL_MAX_PATH) as f:
+            return int(f.read().strip())
+    except Exception:
+        return 2 ** 32
+
+
+def _rapl_delta_j(start_uj: int, end_uj: int) -> float:
+    """Handle counter wraparound and return delta in Joules."""
+    delta = end_uj - start_uj
+    if delta < 0:
+        delta += _rapl_max_uj()
+    return delta / 1e6
+
 
 # ---------------------------------------------------------------------------
 # NVML energy helpers
@@ -131,6 +163,7 @@ def build_binary(
 # ---------------------------------------------------------------------------
 
 _TIME_RE           = re.compile(r"TIME:\s*pointpillar:\s*([\d.]+)\s*ms")
+_TIME_READ_RE      = re.compile(r"TIME:\s*read_points:\s*([\d.]+)\s*ms")
 _TIME_VOXELS_RE    = re.compile(r"TIME:\s*generateVoxels:\s*([\d.]+)\s*ms")
 _TIME_FEATURES_RE  = re.compile(r"TIME:\s*generateFeatures:\s*([\d.]+)\s*ms")
 _TIME_INFER_RE     = re.compile(r"TIME:\s*doinfer:\s*([\d.]+)\s*ms")
@@ -177,6 +210,7 @@ def _run_persistent(
         raise RuntimeError(f"./demo exited with code {result.returncode}")
     return {
         "full_frame":        [float(m.group(1)) for m in _TIME_RE.finditer(result.stdout)],
+        "read_points":       [float(m.group(1)) for m in _TIME_READ_RE.finditer(result.stdout)],
         "generate_voxels":   [float(m.group(1)) for m in _TIME_VOXELS_RE.finditer(result.stdout)],
         "generate_features": [float(m.group(1)) for m in _TIME_FEATURES_RE.finditer(result.stdout)],
         "doinfer":           [float(m.group(1)) for m in _TIME_INFER_RE.finditer(result.stdout)],
@@ -213,7 +247,14 @@ def run_benchmark(
     _run_persistent(demo, data_dir, warmup=1, steps=1)
 
     print(f"[run] energy+latency run: data_dir={data_dir}  warmup={warmup}  steps={steps}", flush=True)
+    use_rapl = _rapl_available()
+    if use_rapl:
+        print("[run] RAPL available — measuring CPU package energy", flush=True)
+    else:
+        print("[run] RAPL not available — CPU energy will not be measured", flush=True)
+
     stage_times: dict[str, list[float]] = {}
+    rapl_start_uj = _rapl_read_uj() if use_rapl else 0
 
     def _measured_runs():
         result = _run_persistent(demo, data_dir, warmup, steps,
@@ -222,6 +263,11 @@ def run_benchmark(
             stage_times.setdefault(k, []).extend(v)
 
     _, avg_power_w, total_j = _measure_energy(handle, _measured_runs)
+
+    rapl_end_uj = _rapl_read_uj() if use_rapl else 0
+    cpu_energy_j = _rapl_delta_j(rapl_start_uj, rapl_end_uj) if use_rapl else 0.0
+    wall_s_rapl  = total_j / avg_power_w if avg_power_w > 0 else 0.0
+    cpu_mean_power_w = cpu_energy_j / wall_s_rapl if wall_s_rapl > 0 else 0.0
 
     all_times = stage_times.get("full_frame", [])
     n = len(all_times)
@@ -241,18 +287,22 @@ def run_benchmark(
         return round(mean(vals), 4) if vals else 0.0
 
     return {
-        "full_frame_mean_ms":        round(avg, 4),
-        "full_frame_p50_ms":         round(p50, 4),
-        "full_frame_p95_ms":         round(p95, 4),
-        "full_frame_p99_ms":         round(p99, 4),
-        "throughput_sps":            round(throughput, 4),
-        "energy_mean_power_W":       round(avg_power_w, 4),
-        "energy_total_J":            round(total_j, 4),
-        "n_frames":                  n,
-        "stage_generate_voxels_ms":  _stage_mean("generate_voxels"),
+        "full_frame_mean_ms":         round(avg, 4),
+        "full_frame_p50_ms":          round(p50, 4),
+        "full_frame_p95_ms":          round(p95, 4),
+        "full_frame_p99_ms":          round(p99, 4),
+        "throughput_sps":             round(throughput, 4),
+        "energy_mean_power_W":        round(avg_power_w, 4),
+        "energy_total_J":             round(total_j, 4),
+        "cpu_energy_j":               round(cpu_energy_j, 4),
+        "cpu_mean_power_w":           round(cpu_mean_power_w, 4),
+        "rapl_measured":              use_rapl,
+        "n_frames":                   n,
+        "stage_read_points_ms":       _stage_mean("read_points"),
+        "stage_generate_voxels_ms":   _stage_mean("generate_voxels"),
         "stage_generate_features_ms": _stage_mean("generate_features"),
-        "stage_doinfer_ms":          _stage_mean("doinfer"),
-        "stage_postprocess_ms":      _stage_mean("postprocess"),
+        "stage_doinfer_ms":           _stage_mean("doinfer"),
+        "stage_postprocess_ms":       _stage_mean("postprocess"),
     }
 
 
@@ -366,9 +416,10 @@ def main():
         "trt_precision":     args.precision,
         # latency — aligned to runs.csv column names used by plot scripts
         # prof_forward_mean_ms = TRT infer only (matches M0-M4 forward semantics)
+        "prof_read_points_mean_ms":      stats["stage_read_points_ms"],
         "prof_forward_mean_ms":          stats["stage_doinfer_ms"],
         "prof_pre_processing_mean_ms":   round(stats["stage_generate_voxels_ms"] + stats["stage_generate_features_ms"], 4),
-        "prof_h2d_mean_ms":              0.0,   # no separate h2d stage in TRT pipeline
+        "prof_h2d_mean_ms":              0.0,
         "prof_postprocess_mean_ms":      stats["stage_postprocess_ms"],
         # full frame (all stages) — for Pareto / reporting
         "prof_full_frame_mean_ms":       stats["full_frame_mean_ms"],
@@ -376,9 +427,12 @@ def main():
         "prof_full_frame_p95_ms":        stats["full_frame_p95_ms"],
         "prof_full_frame_p99_ms":        stats["full_frame_p99_ms"],
         "prof_throughput_sps":           stats["throughput_sps"],
-        # energy
-        "energy_mean_power_W":           stats["energy_mean_power_W"],
-        "energy_total_J":                stats["energy_total_J"],
+        # energy — GPU (NVML) + CPU (RAPL package)
+        "energy_gpu_mean_power_W":       stats["energy_mean_power_W"],
+        "energy_gpu_total_J":            stats["energy_total_J"],
+        "energy_cpu_mean_power_W":       stats["cpu_mean_power_w"],
+        "energy_cpu_total_J":            stats["cpu_energy_j"],
+        "energy_rapl_measured":          stats["rapl_measured"],
         "measured_steps":                stats["n_frames"],
         "n_measured_frames":             stats["n_frames"],
     }
