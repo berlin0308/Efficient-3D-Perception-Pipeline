@@ -101,6 +101,8 @@ def parse_args():
     parser.add_argument('--sample_interval_ms', type=int, default=50,
                         help='power sampling interval in ms (default: 50 ms)')
     parser.add_argument('--traced_model', type=str, default=None)
+    parser.add_argument('--trt_engine', type=str, default=None,
+                        help='path to TRT .engine file (profile_utils/export_onnx.py + trtexec)')
     parser.add_argument('--compile', action='store_true')
     parser.add_argument(
         '--energy_exclude_compile_over_ms',

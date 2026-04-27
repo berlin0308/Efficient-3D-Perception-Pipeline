@@ -109,6 +109,10 @@ def load_model_for_inference(cfg, args, logger, dataset, to_cpu=False):
         _configure_memory_opts(model, args, logger)
 
     traced_path = getattr(args, 'traced_model', None)
+    trt_path    = getattr(args, 'trt_engine', None)
+    if traced_path and trt_path:
+        raise ValueError('Specify only one of --traced_model or --trt_engine.')
+
     if traced_path:
         path = Path(traced_path)
         if not path.exists():
@@ -117,6 +121,13 @@ def load_model_for_inference(cfg, args, logger, dataset, to_cpu=False):
         traced = torch.jit.load(str(path), map_location='cuda')
         traced.eval()
         model = TracedModelWrapper(traced, model)
+        model.cuda()
+    elif trt_path:
+        path = Path(trt_path)
+        if not path.exists():
+            raise FileNotFoundError('--trt_engine file not found: %s' % trt_path)
+        from profile_utils.trt_runner import TRTModelWrapper
+        model = TRTModelWrapper.from_engine_path(str(path), model, logger=logger)
         model.cuda()
     elif getattr(args, 'compile', False):
         if hasattr(torch, 'compile'):

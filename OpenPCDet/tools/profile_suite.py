@@ -82,6 +82,8 @@ def parse_args():
     parser.add_argument('--workers', type=int, default=4)
     parser.add_argument('--traced_model', type=str, default=None,
                         help='path to TorchScript .pt (profile_utils/export.py)')
+    parser.add_argument('--trt_engine', type=str, default=None,
+                        help='path to TRT .engine file (profile_utils/export_onnx.py + trtexec)')
     parser.add_argument('--compile', action='store_true',
                         help='wrap model with torch.compile() before profiling')
     parser.add_argument('--amp', action='store_true', default=False,

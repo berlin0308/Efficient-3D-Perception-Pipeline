@@ -155,6 +155,35 @@ LOCAL_VARIANTS = [
     ),
 ]
 
+# ── M5: CUDA-PointPillars TRT — measured locally 2026-04-27 ──────────────────
+# cuda_pp_metrics.py: gpu_W from NVML; CPU not measured (C++ process, no RAPL).
+# read_ms: estimated from M4_AMP (~3.9 ms); preproc on GPU (0.10 ms); h2d=0.
+TRT_VARIANTS = [
+    dict(label="M5_FP32\n(TRT)", gpu_W=55.72, read_ms=3.9,
+         preproc_ms=0.10, forward_ms=5.61, nms_ms=0.49),
+    dict(label="M5_FP16\n(TRT)", gpu_W=52.70, read_ms=3.9,
+         preproc_ms=0.10, forward_ms=5.25, nms_ms=0.57),
+]
+
+
+def trt_segments(v):
+    lat  = v['read_ms'] + v['preproc_ms'] + v['forward_ms'] + v['nms_ms']
+    idle = DUTY_MS - lat
+    fwd_mj = v['gpu_W'] * v['forward_ms']
+    segs = {
+        "platform_overhead": PLATFORM_ACTIVE_W * lat + PLATFORM_IDLE_W * idle,
+        "read_points":       0.0,   # CPU not measured for M5
+        "pre_processing":    0.0,   # GPU voxelization — counted in gpu_vfe proxy
+        "data_to_gpu":       0.0,
+        "gpu_nms":           v['gpu_W'] * v['nms_ms'],
+        "gpu_idle":          GPU_IDLE_W * idle,
+        "cpu_idle":          CPU_IDLE_PKG_W * idle,
+    }
+    segs.update({k: fwd_mj * f for k, f in
+                 NVTX_FRACS['default'].items()})
+    return segs
+
+
 # ── A10G cloud reference ──────────────────────────────────────────────────────
 A10G = dict(
     label="A10G  M0_FP32\n(cloud, GPU measured\nCPU est.)",
@@ -210,9 +239,14 @@ def main():
     rows = []
     for v in LOCAL_VARIANTS:
         rows.append(dict(label=v['label'], segs=edge_segments(v),
-                         cloud=False))
+                         cloud=False, trt=False))
+    for v in TRT_VARIANTS:
+        rows.append(dict(label=v['label'], segs=trt_segments(v),
+                         cloud=False, trt=True))
     for r in rows:
         r['total'] = sum(r['segs'].get(s, 0) for s in SEG_ORDER)
+
+    n_pytorch = len(LOCAL_VARIANTS)   # index where TRT rows start
 
     n     = len(rows)
     bar_h = 0.65
@@ -275,6 +309,16 @@ def main():
                     fontweight='bold', color=lcol)
 
 
+        # ── PyTorch / TRT divider ─────────────────────────────────────────────
+        divider_y = n_pytorch - 0.5
+        ax.axhline(divider_y, color='#777', lw=1.1, ls='--', alpha=0.7)
+        ax.text(XLIM * 0.35, divider_y,
+                'PyTorch (M0–M4) ↑     ↓ TensorRT C++ (M5)',
+                ha='center', va='center', fontsize=8, color='#555',
+                style='italic',
+                bbox=dict(boxstyle='round,pad=0.2', fc='#f5f5f5',
+                          ec='none', alpha=0.9))
+
         # ── Annotations ──────────────────────────────────────────────────────
         # NMS on M0_FP32
         m0   = rows[0]
@@ -312,11 +356,6 @@ def main():
                 'compile ↓', ha='left', va='center',
                 fontsize=8, color='#1565C0', fontweight='bold')
 
-        # "the best" on M4_AMP
-        ax.text(rows[-1]['total'] * scale + 55, y[-1] - 1.2,
-                '← the best', ha='left', va='center',
-                fontsize=8.5, color='#2E7D32',
-                fontweight='bold', style='italic')
 
         # ── CPU / GPU band labels on y-axis side ─────────────────────────────
         ax.text(-XLIM * 0.01, -0.5, 'CPU', ha='right', va='center',
@@ -324,7 +363,7 @@ def main():
                 transform=ax.transData)
 
         # ── Axes ─────────────────────────────────────────────────────────────
-        ax.set_yticks
+        ax.set_yticks(y)
         ax.set_yticklabels([r['label'] for r in rows], fontsize=10)
         ax.invert_yaxis()
         ax.xaxis.set_major_locator(
