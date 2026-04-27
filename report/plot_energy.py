@@ -58,6 +58,7 @@ try:
         FORWARD_NVTX_HATCH_LINEWIDTH,
         FORWARD_NVTX_LEGEND_LABEL,
         LEGEND_ORDER,
+        M5_FORWARD_HATCH,
         MLSYS_PLOT_RC,
         POINTPILLAR_FORWARD_NVTX,
         STACKED_BARH_FIG_WIDTH,
@@ -79,6 +80,7 @@ except ImportError:
         FORWARD_NVTX_HATCH_LINEWIDTH,
         FORWARD_NVTX_LEGEND_LABEL,
         LEGEND_ORDER,
+        M5_FORWARD_HATCH,
         MLSYS_PLOT_RC,
         POINTPILLAR_FORWARD_NVTX,
         STACKED_BARH_FIG_WIDTH,
@@ -102,6 +104,27 @@ DEFAULT_RUNS_CSV = _V4_A10 if (_V4_A10 / "runs.csv").is_file() else (_V2_FULL if
 DEFAULT_FORWARD_NVTX_ROOT = _V3_A10
 DEFAULT_M5_SOURCE_CSV = _V3_A10 / "runs.csv"
 DEFAULT_GPU = "A10"
+M2_KEEP_ONLY = {"M2_FP32_mem_both", "M2_AMP_mem_both"}
+ENERGY_AXIS_MAX_MJ = 3500.0
+
+# Match report/plot_latency.py visual defaults
+LEGEND_FONTSIZE = 22
+LEGEND_TITLE_FONTSIZE = 22
+LEGEND_FONTSIZE_FWD = 22
+LEGEND_BORDER_COLOR = "black"
+LEGEND_BORDER_WIDTH = 1.0
+LEGEND_BOX_LEFT_X = 0.81
+
+
+def _style_legend_border_black(leg) -> None:
+    fr = leg.get_frame()
+    fr.set_edgecolor(LEGEND_BORDER_COLOR)
+    fr.set_linewidth(LEGEND_BORDER_WIDTH)
+
+
+def _style_legend_left_aligned(leg) -> None:
+    leg._legend_box.align = "left"  # noqa: SLF001
+    leg.get_title().set_ha("left")
 
 _TOOLS = _REPO_ROOT / "OpenPCDet" / "tools"
 if _TOOLS.is_dir() and str(_TOOLS) not in sys.path:
@@ -172,7 +195,7 @@ def parse_args():
         "--csv",
         type=Path,
         default=DEFAULT_RUNS_CSV,
-        help="runs.csv path or directory containing it (runs mode; default: modal_outputs/modal_v4_a10 when present)",
+        help="runs.csv path or directory containing it (runs mode; default: modal_outputs/modal_v4_a10 if present)",
     )
     parser.add_argument(
         "--runs-root",
@@ -419,14 +442,14 @@ def plot_runs_energy_stacked(
     forward_nvtx_root: Path | None = None,
 ) -> None:
     """Horizontal stacked bars: mJ per sample per stage (same stages as plot_latency_breakdown)."""
-    labels = df["experiment_cell_id"].astype(str).tolist()
+    labels = df["experiment_cell_id"].astype(str).str.replace("_mem_both", "", regex=False).tolist()
     mat_ms = stage_matrix(df).reindex(df.index)
 
     etot = pd.to_numeric(df["energy_total_J"], errors="coerce")
     steps = pd.to_numeric(df["measured_steps"], errors="coerce").replace(0, np.nan)
     e_j = etot / steps
 
-    fig_h = max(6.0, 0.35 * len(labels) + 2.0)
+    fig_h = 1.8 * max(6.0, 0.35 * len(labels) + 2.0)
     root = repo_root or _REPO_ROOT
     fb_json = _existing_json_path(forward_nvtx_json_fallback, root)
     nvtx_root = _existing_dir_path(forward_nvtx_root, root)
@@ -461,10 +484,11 @@ def plot_runs_energy_stacked(
             ej = float(e_j.iloc[yi]) if np.isfinite(e_j.iloc[yi]) else float("nan")
             stages = _energy_mj_per_stage_row(ej, mat_ms.iloc[yi], order)
             left = 0.0
+            m5_row = str(lab).startswith("M5_")
             frac = None
             sub_order = list(POINTPILLAR_FORWARD_NVTX)
             nvtx_path: Path | None = None
-            if nest_forward_from_artifacts:
+            if nest_forward_from_artifacts and not m5_row:
                 nvtx_path = resolve_forward_nvtx_json_path(df.iloc[yi], root, runs_csv=runs_csv)
                 if nvtx_path is None and nvtx_root is not None:
                     cell = str(df.iloc[yi].get("experiment_cell_id", "") or "").strip()
@@ -478,15 +502,15 @@ def plot_runs_energy_stacked(
                     tried_nvtx_paths.append(nvtx_path)
                     frac, sub_order = load_forward_nvtx_fractions_ordered(nvtx_path)
             for name in order:
-                if name == "forward" and frac is not None:
-                    fwd_e = stages["forward"]
+                if name == "Forward" and frac is not None:
+                    fwd_e = stages["Forward"]
                     sub_total = sum(float(frac.get(sub, 0.0)) for sub in POINTPILLAR_FORWARD_NVTX)
                     if sub_total < 1e-9 and fwd_e > 0:
                         ax.barh(
                             lab,
                             fwd_e,
                             left=left,
-                            color=COLOR_BY_STAGE["forward"],
+                            color=COLOR_BY_STAGE["Forward"],
                             height=0.7,
                             edgecolor="white",
                             linewidth=0.65,
@@ -502,7 +526,7 @@ def plot_runs_energy_stacked(
                                 lab,
                                 w,
                                 left=left,
-                                facecolor=FORWARD_NVTX_COLORS.get(sub, COLOR_BY_STAGE["forward"]),
+                                facecolor=FORWARD_NVTX_COLORS.get(sub, COLOR_BY_STAGE["Forward"]),
                                 hatch=FORWARD_NVTX_HATCH.get(sub, ""),
                                 height=0.7,
                                 edgecolor="#f5f5f0",
@@ -513,15 +537,29 @@ def plot_runs_energy_stacked(
                             left += w
                     continue
                 val = stages[name]
-                ax.barh(
-                    lab,
-                    val,
-                    left=left,
-                    color=COLOR_BY_STAGE[name],
-                    height=0.7,
-                    edgecolor="white",
-                    linewidth=0.65,
-                )
+                if m5_row and name == "Forward":
+                    bars = ax.barh(
+                        lab,
+                        val,
+                        left=left,
+                        facecolor=COLOR_BY_STAGE[name],
+                        hatch=M5_FORWARD_HATCH,
+                        height=0.7,
+                        edgecolor="white",
+                        linewidth=0.65,
+                    )
+                    for patch in bars.patches:
+                        patch.set_hatch_linewidth(FORWARD_NVTX_HATCH_LINEWIDTH)
+                else:
+                    ax.barh(
+                        lab,
+                        val,
+                        left=left,
+                        color=COLOR_BY_STAGE[name],
+                        height=0.7,
+                        edgecolor="white",
+                        linewidth=0.65,
+                    )
                 left += val
             xmax = max(xmax, left)
 
@@ -529,7 +567,7 @@ def plot_runs_energy_stacked(
             fwd_legend_handles = []
             for sub in POINTPILLAR_FORWARD_NVTX:
                 leg_patch = mpatches.Patch(
-                    facecolor=FORWARD_NVTX_COLORS.get(sub, COLOR_BY_STAGE["forward"]),
+                    facecolor=FORWARD_NVTX_COLORS.get(sub, COLOR_BY_STAGE["Forward"]),
                     edgecolor="#f5f5f0",
                     linewidth=1.0,
                     hatch=FORWARD_NVTX_HATCH.get(sub, ""),
@@ -537,28 +575,33 @@ def plot_runs_energy_stacked(
                 )
                 leg_patch.set_hatch_linewidth(FORWARD_NVTX_HATCH_LINEWIDTH)
                 fwd_legend_handles.append(leg_patch)
+            leg_forward = ax.legend(
+                handles=fwd_legend_handles,
+                loc="lower left",
+                bbox_to_anchor=(LEGEND_BOX_LEFT_X, 0.02),
+                borderaxespad=0.35,
+                fontsize=LEGEND_FONTSIZE_FWD,
+                framealpha=1.0,
+                title="Forward Substage",
+                title_fontsize=LEGEND_FONTSIZE_FWD,
+            )
+            _style_legend_border_black(leg_forward)
+            _style_legend_left_aligned(leg_forward)
+            ax.add_artist(leg_forward)
             leg_pipe = ax.legend(
                 handles=pipe_legend_handles,
-                loc="upper left",
-                bbox_to_anchor=(1.02, 1.0),
+                loc="lower left",
+                bbox_to_anchor=(LEGEND_BOX_LEFT_X, 0.31),
                 borderaxespad=0.35,
-                fontsize=8,
-                framealpha=0.96,
-                title="Pipeline",
-                title_fontsize=8,
+                fontsize=LEGEND_FONTSIZE,
+                framealpha=1.0,
+                title="Stage",
+                title_fontsize=LEGEND_TITLE_FONTSIZE,
             )
+            _style_legend_border_black(leg_pipe)
+            _style_legend_left_aligned(leg_pipe)
             ax.add_artist(leg_pipe)
-            ax.legend(
-                handles=fwd_legend_handles,
-                loc="upper left",
-                bbox_to_anchor=(1.02, 0.38),
-                borderaxespad=0.35,
-                fontsize=7,
-                framealpha=0.96,
-                title="Forward (NVTX share)",
-                title_fontsize=7,
-            )
-            tight_rect = [0.0, 0.0, 0.70, 1.0]
+            tight_rect = [0.0, 0.0, 1.0, 1.0]
         else:
             if nest_forward_from_artifacts:
                 paths_hint = (
@@ -573,26 +616,22 @@ def plot_runs_energy_stacked(
                     % (list(POINTPILLAR_FORWARD_NVTX), paths_hint),
                     file=sys.stderr,
                 )
-            ax.legend(
+            leg_stage = ax.legend(
                 handles=pipe_legend_handles,
-                loc="upper right",
-                fontsize=8,
+                loc="lower right",
+                bbox_to_anchor=(0.99, 0.02),
+                borderaxespad=0.35,
+                fontsize=LEGEND_FONTSIZE,
                 framealpha=0.92,
+                title="Stage",
+                title_fontsize=LEGEND_TITLE_FONTSIZE,
             )
-            tight_rect = [0.0, 0.0, 0.92, 1.0]
+            _style_legend_border_black(leg_stage)
+            _style_legend_left_aligned(leg_stage)
+            tight_rect = [0.0, 0.0, 1.0, 1.0]
 
-        ax.set_xlabel("Energy [mJ] per sample (allocated by profile stage latency share)")
-        ax.set_ylabel("experiment_cell_id")
-        title_extra = (
-            " · NVTX forward split"
-            if (nest_forward_from_artifacts and drew_forward_nvtx)
-            else ""
-        )
-        ax.set_title(
-            "Per-stage energy (runs.csv: energy_total_J / measured_steps; %s; no dataloader)%s"
-            % (gpu_resolved, title_extra)
-        )
-        ax.set_xlim(0, xmax * 1.02 if xmax > 0 else 1.0)
+        ax.set_xlabel("Energy per Sample [mJ]")
+        ax.set_xlim(0, ENERGY_AXIS_MAX_MJ)
         ax.invert_yaxis()
         fig.tight_layout(rect=tight_rect)
         out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -734,8 +773,11 @@ def main_runs(args: argparse.Namespace) -> None:
     )
 
     df, gpu_resolved = load_filtered_latest(csv_path, args.gpu)
-    # Prefer M5 rows from a separate source (default: modal_v3_a10/runs.csv) so v4 plots
-    # can reuse v3 M5 entries when desired.
+    keep_mask = df["experiment_cell_id"].astype(str).apply(
+        lambda c: (not c.startswith("M2_")) or (c in M2_KEEP_ONLY)
+    )
+    df = df[keep_mask].copy()
+
     m5_source = Path(args.m5_source_csv).expanduser()
     if not m5_source.is_absolute():
         m5_source = (_REPO_ROOT / m5_source).resolve()
@@ -750,6 +792,7 @@ def main_runs(args: argparse.Namespace) -> None:
                 df = pd.concat([base, m5_df], ignore_index=True)
         except Exception as ex:
             print("plot_energy: failed to load M5 source %s: %s" % (m5_source, ex), file=sys.stderr)
+
     if "energy_total_J" not in df.columns or "measured_steps" not in df.columns:
         raise ValueError("runs.csv must include energy_total_J and measured_steps columns")
     df = sort_by_m_group(df)

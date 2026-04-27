@@ -1,0 +1,8 @@
+2026-04-25 22:17:03,770   INFO  Profile suite — output dir: /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v5_t4/M1_FP32/profile
+2026-04-25 22:17:03,771   INFO  Loading KITTI dataset
+2026-04-25 22:17:04,028   INFO  Total samples for KITTI dataset: 7481
+2026-04-25 22:17:04,895   INFO  ==> Loading parameters from checkpoint /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-25 22:17:04,922   INFO  ==> Done (loaded 127/127)
+2026-04-25 22:17:04,970   INFO  Wrapping model with torch.compile()
+2026-04-25 22:17:07,122   INFO  Running 1000 warmup steps...
+2026-04-25 22:20:41,415   INFO  Profiling 2000 steps (KITTI RT CPU stages)...

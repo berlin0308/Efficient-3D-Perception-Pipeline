@@ -401,7 +401,7 @@ def main(
     steps: int = 10,
     gpu: str = "A10G",
     download_to: str = "./modal_outputs/cuda_pp",
-    skip_download: bool = False,
+    skip_download: bool = True,
 ):
     """
     action:    build | run | run_all

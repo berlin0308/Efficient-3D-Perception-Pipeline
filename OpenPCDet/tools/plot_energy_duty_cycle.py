@@ -85,8 +85,8 @@ LEGEND_FONTSIZE = 22
 LEGEND_TITLE_FONTSIZE = 22
 LEGEND_BORDER_COLOR = "black"
 LEGEND_BORDER_WIDTH = 1.0
-CPU_ACTIVE_HATCH = "///"
-GPU_ACTIVE_HATCH = "|||"
+CPU_ACTIVE_HATCH = "|||"
+GPU_ACTIVE_HATCH = "///"
 ACTIVE_HATCH_LINEWIDTH = 2.2
 ACTIVE_HATCH_COLOR = "#666666"
 ACTIVE_BOX_FONTSIZE = 11
@@ -162,13 +162,6 @@ LOCAL_VARIANTS = [
         forward_ms=9.19, nms_ms=0.39,
         gpu_voxel=True,
     ),
-    dict(
-        label="M4_AMP",
-        gpu_W=53.8, cpu_W=46.74,
-        read_ms=3.92, preproc_ms=1.56, h2d_ms=0.25,
-        forward_ms=8.23, nms_ms=0.40,
-        gpu_voxel=True,
-    ),
 ]
 
 # ── A10G cloud reference ──────────────────────────────────────────────────────
@@ -179,8 +172,67 @@ A10G = dict(
     forward_ms=12.96, nms_ms=0.60,
 )
 
+# M5 values are fixed constants (no file I/O). Source baseline:
+# modal_v3_a10/runs.csv latest measured rows (energy_analysis data path).
+M5_FIXED_VARIANTS = [
+    dict(
+        label="M5",
+        energy_per_frame_j=230.1626 / 500.0,
+        preproc_ms=0.1721,
+        h2d_ms=0.0,
+        forward_ms=3.1841,
+        # Estimated to align with OpenPCDet: median(M0/M1/M3 nms/forward) * M5 forward.
+        nms_ms=0.1315,
+        gpu_voxel=False,
+    ),
+]
+
+
+def _to_float(v, default=0.0):
+    try:
+        if v is None or str(v).strip() == "":
+            return float(default)
+        return float(v)
+    except Exception:
+        return float(default)
+
+
+def m5_segments(v):
+    """
+    Build M5 segment energies from measured per-frame total energy.
+    Idle/platform follow existing constants; active budget is split by stage time share.
+    """
+    preproc_ms = _to_float(v.get("preproc_ms"))
+    h2d_ms = _to_float(v.get("h2d_ms"))
+    forward_ms = _to_float(v.get("forward_ms"))
+    nms_ms = _to_float(v.get("nms_ms"))
+    lat = preproc_ms + h2d_ms + forward_ms + nms_ms
+    idle = max(0.0, DUTY_MS - lat)
+    total_mj = max(0.0, _to_float(v.get("energy_per_frame_j")) * 1000.0)
+    # For M5, measured energy is treated as active-window energy.
+    # Add duty-cycle idle/platform estimates on top so the plot includes
+    # platform_overhead/cpu_idle/gpu_idle like other rows.
+    platform_mj = PLATFORM_ACTIVE_W * lat + PLATFORM_IDLE_W * idle
+    cpu_idle_mj = CPU_IDLE_PKG_W * idle
+    gpu_idle_mj = GPU_IDLE_W * idle
+    active_budget_mj = total_mj
+    active_ms = preproc_ms + h2d_ms + forward_ms + nms_ms
+    scale = (active_budget_mj / active_ms) if active_ms > 1e-9 else 0.0
+    segs = {
+        "platform_overhead": platform_mj,
+        "pre_processing": preproc_ms * scale,
+        "data_to_gpu": h2d_ms * scale,
+        "gpu_forward": forward_ms * scale,
+        "gpu_nms": nms_ms * scale,
+        "gpu_idle": gpu_idle_mj,
+        "cpu_idle": cpu_idle_mj,
+    }
+    return segs
+
 
 def edge_segments(v):
+    if "energy_per_frame_j" in v:
+        return m5_segments(v)
     lat  = v['read_ms'] + v['preproc_ms'] + v['h2d_ms'] + v['forward_ms'] + v['nms_ms']
     idle = DUTY_MS - lat
     fwd_mj = v['gpu_W'] * v['forward_ms']
@@ -231,6 +283,9 @@ def main():
     for v in LOCAL_VARIANTS:
         rows.append(dict(label=v['label'].replace('_AMP', ''), segs=edge_segments(v),
                          cloud=False))
+    for v in M5_FIXED_VARIANTS:
+        rows.append(dict(label=v["label"], segs=edge_segments(v), cloud=False))
+    print("Loaded fixed M5 variants: %s" % ", ".join(v["label"] for v in M5_FIXED_VARIANTS))
     for r in rows:
         r['total'] = sum(r['segs'].get(s, 0) for s in SEG_ALL)
 
@@ -292,6 +347,18 @@ def main():
                 post = seg_pos.get("gpu_nms")
                 if h2d and post:
                     gpu_span = (h2d[0], post[1])
+            elif label.startswith("M5"):
+                # TRT M5 follows CPU-preprocess then GPU active pipeline like M0/M1.
+                cpu_span = seg_pos.get("pre_processing")
+                h2d = seg_pos.get("data_to_gpu")
+                fwd = seg_pos.get("gpu_forward")
+                post = seg_pos.get("gpu_nms")
+                if h2d and post:
+                    gpu_span = (h2d[0], post[1])
+                elif fwd and post:
+                    # M5 fixed data may have zero H2D width; then start GPU-active
+                    # overlay at forward so hatch remains visible.
+                    gpu_span = (fwd[0], post[1])
             elif label.startswith("M3") or label.startswith("M4"):
                 h2d = seg_pos.get("data_to_gpu")
                 if h2d:

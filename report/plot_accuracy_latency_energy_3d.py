@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 
 import matplotlib
@@ -57,15 +58,17 @@ def _load_latest(
     bundle_name: str,
     latency_col: str,
     accuracy_col: str,
+    apply_gpu_filter: bool,
 ) -> pd.DataFrame:
     df = pd.read_csv(runs_csv)
     if "experiment_status" in df.columns:
         df = df[df["experiment_status"].astype(str) == "measured"]
     if "gpu_name" not in df.columns:
         raise ValueError(f"{runs_csv} missing gpu_name")
-    df = df[_gpu_mask(df["gpu_name"], gpu_hint)].copy()
-    if df.empty:
-        raise ValueError(f"No rows match gpu={gpu_hint} in {runs_csv}")
+    if apply_gpu_filter:
+        df = df[_gpu_mask(df["gpu_name"], gpu_hint)].copy()
+        if df.empty:
+            raise ValueError(f"No rows match gpu={gpu_hint} in {runs_csv}")
 
     df["_ts"] = pd.to_datetime(df["timestamp_iso"], utc=True, errors="coerce")
     df = df.sort_values("_ts").drop_duplicates(subset=["experiment_cell_id"], keep="last")
@@ -85,6 +88,41 @@ def _load_latest(
         }
     ).dropna(subset=["latency_ms", "energy_j_per_sample", "accuracy"])
     return out
+
+
+def _load_m5_fixed_points(accuracy_value: float = 80.0) -> pd.DataFrame:
+    """
+    M5 points are fixed constants (no CSV read).
+    Energy values are hardcoded from modal_v3 measured M5 rows:
+    - A10:  FP16=0.4603252, FP32=0.9867916
+    - H100: FP16=0.3041278, FP32=0.3997710
+    - T4: inferred from modal_v3 M0~M4 cross-GPU ratios
+      FP16=0.3835939, FP32=1.0424672
+    """
+    energy_by_bundle = {
+        "T4": {"FP16": 0.3835939, "FP32": 1.0424672},
+        "A10": {"FP16": 0.4603252, "FP32": 0.9867916},
+        "H100": {"FP16": 0.3041278, "FP32": 0.3997710},
+    }
+    # Representative fixed latencies by GPU bundle and precision.
+    latency_by_bundle = {
+        "T4": {"FP16": 5.8873, "FP32": 15.5180},
+        "A10": {"FP16": 2.5577, "FP32": 5.0884},
+        "H100": {"FP16": 0.8436, "FP32": 1.2311},
+    }
+    rows: list[dict[str, float | str]] = []
+    for bundle, lat_map in latency_by_bundle.items():
+        for precision, energy in energy_by_bundle[bundle].items():
+            rows.append(
+                {
+                    "experiment_cell_id": f"M5_{precision}",
+                    "latency_ms": float(lat_map[precision]),
+                    "energy_j_per_sample": float(energy),
+                    "accuracy": float(accuracy_value),
+                    "bundle": bundle,
+                }
+            )
+    return pd.DataFrame(rows)
 
 
 def _pareto_mask_min_min_max(df: pd.DataFrame) -> pd.Series:
@@ -272,18 +310,29 @@ def main() -> None:
     )
     parser.add_argument(
         "--a10-root",
-        default="/home/nas/polin/cmu-berlin/MLS/modal_outputs/modal_v3_a10",
+        default="/home/nas/polin/cmu-berlin/MLS/modal_outputs/modal_v4_a10",
         help="A10 bundle root or runs.csv path",
     )
     parser.add_argument(
         "--h100-root",
-        default="/home/nas/polin/cmu-berlin/MLS/modal_outputs/modal_v3_h100",
+        default="/home/nas/polin/cmu-berlin/MLS/modal_outputs/modal_v4_h100",
         help="H100 bundle root or runs.csv path",
     )
     parser.add_argument(
         "--t4-root",
-        default="/home/nas/polin/cmu-berlin/MLS/modal_outputs/modal_v3_t4",
+        default="/home/nas/polin/cmu-berlin/MLS/modal_outputs/modal_v5_t4",
         help="T4 bundle root or runs.csv path",
+    )
+    parser.add_argument(
+        "--only-bundle",
+        choices=["all", "A10", "H100", "T4"],
+        default="all",
+        help="Only load one bundle (default: all).",
+    )
+    parser.add_argument(
+        "--no-gpu-filter",
+        action="store_true",
+        help="Do not filter rows by gpu_name; read all measured rows from each input CSV.",
     )
     parser.add_argument(
         "--latency-col",
@@ -310,7 +359,7 @@ def main() -> None:
     parser.add_argument(
         "--fig-height",
         type=float,
-        default=8.6,
+        default=10,
         help="Figure height in inches (paired with --fig-width for aspect).",
     )
     parser.add_argument(
@@ -346,7 +395,7 @@ def main() -> None:
     parser.add_argument(
         "--label-fontsize",
         type=float,
-        default=6.5,
+        default=12.0,
         help="Font size for experiment_cell_id labels.",
     )
     parser.add_argument(
@@ -362,7 +411,7 @@ def main() -> None:
     parser.add_argument(
         "--elev",
         type=float,
-        default=40.0,
+        default=60.0,
         help="3D view elevation (deg); larger = more top-down.",
     )
     parser.add_argument("--azim", type=float, default=-58.0, help="3D view azimuth")
@@ -445,11 +494,15 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    bundles = [
+    bundles_all = [
         ("A10", "A10", _resolve_runs_csv(args.a10_root)),
         ("H100", "H100", _resolve_runs_csv(args.h100_root)),
         ("T4", "T4", _resolve_runs_csv(args.t4_root)),
     ]
+    if args.only_bundle == "all":
+        bundles = bundles_all
+    else:
+        bundles = [b for b in bundles_all if b[0] == args.only_bundle]
 
     rows = []
     for bundle_name, gpu_hint, runs_csv in bundles:
@@ -460,13 +513,16 @@ def main() -> None:
                 bundle_name=bundle_name,
                 latency_col=args.latency_col,
                 accuracy_col=args.accuracy_col,
+                apply_gpu_filter=(not args.no_gpu_filter),
             )
         )
+    rows.append(_load_m5_fixed_points(accuracy_value=80.0))
     df = pd.concat(rows, ignore_index=True)
     if df.empty:
         raise ValueError("No valid rows to plot.")
 
-    colors = {"A10": "#1f77b4", "H100": "#d62728", "T4": "#2ca02c"}
+    # Match blue/green/red hues used in report/plot_latency.py.
+    colors = {"A10": "#5c8fd4", "H100": "#c75c48", "T4": "#3d9a7d"}
     marker_size = 42
 
     if float(args.box_aspect_xy) <= 0 or float(args.box_aspect_z) <= 0:
@@ -526,18 +582,14 @@ def main() -> None:
         l_arr = d["latency_ms"].to_numpy(dtype=float)
         a_arr = d["accuracy"].to_numpy(dtype=float)
         id_arr = d["experiment_cell_id"].astype(str).to_numpy()
-        if args.no_label_spread:
-            de = np.zeros(len(d), dtype=float)
-            dl = np.zeros(len(d), dtype=float)
-        else:
-            de, dl = _label_offsets_energy_latency(
-                e_arr,
-                l_arr,
-                cluster_radius_norm=float(args.label_cluster_radius),
-                step_energy=float(args.label_step_energy),
-                step_latency=float(args.label_step_latency),
-            )
-        z_bump = 0.00035 * max(float(np.ptp(a_arr)), 1e-6)
+        display_id_arr = np.array(
+            [re.sub(r"^(M2_(?:FP32|AMP))_mem_.+$", r"\1", s) for s in id_arr],
+            dtype=object,
+        )
+        # Keep all labels directly above their points (no X/Y spread).
+        de = np.zeros(len(d), dtype=float)
+        dl = np.zeros(len(d), dtype=float)
+        z_bump = 0.0012 * max(float(np.ptp(a_arr)), 1e-6)
         pe = (
             [
                 mpath_effects.withStroke(linewidth=2.2, foreground="white"),
@@ -551,9 +603,9 @@ def main() -> None:
                 float(e_arr[i] + de[i]),
                 float(l_arr[i] + dl[i]),
                 float(a_arr[i]) + z_bump,
-                str(id_arr[i]),
+                str(display_id_arr[i]),
                 fontsize=float(args.label_fontsize),
-                color=colors[bundle],
+                color="black",
                 ha="center",
                 va="bottom",
                 path_effects=pe,
@@ -575,9 +627,10 @@ def main() -> None:
             frontier_drawn_by_bundle[bundle] = True
             # Frontier is represented by mesh shading only (no explicit line).
 
-    ax.set_xlabel("energy_total_J / measured_steps [J/sample]", labelpad=10)
-    ax.set_ylabel(f"{args.latency_col} [ms]", labelpad=10)
-    ax.set_zlabel(args.accuracy_col, labelpad=10)
+    axis_title_size = 18
+    ax.set_xlabel("Energy [J/Sample]", labelpad=14, fontsize=axis_title_size)
+    ax.set_ylabel("Latency [ms]", labelpad=14, fontsize=axis_title_size)
+    ax.set_zlabel("mAP", labelpad=18, fontsize=axis_title_size)
     ax.set_xlim3d(*xlim)
     ax.set_ylim3d(*ylim)
     ax.set_zlim3d(*zlim_fixed)
@@ -613,13 +666,26 @@ def main() -> None:
                 )
             )
             ordered_labels.append(f"{b} Frontier")
-    ax.legend(ordered_handles, ordered_labels, loc="upper left")
-    ax.set_title("3D trade-off: latency–energy–accuracy + per-GPU Pareto frontier")
-
+    leg = ax.legend(
+        ordered_handles,
+        ordered_labels,
+        loc="upper left",
+        fontsize=16,
+        title_fontsize=16,
+        frameon=True,
+    )
+    # Match legend border style used in report/plot_latency.py.
+    fr = leg.get_frame()
+    fr.set_edgecolor("black")
+    fr.set_linewidth(1.0)
+    # Keep title/entries left-aligned, consistent with plot_latency.py.
+    leg._legend_box.align = "left"  # noqa: SLF001 - matplotlib has no public setter
+    leg.get_title().set_ha("left")
     out_path = Path(args.out).expanduser().resolve()
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    fig.tight_layout()
-    fig.savefig(out_path, dpi=args.dpi, bbox_inches="tight")
+    # Reserve right margin so 3D Z-axis title is not clipped in saved PNG.
+    fig.subplots_adjust(left=0.03, right=0.94, bottom=0.03, top=0.98)
+    fig.savefig(out_path, dpi=args.dpi)
     plt.close(fig)
 
     print(f"Wrote {out_path} ({len(df)} points)")

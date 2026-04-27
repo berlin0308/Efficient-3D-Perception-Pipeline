@@ -1,0 +1,26 @@
+Car AP(Average Precision)@0.70, 0.70, 0.70:
+bbox AP:85.76, 78.25, 78.05
+bev  AP:83.94, 76.88, 76.42
+3d   AP:78.87, 67.53, 66.64
+aos  AP:85.74, 78.09, 77.77
+Car AP(Average Precision)@0.70, 0.50, 0.50:
+bbox AP:85.76, 78.25, 78.05
+bev  AP:86.49, 82.10, 82.56
+3d   AP:86.49, 78.75, 82.42
+aos  AP:85.74, 78.09, 77.77
+
+/usr/local/lib/python3.10/dist-packages/numba/cuda/dispatcher.py:536: NumbaPerformanceWarning: Grid size 18 will likely result in GPU under-utilization due to low occupancy.
+  warn(NumbaPerformanceWarning(msg))
+/usr/local/lib/python3.10/dist-packages/numba/core/typed_passes.py:338: NumbaPerformanceWarning: 
+The keyword argument 'parallel=True' was specified but no transformation for parallel execution was possible.
+
+To find out why, try turning on parallel diagnostics, see https://numba.readthedocs.io/en/stable/user/parallel.html#diagnostics for help.
+
+File "../opt/cuda-pp/eval/kitti-object-eval-python/eval.py", line 135:
+@numba.jit(nopython=True, parallel=True)
+def d3_box_overlap_kernel(boxes,
+^
+
+  warnings.warn(errors.NumbaPerformanceWarning(msg,
+/usr/local/lib/python3.10/dist-packages/numba/cuda/dispatcher.py:536: NumbaPerformanceWarning: Grid size 18 will likely result in GPU under-utilization due to low occupancy.
+  warn(NumbaPerformanceWarning(msg))

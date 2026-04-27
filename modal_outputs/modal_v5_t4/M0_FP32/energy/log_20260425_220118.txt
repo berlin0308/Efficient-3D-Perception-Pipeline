@@ -1,0 +1,51 @@
+2026-04-25 22:01:18,121   INFO  GPU [0]: Tesla T4
+2026-04-25 22:01:18,122   INFO  Loading KITTI dataset
+2026-04-25 22:01:18,389   INFO  Total samples for KITTI dataset: 7481
+2026-04-25 22:01:18,997   INFO  ==> Loading parameters from checkpoint /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-25 22:01:19,026   INFO  ==> Done (loaded 127/127)
+2026-04-25 22:01:19,208   INFO  Running 1000 warmup steps (no measurement)...
+2026-04-25 22:01:47,524   INFO  Measuring energy over 2000 steps...
+2026-04-25 22:02:42,930   INFO  =================================================================
+2026-04-25 22:02:42,931   INFO    PointPillars Energy Monitor — 2026-04-25 22:02:42
+2026-04-25 22:02:42,931   INFO  =================================================================
+2026-04-25 22:02:42,931   INFO    GPU            : Tesla T4
+2026-04-25 22:02:42,932   INFO    Config         : /opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+2026-04-25 22:02:42,932   INFO    Compile        : False  Traced: none
+2026-04-25 22:02:42,936   INFO    AMP (fp16)     : False
+2026-04-25 22:02:42,937   INFO    Memory opt scatter (HWC write): False
+2026-04-25 22:02:42,937   INFO    Memory opt conv2d (channels_last): False
+2026-04-25 22:02:42,937   INFO    Preprocess GPU (voxelize on GPU): False
+2026-04-25 22:02:42,938   INFO    Compile voxelizer: False
+2026-04-25 22:02:42,938   INFO    INT8 (CPU PTQ) : False
+2026-04-25 22:02:42,938   INFO    Warmup         : 1000   Steps: 2000   Batch: 1
+2026-04-25 22:02:42,939   INFO    Meas. burn-in  : 0  (power sampled; excluded from NVML J window)
+2026-04-25 22:02:42,939   INFO  
+2026-04-25 22:02:42,939   INFO  ── Latency (ms) ─────────────────────────────────────────
+2026-04-25 22:02:42,940   INFO    Mean : 26.14   p50 : 25.59   p95 : 29.86   p99 : 32.46
+2026-04-25 22:02:42,940   INFO  
+2026-04-25 22:02:42,940   INFO  ── Throughput ───────────────────────────────────────────
+2026-04-25 22:02:42,940   INFO    36.20 samples/s  (total_samples=2000, wall=55.25 s)
+2026-04-25 22:02:42,940   INFO  
+2026-04-25 22:02:42,941   INFO  ── Power & Energy ───────────────────────────────────────
+2026-04-25 22:02:42,941   INFO    Mean power     : 67.6 W
+2026-04-25 22:02:42,941   INFO    Peak power     : 84.1 W
+2026-04-25 22:02:42,942   INFO    Total energy   : 3739.76 J  (NVML window=55.25 s, 951 power samples)
+2026-04-25 22:02:42,942   INFO  
+2026-04-25 22:02:42,942   INFO  ── Performance-per-Watt ─────────────────────────────────
+2026-04-25 22:02:42,942   INFO    0.5352 samples/s/W  (throughput / mean_power)
+2026-04-25 22:02:42,943   INFO    0.5348 samples/J   (steady_samples / steady_energy; spike intervals omitted when enabled)
+2026-04-25 22:02:42,943   INFO    Interpretation: higher = more efficient per unit energy
+2026-04-25 22:02:42,943   INFO  
+2026-04-25 22:02:42,943   INFO  ── CPU Energy ───────────────────────────────────────────
+2026-04-25 22:02:42,944   INFO    Method         : psutil (0% × 45W TDP)
+2026-04-25 22:02:42,944   INFO    Duration       : 55.347 s
+2026-04-25 22:02:42,945   INFO    CPU mean power : 0.00 W
+2026-04-25 22:02:42,945   INFO    CPU energy     : 0.0000 J
+2026-04-25 22:02:42,945   INFO    Total (GPU+CPU): 3739.7631 J   samples/J (corrected): 0.5348
+2026-04-25 22:02:42,946   INFO  
+2026-04-25 22:02:42,946   INFO  ── Outputs ──────────────────────────────────────────────
+2026-04-25 22:02:42,946   INFO    Summary  : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v5_t4/M0_FP32/energy/energy_summary.txt
+2026-04-25 22:02:42,947   INFO    Raw CSV  : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v5_t4/M0_FP32/energy/energy_samples.csv
+2026-04-25 22:02:42,947   INFO  =================================================================
+2026-04-25 22:02:42,951   INFO  Raw power samples → /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v5_t4/M0_FP32/energy/energy_samples.csv
+2026-04-25 22:02:42,964   INFO  Per-step forward latency → /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v5_t4/M0_FP32/energy/energy_latency_per_step.csv

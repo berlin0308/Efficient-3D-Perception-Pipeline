@@ -1,0 +1,47 @@
+2026-04-25 22:03:29,449   INFO  Profile suite — output dir: /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v5_t4/M0_AMP/profile
+2026-04-25 22:03:29,450   INFO  Loading KITTI dataset
+2026-04-25 22:03:29,740   INFO  Total samples for KITTI dataset: 7481
+2026-04-25 22:03:30,532   INFO  ==> Loading parameters from checkpoint /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth to GPU
+2026-04-25 22:03:30,559   INFO  ==> Done (loaded 127/127)
+2026-04-25 22:03:30,573   INFO  Running 1000 warmup steps...
+2026-04-25 22:04:25,603   INFO  Profiling 2000 steps (KITTI RT CPU stages)...
+2026-04-25 22:13:08,584   INFO  Chrome trace saved → /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v5_t4/M0_AMP/profile/torch_profile_trace.json
+2026-04-25 22:15:07,421   INFO  ======================================================================
+2026-04-25 22:15:07,421   INFO    PointPillars Profile Suite — 2026-04-25 22:15:07
+2026-04-25 22:15:07,421   INFO  ======================================================================
+2026-04-25 22:15:07,422   INFO    Config  : /opt/OpenPCDet/tools/cfgs/kitti_models/pointpillar.yaml
+2026-04-25 22:15:07,422   INFO    Ckpt    : /opt/OpenPCDet/tools/ckpt/pointpillar_7728.pth
+2026-04-25 22:15:07,423   INFO    Compile : False
+2026-04-25 22:15:07,423   INFO    AMP (fp16): True
+2026-04-25 22:15:07,423   INFO    Memory opt scatter (HWC write): False
+2026-04-25 22:15:07,424   INFO    Memory opt conv2d (channels_last): False
+2026-04-25 22:15:07,424   INFO    Preprocess GPU (voxelize on GPU): False
+2026-04-25 22:15:07,424   INFO    Compile voxelizer: False
+2026-04-25 22:15:07,424   INFO    INT8    : False  (CPU dynamic Linear PTQ if true)
+2026-04-25 22:15:07,425   INFO    Traced  : none
+2026-04-25 22:15:07,425   INFO    Nsight NVTX: False
+2026-04-25 22:15:07,425   INFO    Warmup  : 1000 steps   Measured: 2000 steps   Batch: 1   Meas. burn-in: 0
+2026-04-25 22:15:07,426   INFO  
+2026-04-25 22:15:07,426   INFO  ── Per-stage latency (mean / p50 / p95 / p99 / std) [ms] ─────────────
+2026-04-25 22:15:07,426   INFO  Stage                   mean         p50         p95         p99         std
+2026-04-25 22:15:07,426   INFO  ----------------------------------------------------------------------------
+2026-04-25 22:15:07,427   INFO  read_points (excl.T_rt)       10.76       10.21       13.56       19.37        2.84
+2026-04-25 22:15:07,427   INFO  pre_processing         21.94       21.94       29.97       32.83        4.99
+2026-04-25 22:15:07,427   INFO  data_to_gpu             1.22        1.20        1.58        1.75        0.22
+2026-04-25 22:15:07,427   INFO  Forward (GPU)          23.79       23.71       25.22       26.39        1.03
+2026-04-25 22:15:07,428   INFO  PostProcess             0.80        0.80        0.85        1.11        0.10
+2026-04-25 22:15:07,428   INFO  ── Onboard frame ──       26.07       26.00       27.83       29.15        1.16
+2026-04-25 22:15:07,428   INFO  ── T_rt (onboard) ──       47.75       47.87       56.78       60.14        5.65
+2026-04-25 22:15:07,429   INFO  
+2026-04-25 22:15:07,429   INFO  ── Throughput & Memory ─────────────────────────────────────────
+2026-04-25 22:15:07,429   INFO    Throughput         : 20.9 samples/s  (batch=1, mean T_rt=47.75 ms)
+2026-04-25 22:15:07,430   INFO    Peak GPU Memory    : 183.0 MB  (NMS/recall on GPU; backbone mostly CPU when INT8)
+2026-04-25 22:15:07,430   INFO    Peak GPU Mem (steady): 183.0 MB  (no forward spike filter)
+2026-04-25 22:15:07,430   INFO    Mean peak per step : 182.5 MB
+2026-04-25 22:15:07,430   INFO    CUDA kernel events : 1737211
+2026-04-25 22:15:07,430   INFO    T_rt mean (onboard, excl. read_points): 47.75 ms
+2026-04-25 22:15:07,431   INFO  
+2026-04-25 22:15:07,431   INFO  ── Outputs ──────────────────────────────────────────────────────
+2026-04-25 22:15:07,432   INFO    Chrome trace       : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v5_t4/M0_AMP/profile/torch_profile_trace.json
+2026-04-25 22:15:07,432   INFO    Summary            : /__modal/volumes/vo-IonADsHkUVjfGkodF5a2qa/modal_v5_t4/M0_AMP/profile/profile_summary.txt
+2026-04-25 22:15:07,432   INFO  ======================================================================

@@ -142,6 +142,18 @@ MNT_RESULTS = "/mnt/results"
 
 # GPU for profile / energy / KITTI eval (Modal docs: gpu="A10", "T4", "H100", … — not "A10G").
 RESEARCH_GPU = os.environ.get("MLS_MODAL_RESEARCH_GPU", "A10")
+T4_NON_COMPILE_CELL_IDS = (
+    "M0_FP32",
+    "M0_AMP",
+    "M2_FP32_mem_scatter",
+    "M2_FP32_mem_conv2d",
+    "M2_FP32_mem_both",
+    "M2_AMP_mem_scatter",
+    "M2_AMP_mem_conv2d",
+    "M2_AMP_mem_both",
+    "M3_FP32",
+    "M3_AMP",
+)
 
 
 def _volume_prefix_under_results(container_path: str) -> str:
@@ -308,7 +320,7 @@ mls_image = (
         "torchvision==0.16.2",
         extra_index_url="https://download.pytorch.org/whl/cu118",
     )
-    .pip_install("spconv-cu118")
+    .pip_install("spconv-cu118", "psutil")
     .add_local_dir(
         str(OPENPCDET_ROOT),
         "/opt/OpenPCDet",
@@ -644,6 +656,7 @@ def run_collect_research_metrics(
     require_real_kitti: bool = True,
     kitti_full_val: bool = False,
     kitti_max_eval_samples: int = 200,
+    skip_compile_cells_on_t4: bool = True,
 ) -> dict:
     """
     Same CLI surface as collect_research_metrics.py run (matrix / cell / all-cells / m+p / runs_csv / output_csv).
@@ -675,6 +688,38 @@ def run_collect_research_metrics(
     out_csv_n = output_csv.strip() or None
     mm = None if model_m < 0 else model_m
     pp = None if precision_p < 0 else precision_p
+
+    if skip_compile_cells_on_t4 and RESEARCH_GPU.upper() == "T4" and matrix in ("fp32_amp", "15"):
+        requested_ids = []
+        if cell_n:
+            requested_ids = [x.strip() for x in cell_n.split(",") if x.strip()]
+        compile_ids = {"M1_FP32", "M1_AMP", "M4_FP32", "M4_AMP"}
+        if requested_ids:
+            kept = [x for x in requested_ids if x not in compile_ids]
+            if len(kept) != len(requested_ids):
+                print(
+                    "[mls] T4 safety: removed compile-heavy cell(s) to avoid OOM: %s"
+                    % (", ".join(sorted(set(requested_ids) - set(kept)))),
+                    flush=True,
+                )
+            cell_n = ",".join(kept) if kept else None
+            if not cell_n:
+                raise SystemExit(
+                    "All requested cells on T4 were compile-heavy (M1/M4). "
+                    "Disable --skip-compile-cells-on-t4 only if you accept OOM risk."
+                )
+        elif mm in (1, 4):
+            raise SystemExit(
+                "T4 safety blocked --model-m %d because it implies compile-heavy cells (M1/M4). "
+                "Disable --skip-compile-cells-on-t4 only if you accept OOM risk." % mm
+            )
+        elif mm is None and pp is None:
+            all_cells_15 = False
+            cell_n = ",".join(T4_NON_COMPILE_CELL_IDS)
+            print(
+                "[mls] T4 safety: using non-compile cell subset to avoid OOM: %s" % cell_n,
+                flush=True,
+            )
 
     argv = _argv_collect_research_run(
         tools_dir=tools_dir,
@@ -772,6 +817,7 @@ def main(
     keep_kitti_zips: bool = False,
     kitti_full_val: bool = False,
     kitti_max_eval_samples: int = 200,
+    skip_compile_cells_on_t4: bool = True,
 ):
     """
     action=verify | upload | upload_kitti | download_kitti | run
@@ -833,6 +879,7 @@ def main(
             require_real_kitti=require_real_kitti,
             kitti_full_val=kitti_full_val,
             kitti_max_eval_samples=kitti_max_eval_samples,
+            skip_compile_cells_on_t4=skip_compile_cells_on_t4,
         )
         print("artifact_status:", out.get("artifact_status"))
         print("kitti_data:", out.get("kitti_data"))
