@@ -318,6 +318,7 @@ def run_profile_loop(model, dataloader, dataset, class_names, args, logger, resu
     activities = [torch.profiler.ProfilerActivity.CPU]
     if not cpu_int8:
         activities.append(torch.profiler.ProfilerActivity.CUDA)
+    torch.cuda.cudart().cudaProfilerStart()
     with torch.profiler.profile(
         activities=activities,
         record_shapes=True,
@@ -364,6 +365,7 @@ def run_profile_loop(model, dataloader, dataset, class_names, args, logger, resu
             forward_ms_steps.append(float(fwd_timer.ms))
             prof.step()
 
+    torch.cuda.cudart().cudaProfilerStop()
     prof.export_chrome_trace(trace_path)
     logger.info('Chrome trace saved → %s', trace_path)
 
@@ -420,6 +422,7 @@ def run_profile_loop_preprocess_gpu(model, dataset, class_names, args, logger, r
 
     trace_path = str(result_dir / 'torch_profile_trace.json')
     activities = [torch.profiler.ProfilerActivity.CPU, torch.profiler.ProfilerActivity.CUDA]
+    torch.cuda.cudart().cudaProfilerStart()
     with torch.profiler.profile(
         activities=activities,
         record_shapes=True,
@@ -496,6 +499,7 @@ def run_profile_loop_preprocess_gpu(model, dataset, class_names, args, logger, r
             forward_ms_steps.append(float(fwd_timer.ms))
             prof.step()
 
+    torch.cuda.cudart().cudaProfilerStop()
     prof.export_chrome_trace(trace_path)
     logger.info('Chrome trace saved → %s', trace_path)
 
@@ -543,6 +547,7 @@ def run_profile_loop_kitti_rt_cpu(model, dataset, class_names, args, logger, res
 
     trace_path = str(result_dir / 'torch_profile_trace.json')
     activities = [torch.profiler.ProfilerActivity.CPU, torch.profiler.ProfilerActivity.CUDA]
+    torch.cuda.cudart().cudaProfilerStart()
     with torch.profiler.profile(
         activities=activities,
         record_shapes=True,
@@ -603,6 +608,7 @@ def run_profile_loop_kitti_rt_cpu(model, dataset, class_names, args, logger, res
             forward_ms_steps.append(float(fwd_timer.ms))
             prof.step()
 
+    torch.cuda.cudart().cudaProfilerStop()
     prof.export_chrome_trace(trace_path)
     logger.info('Chrome trace saved → %s', trace_path)
 

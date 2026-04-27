@@ -85,6 +85,7 @@ def _precision_kind(df: pd.DataFrame) -> pd.Series:
     low = cid.str.lower()
     pr[(pr == "other") & low.str.contains("_fp32", na=False)] = "FP32"
     pr[(pr == "other") & low.str.contains("_amp", na=False)] = "AMP"
+    pr[(pr == "other") & low.str.contains("_fp16", na=False)] = "FP16"
     return pr
 
 
@@ -237,11 +238,11 @@ def main() -> None:
         )
 
     i_min = max(0.05, float(np.nanmin(x_plot)) * 0.35)
+    i_ridge = (args.peak_tflops * 1e12) / (args.dram_bandwidth_gbs * 1e9)
     i_max = float(args.imax) if args.imax is not None else float(np.nanmax(x_plot)) * 2.5
-    i_max = max(i_max, i_min * 10.0, 5.0)
+    i_max = max(i_max, i_min * 10.0, 5.0, i_ridge * 2.0)
     ii = np.geomspace(i_min, i_max, 200)
     roof = _roof_gflops(ii, args.peak_tflops, args.dram_bandwidth_gbs)
-    i_ridge = (args.peak_tflops * 1e12) / (args.dram_bandwidth_gbs * 1e9)
 
     with plt.rc_context(MLSYS_PLOT_RC):
         fig, ax = plt.subplots(figsize=(12.0, 7.0))
@@ -255,10 +256,11 @@ def main() -> None:
             zorder=1,
         )
 
-        c_fp32, c_amp, c_other = "#0072B2", "#E69F00", "#7f7f7f"
+        c_fp32, c_amp, c_fp16, c_other = "#0072B2", "#E69F00", "#009E73", "#7f7f7f"
         for kind, c, m, leg in (
             ("FP32", c_fp32, "o", "FP32 cells"),
             ("AMP", c_amp, "s", "AMP cells"),
+            ("FP16", c_fp16, "D", "FP16 cells"),
             ("other", c_other, "^", "Other"),
         ):
             msk = prec_plot == kind
@@ -288,12 +290,16 @@ def main() -> None:
 
         ax.set_xlabel("Arithmetic intensity [FLOP / byte] (forward; NCU or proxy)")
         ax.set_ylabel("Attained [GFLOP/s] = F_theory / t_forward")
-        sub_i = (
-            "NCU intensity: %d / %d cells (rest use bytes proxy)"
-            % (n_ncu_pts, n_pts)
-            if args.intensity_source == "blend"
-            else ("Intensity = NCU only" if args.intensity_source == "ncu" else "Intensity = F_theory / bytes_proxy (same for all)")
-        )
+        if args.intensity_source == "blend":
+            n_proxy = n_pts - n_ncu_pts
+            if n_proxy == 0:
+                sub_i = "NCU intensity: %d / %d cells (all from NCU)" % (n_ncu_pts, n_pts)
+            else:
+                sub_i = "NCU intensity: %d / %d cells (%d use bytes proxy)" % (n_ncu_pts, n_pts, n_proxy)
+        elif args.intensity_source == "ncu":
+            sub_i = "Intensity = NCU only"
+        else:
+            sub_i = "Intensity = F_theory / bytes_proxy (same for all)"
         ax.set_title(
             "Forward roofline-style chart — %s\nF_theory = %.3g FLOP/run; ridge I* ≈ %.2g FLOP/B\n%s"
             % (gpu_resolved, f_theory, i_ridge, sub_i)
@@ -310,6 +316,9 @@ def main() -> None:
             )
         ax.legend(loc="lower right", fontsize=8, framealpha=0.95)
         ax.grid(True, which="both", alpha=0.4)
+        # Ensure compute ceiling line is always visible in the y-axis range.
+        cur_ylim = ax.get_ylim()
+        ax.set_ylim(top=max(cur_ylim[1], args.peak_tflops * 1e3 * 1.5))
         fig.tight_layout()
         out_path.parent.mkdir(parents=True, exist_ok=True)
         fig.savefig(out_path, dpi=args.dpi, bbox_inches="tight", pad_inches=0.12)

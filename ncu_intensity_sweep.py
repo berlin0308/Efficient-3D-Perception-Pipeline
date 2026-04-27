@@ -72,8 +72,9 @@ ALL_VARIANTS = [
     # M4: GPU preprocess + memory opts
     {"id": "M4_FP32",             "type": "openpcdet", "extra_flags": ["--preprocess_gpu", "--memory_opt_scatter", "--memory_opt_conv2d"]},
     {"id": "M4_AMP",              "type": "openpcdet", "extra_flags": ["--preprocess_gpu", "--memory_opt_scatter", "--memory_opt_conv2d", "--amp"]},
-    # M5: CUDA-PointPillars TensorRT FP32
+    # M5: CUDA-PointPillars TensorRT FP32 + FP16
     {"id": "M5_FP32",             "type": "cuda_pp",   "extra_flags": []},
+    {"id": "M5_FP16",             "type": "cuda_pp_fp16", "extra_flags": []},
 ]
 
 # ---------------------------------------------------------------------------
@@ -83,30 +84,33 @@ ALL_VARIANTS = [
 def _run_ncu_openpcdet(variant_flags: list[str], ncu_bin: str, python_bin: str,
                        ld_preload: str = LD_PRELOAD) -> str:
     """Run ncu on profile_suite.py, return stdout."""
-    # Use /usr/bin/env to inject LD_PRELOAD directly into the ncu target command.
-    # sudo -E would strip LD_PRELOAD; embedding it here bypasses that stripping.
     cmd = [
-        "sudo", "-E",
         ncu_bin,
+        "--profile-from-start", "off",
         "--csv",
         "--metrics", f"{METRIC_LD},{METRIC_ST}",
-        "--target-processes", "all",
-        "/usr/bin/env", f"LD_PRELOAD={ld_preload}",
         python_bin,
         "profile_suite.py",
         "--cfg_file", CFG_FILE,
         "--ckpt",     CKPT_FILE,
         "--warmup",   "0",
         "--steps",    "1",
+        "--cuda_id",  "0",
     ] + variant_flags
 
-    print(f"  Running: {' '.join(cmd[4:])}", flush=True)
+    # Pass LD_PRELOAD and CUDA_VISIBLE_DEVICES via env so ncu targets python directly.
+    env = os.environ.copy()
+    env["LD_PRELOAD"] = ld_preload
+    env["CUDA_VISIBLE_DEVICES"] = "0"
+
+    print(f"  Running: {' '.join(cmd)}", flush=True)
     result = subprocess.run(
         cmd,
         cwd=str(TOOLS_DIR),
         capture_output=True,
         text=True,
         timeout=600,
+        env=env,
     )
     if result.returncode != 0:
         print(f"  [warn] ncu exited {result.returncode}", flush=True)
@@ -117,7 +121,6 @@ def _run_ncu_openpcdet(variant_flags: list[str], ncu_bin: str, python_bin: str,
 def _run_ncu_cuda_pp(demo_path: Path, ncu_bin: str) -> str:
     """Run ncu on ./demo binary, return stdout."""
     cmd = [
-        "sudo", "-E",
         ncu_bin,
         "--csv",
         "--metrics", f"{METRIC_LD},{METRIC_ST}",
@@ -199,7 +202,13 @@ def main() -> None:
         "--demo",
         type=Path,
         default=REPO_ROOT / "CUDA-PointPillars" / "build-fp32" / "demo",
-        help="Path to CUDA-PP ./demo binary",
+        help="Path to CUDA-PP FP32 ./demo binary",
+    )
+    parser.add_argument(
+        "--demo-fp16",
+        type=Path,
+        default=REPO_ROOT / "CUDA-PointPillars" / "build-fp16" / "demo",
+        help="Path to CUDA-PP FP16 ./demo binary",
     )
     parser.add_argument(
         "--out",
@@ -228,6 +237,12 @@ def main() -> None:
         if v["type"] == "openpcdet":
             stdout = _run_ncu_openpcdet(v["extra_flags"], args.ncu_bin, args.python_bin,
                                         args.ld_preload)
+        elif v["type"] == "cuda_pp_fp16":
+            demo_fp16 = args.demo_fp16
+            if not demo_fp16.exists():
+                print(f"  [warn] FP16 demo binary not found: {demo_fp16} — skipping M5_FP16", flush=True)
+                continue
+            stdout = _run_ncu_cuda_pp(demo_fp16, args.ncu_bin)
         else:
             if not args.demo.exists():
                 print(f"  [warn] demo binary not found: {args.demo} — skipping M5", flush=True)
